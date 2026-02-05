@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useVisualizerStore } from '../store/visualizerStore';
 import { ArrayBar } from '../components/visualizer/ArrayBar';
 import { HashMapView } from '../components/visualizer/HashMapView';
@@ -16,6 +17,7 @@ import { useProgressStore } from '../store/progressStore';
 export function VisualizerPage() {
   const { currentAlgorithm, steps, currentStepIndex, language } = useVisualizerStore();
   const { solvedProblems, toggleSolved } = useProgressStore();
+  const [showCode, setShowCode] = useState(false);
 
   if (!currentAlgorithm) {
     return (
@@ -82,21 +84,33 @@ export function VisualizerPage() {
   const intervalSecondary = state?.intervalSecondary as number[] | undefined;
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
+    <div className="flex flex-col lg:flex-row lg:flex-1 gap-4 p-4 lg:overflow-hidden">
       {/* Visualization Panel */}
-      <div className="flex-1 flex flex-col gap-4 min-h-0">
-        {/* Algorithm info bar */}
-        <div className="bg-slate-800 rounded-xl p-4 flex flex-wrap gap-3 items-center text-sm">
+      <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0">
+        {/* Algorithm info bar — compact on mobile */}
+        <div className="bg-slate-800 rounded-xl p-3 lg:p-4 flex flex-wrap gap-2 lg:gap-3 items-center text-sm">
+          <span className="font-medium lg:hidden truncate max-w-[160px]">{currentAlgorithm.name}</span>
           <span className={`px-2 py-0.5 rounded font-medium ${
             currentAlgorithm.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
             currentAlgorithm.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
             'bg-red-500/20 text-red-400'
           }`}>{currentAlgorithm.difficulty}</span>
-          <span className="text-slate-400">Time: <span className="text-slate-200 font-mono">{currentAlgorithm.timeComplexity}</span></span>
-          <span className="text-slate-400">Space: <span className="text-slate-200 font-mono">{currentAlgorithm.spaceComplexity}</span></span>
-          <span className="text-slate-400">|</span>
-          <span className="text-indigo-400 font-medium">{currentAlgorithm.pattern}</span>
-          <div className="ml-auto flex-shrink-0">
+          <span className="hidden sm:inline text-slate-400">Time: <span className="text-slate-200 font-mono">{currentAlgorithm.timeComplexity}</span></span>
+          <span className="hidden sm:inline text-slate-400">Space: <span className="text-slate-200 font-mono">{currentAlgorithm.spaceComplexity}</span></span>
+          <span className="hidden sm:inline text-slate-400">|</span>
+          <span className="hidden sm:inline text-indigo-400 font-medium">{currentAlgorithm.pattern}</span>
+          <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+            {/* Code toggle (mobile only) */}
+            <button
+              onClick={() => setShowCode(!showCode)}
+              className={`lg:hidden px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                showCode
+                  ? 'bg-indigo-500/20 text-indigo-400'
+                  : 'bg-slate-700 text-slate-400'
+              }`}
+            >
+              {showCode ? 'Viz' : 'Code'}
+            </button>
             <button
               onClick={() => toggleSolved(currentAlgorithm.id)}
               className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
@@ -110,7 +124,25 @@ export function VisualizerPage() {
           </div>
         </div>
 
-        <div className="flex-1 bg-slate-800 rounded-xl p-4 overflow-auto">
+        {/* Mobile: pattern + complexity row */}
+        <div className="sm:hidden bg-slate-800/50 rounded-lg px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1">
+          <span className="text-slate-400">T: <span className="text-slate-300 font-mono">{currentAlgorithm.timeComplexity}</span></span>
+          <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{currentAlgorithm.spaceComplexity}</span></span>
+          <span className="text-indigo-400">{currentAlgorithm.pattern}</span>
+        </div>
+
+        {/* Mobile code view */}
+        {showCode && (
+          <div className="lg:hidden h-[60vh]">
+            <CodeBlock
+              code={currentAlgorithm.code[language]}
+              currentLine={currentStep?.codeLine}
+            />
+          </div>
+        )}
+
+        {/* Visualization area (hidden on mobile when showing code) */}
+        <div className={`${showCode ? 'hidden' : ''} lg:block lg:flex-1 bg-slate-800 rounded-xl p-4 overflow-auto lg:min-h-0`}>
           <h3 className="text-sm font-medium text-slate-400 mb-4">Visualization</h3>
 
           {/* Array visualization */}
@@ -287,8 +319,8 @@ export function VisualizerPage() {
         <Controls />
       </div>
 
-      {/* Code Panel */}
-      <div className="lg:w-[400px] h-[300px] lg:h-auto">
+      {/* Code Panel — desktop only (mobile uses toggle above) */}
+      <div className="hidden lg:block lg:w-[400px]">
         <CodeBlock
           code={currentAlgorithm.code[language]}
           currentLine={currentStep?.codeLine}

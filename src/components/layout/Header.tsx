@@ -35,15 +35,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         </h1>
       </div>
 
-      {/* Current algorithm */}
+      {/* Current algorithm — hidden on mobile (info bar shows it) */}
       {currentAlgorithm && (
-        <div className="flex-1 flex items-center gap-3 ml-4">
+        <div className="hidden lg:flex flex-1 items-center gap-3 ml-4">
           <span className="text-slate-400">/</span>
-          <span className="text-slate-300">{currentAlgorithm.category}</span>
+          <span className="text-slate-300 truncate max-w-[150px]">{currentAlgorithm.category}</span>
           <span className="text-slate-400">/</span>
-          <span className="font-medium">{currentAlgorithm.name}</span>
+          <span className="font-medium truncate max-w-[200px]">{currentAlgorithm.name}</span>
           <span
-            className={`px-2 py-0.5 text-xs rounded-full ${
+            className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${
               currentAlgorithm.difficulty === 'Easy'
                 ? 'bg-green-500/20 text-green-400'
                 : currentAlgorithm.difficulty === 'Medium'
@@ -57,7 +57,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           {/* Info button */}
           <button
             onClick={() => setShowInfo(!showInfo)}
-            className="p-1 rounded hover:bg-slate-700 transition-colors"
+            className="p-1 rounded hover:bg-slate-700 transition-colors flex-shrink-0"
             title="Problem info"
           >
             <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,6 +65,19 @@ export function Header({ onMenuClick }: HeaderProps) {
             </svg>
           </button>
         </div>
+      )}
+
+      {/* Mobile info button (when algo selected) */}
+      {currentAlgorithm && (
+        <button
+          onClick={() => setShowInfo(!showInfo)}
+          className="lg:hidden ml-auto p-2 rounded-lg hover:bg-slate-700 transition-colors"
+          title="Problem info"
+        >
+          <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
       )}
 
       {/* Info modal */}
