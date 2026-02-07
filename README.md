@@ -1,8 +1,22 @@
-# AlgoFlow
+<div align="center">
+
+# 🌊 AlgoFlow
 
 **Interactive Algorithm Visualizer for NeetCode 150**
 
-A comprehensive web application that visualizes 150 essential algorithm problems with step-by-step execution, supporting Python, JavaScript, and Java implementations.
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge)](https://algoflow.vercel.app)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
+
+A comprehensive web application that visualizes **150 essential algorithm problems** with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations.
+
+[Live Demo](https://algoflow.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
+
+</div>
+
+---
 
 ## ✨ Features
 
@@ -14,9 +28,22 @@ A comprehensive web application that visualizes 150 essential algorithm problems
 - ⚡ **Pattern recognition** - each problem includes algorithm pattern hints
 - 🔗 **LeetCode integration** - direct links to original problems
 
-## 🚀 Live Demo
+## 📸 Screenshots
 
-Visit [AlgoFlow](https://algoflow.vercel.app) to try it out!
+<div align="center">
+
+### Algorithm Visualization
+*Step-by-step execution with syntax highlighting and interactive controls*
+
+### Multi-Language Support
+*Switch between Python, JavaScript, and Java implementations*
+
+### Responsive Design
+*Optimized for both desktop and mobile devices*
+
+</div>
+
+> **Note**: Add screenshots of your app here! Take screenshots from https://algoflow.vercel.app and upload them to GitHub.
 
 ## 🎓 Algorithm Categories
 
