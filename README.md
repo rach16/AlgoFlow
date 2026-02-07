@@ -1,73 +1,140 @@
-# React + TypeScript + Vite
+# AlgoFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Interactive Algorithm Visualizer for NeetCode 150**
 
-Currently, two official plugins are available:
+A comprehensive web application that visualizes 150 essential algorithm problems with step-by-step execution, supporting Python, JavaScript, and Java implementations.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- 🎯 **150 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.)
+- 🔄 **Step-by-step visualization** with interactive playback controls
+- 💻 **Multi-language support**: Python, JavaScript, and Java
+- 🎨 **Syntax highlighting** with real-time code execution tracking
+- 📱 **Responsive design** optimized for desktop and mobile
+- ⚡ **Pattern recognition** - each problem includes algorithm pattern hints
+- 🔗 **LeetCode integration** - direct links to original problems
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Live Demo
 
-## Expanding the ESLint configuration
+Visit [AlgoFlow](https://algoflow.vercel.app) to try it out!
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🎓 Algorithm Categories
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. **Arrays & Hashing** (9) - Two Sum, Contains Duplicate, Group Anagrams, etc.
+2. **Two Pointers** (5) - Valid Palindrome, Three Sum, Container With Most Water, etc.
+3. **Sliding Window** (6) - Longest Substring Without Repeating, Minimum Window, etc.
+4. **Stack** (7) - Valid Parentheses, Min Stack, Daily Temperatures, etc.
+5. **Binary Search** (7) - Binary Search, Search in Rotated Array, Median of Two Sorted Arrays, etc.
+6. **Linked List** (11) - Reverse Linked List, Merge K Sorted Lists, LRU Cache, etc.
+7. **Trees** (15) - Invert Binary Tree, Max Depth, Serialize/Deserialize, etc.
+8. **Tries** (3) - Implement Trie, Add and Search Words, Word Search II
+9. **Heap/Priority Queue** (7) - Kth Largest Element, Find Median from Data Stream, etc.
+10. **Backtracking** (9) - Permutations, Subsets, N-Queens, Palindrome Partitioning, etc.
+11. **Graphs** (13) - Clone Graph, Course Schedule, Word Ladder, Number of Islands, etc.
+12. **Advanced Graphs** (6) - Network Delay Time, Alien Dictionary, Cheapest Flights, etc.
+13. **1-D Dynamic Programming** (12) - Climbing Stairs, House Robber, Coin Change, etc.
+14. **2-D Dynamic Programming** (11) - Edit Distance, LCS, Unique Paths, Regex Matching, etc.
+15. **Greedy** (8) - Jump Game, Maximum Subarray, Gas Station, etc.
+16. **Intervals** (6) - Merge Intervals, Meeting Rooms, Insert Interval, etc.
+17. **Bit Manipulation** (7) - Single Number, Counting Bits, Reverse Bits, etc.
+18. **Math & Geometry** (8) - Rotate Image, Spiral Matrix, Happy Number, Pow(x,n), etc.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Frontend**: React 19 + TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **Syntax Highlighting**: Prism React Renderer
+- **Deployment**: Vercel
+
+## 📦 Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/rach16/AlgoFlow.git
+cd algoflow
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🎮 Usage
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Select an algorithm** from the sidebar categories
+2. **Choose your language** (Python, JavaScript, or Java) using the tabs
+3. **Customize input** if the algorithm supports it
+4. **Play/pause** the visualization to see step-by-step execution
+5. **Adjust speed** using the playback controls
+6. **View complexity** - time and space complexity displayed for each algorithm
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📂 Project Structure
+
 ```
+src/
+├── algorithms/          # 150 algorithm implementations
+│   ├── arrays-hashing/
+│   ├── two-pointers/
+│   ├── trees/
+│   ├── graphs/
+│   ├── dp-1d/
+│   ├── dp-2d/
+│   └── ...
+├── components/
+│   ├── common/         # Reusable components
+│   ├── layout/         # Layout components
+│   └── visualizers/    # Algorithm visualizers
+├── store/              # Zustand state management
+└── types/              # TypeScript type definitions
+```
+
+## 🎯 Algorithm Implementation Pattern
+
+Each algorithm exports an `Algorithm` object with:
+- `run()` function that generates `AlgorithmStep[]` for visualization
+- Code implementations in Python, JavaScript, and Java
+- Complexity analysis and pattern hints
+- LeetCode problem link
+
+```typescript
+export const twoSum: Algorithm = {
+  id: 'two-sum',
+  name: 'Two Sum',
+  category: 'Arrays & Hashing',
+  difficulty: 'Easy',
+  timeComplexity: 'O(n)',
+  spaceComplexity: 'O(n)',
+  pattern: 'Hash Map — store complement, check on each pass',
+  code: {
+    python: `def twoSum(nums, target): ...`,
+    javascript: `function twoSum(nums, target) { ... }`,
+    java: `public static int[] twoSum(int[] nums, int target) { ... }`
+  },
+  defaultInput: { nums: [2, 7, 11, 15], target: 9 },
+  run: runTwoSum,
+};
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Algorithm problems based on [NeetCode 150](https://neetcode.io/)
+- Inspired by the need for better algorithm visualization tools
+- Built with help from Claude Sonnet 4.5
+
+---
+
+**Happy Coding!** 🚀
