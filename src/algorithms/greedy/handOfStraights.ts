@@ -149,7 +149,29 @@ export const handOfStraights: Algorithm = {
     }
     return true;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean isNStraightHand(int[] hand, int groupSize) {
+    if (hand.length % groupSize != 0) return false;
+
+    Map<Integer, Integer> count = new TreeMap<>();
+    for (int card : hand) {
+        count.put(card, count.getOrDefault(card, 0) + 1);
+    }
+
+    for (int start : count.keySet()) {
+        if (count.get(start) > 0) {
+            int need = count.get(start);
+            for (int i = 0; i < groupSize; i++) {
+                int card = start + i;
+                if (count.getOrDefault(card, 0) < need) {
+                    return false;
+                }
+                count.put(card, count.get(card) - need);
+            }
+        }
+    }
+
+    return true;
+}`,
   },
   defaultInput: { hand: [1, 2, 3, 6, 2, 3, 4, 7, 8], groupSize: 3 },
   run: runHandOfStraights,

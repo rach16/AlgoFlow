@@ -245,7 +245,52 @@ def findWords(board, words):
             dfs(r, c, root);
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class TrieNode {
+    Map<Character, TrieNode> children = new HashMap<>();
+    String word = null;
+}
+
+public static List<String> findWords(char[][] board, String[] words) {
+    TrieNode root = new TrieNode();
+    for (String word : words) {
+        TrieNode node = root;
+        for (char c : word.toCharArray()) {
+            node.children.putIfAbsent(c, new TrieNode());
+            node = node.children.get(c);
+        }
+        node.word = word;
+    }
+
+    int ROWS = board.length, COLS = board[0].length;
+    List<String> result = new ArrayList<>();
+    boolean[][] visited = new boolean[ROWS][COLS];
+
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLS; c++) {
+            dfs(board, r, c, root, visited, result);
+        }
+    }
+    return result;
+}
+
+private static void dfs(char[][] board, int r, int c, TrieNode node,
+                       boolean[][] visited, List<String> result) {
+    if (r < 0 || r >= board.length || c < 0 || c >= board[0].length ||
+        visited[r][c] || !node.children.containsKey(board[r][c])) return;
+
+    visited[r][c] = true;
+    node = node.children.get(board[r][c]);
+    if (node.word != null) {
+        result.add(node.word);
+        node.word = null;
+    }
+
+    dfs(board, r + 1, c, node, visited, result);
+    dfs(board, r - 1, c, node, visited, result);
+    dfs(board, r, c + 1, node, visited, result);
+    dfs(board, r, c - 1, node, visited, result);
+    visited[r][c] = false;
+}`,
   },
   defaultInput: {
     board: [

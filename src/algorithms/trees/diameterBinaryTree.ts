@@ -106,7 +106,21 @@ export const diameterBinaryTree: Algorithm = {
     dfs(root);
     return diameter;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `private static int diameter;
+
+public static int diameterOfBinaryTree(TreeNode root) {
+    diameter = 0;
+    dfs(root);
+    return diameter;
+}
+
+private static int dfs(TreeNode node) {
+    if (node == null) return 0;
+    int left = dfs(node.left);
+    int right = dfs(node.right);
+    diameter = Math.max(diameter, left + right);
+    return 1 + Math.max(left, right);
+}`,
   },
   defaultInput: [1, 2, 3, 4, 5],
   run: runDiameterBinaryTree,

@@ -165,7 +165,27 @@ export const constructFromPreorderInorder: Algorithm = {
     }
     return build(0, inorder.length - 1);
 }`,
-    java: `// Java implementation coming soon`,
+    java: `private static int preIdx;
+private static Map<Integer, Integer> inorderMap;
+
+public static TreeNode buildTree(int[] preorder, int[] inorder) {
+    preIdx = 0;
+    inorderMap = new HashMap<>();
+    for (int i = 0; i < inorder.length; i++) {
+        inorderMap.put(inorder[i], i);
+    }
+    return build(preorder, 0, inorder.length - 1);
+}
+
+private static TreeNode build(int[] preorder, int left, int right) {
+    if (left > right) return null;
+    int rootVal = preorder[preIdx++];
+    TreeNode root = new TreeNode(rootVal);
+    int mid = inorderMap.get(rootVal);
+    root.left = build(preorder, left, mid - 1);
+    root.right = build(preorder, mid + 1, right);
+    return root;
+}`,
   },
   defaultInput: { preorder: [3, 9, 20, 15, 7], inorder: [9, 3, 15, 20, 7] },
   run: runConstructFromPreorderInorder,

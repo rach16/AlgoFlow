@@ -135,7 +135,15 @@ export const sameTree: Algorithm = {
     // Check children
     // Final result
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean isSameTree(TreeNode p, TreeNode q) {
+    if (p == null && q == null) return true;
+    if (p == null || q == null) return false;
+    if (p.val != q.val) return false;
+    return isSameTree(p.left, q.left) &&
+           isSameTree(p.right, q.right);
+    // Check children
+    // Final result
+}`,
   },
   defaultInput: { p: [1, 2, 3], q: [1, 2, 3] },
   run: runSameTree,

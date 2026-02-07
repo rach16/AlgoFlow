@@ -161,7 +161,24 @@ export const levelOrderTraversal: Algorithm = {
     }
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> result = new ArrayList<>();
+    if (root == null) return result;
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+    while (!queue.isEmpty()) {
+        List<Integer> level = new ArrayList<>();
+        int size = queue.size();
+        for (int i = 0; i < size; i++) {
+            TreeNode node = queue.poll();
+            level.add(node.val);
+            if (node.left != null) queue.offer(node.left);
+            if (node.right != null) queue.offer(node.right);
+        }
+        result.add(level);
+    }
+    return result;
+}`,
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runLevelOrderTraversal,

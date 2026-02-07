@@ -114,7 +114,19 @@ export const lowestCommonAncestorBST: Algorithm = {
         }
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    TreeNode cur = root;
+    while (cur != null) {
+        if (p.val < cur.val && q.val < cur.val) {
+            cur = cur.left;
+        } else if (p.val > cur.val && q.val > cur.val) {
+            cur = cur.right;
+        } else {
+            return cur;
+        }
+    }
+    return null;
+}`,
   },
   defaultInput: { root: [6, 2, 8, 0, 4, 7, 9, null, null, 3, 5], p: 2, q: 8 },
   run: runLowestCommonAncestorBST,

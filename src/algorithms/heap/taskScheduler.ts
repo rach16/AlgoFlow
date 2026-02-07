@@ -205,7 +205,33 @@ def leastInterval(tasks, n):
 
     return time;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int leastInterval(char[] tasks, int n) {
+    Map<Character, Integer> count = new HashMap<>();
+    for (char t : tasks) {
+        count.put(t, count.getOrDefault(t, 0) + 1);
+    }
+
+    PriorityQueue<Integer> maxHeap = new PriorityQueue<>((a, b) -> b - a);
+    maxHeap.addAll(count.values());
+
+    int time = 0;
+    Queue<int[]> queue = new LinkedList<>(); // [cnt, availableTime]
+
+    while (!maxHeap.isEmpty() || !queue.isEmpty()) {
+        time++;
+        if (!maxHeap.isEmpty()) {
+            int cnt = maxHeap.poll() - 1;
+            if (cnt > 0) {
+                queue.offer(new int[]{cnt, time + n});
+            }
+        }
+        if (!queue.isEmpty() && queue.peek()[1] == time) {
+            maxHeap.offer(queue.poll()[0]);
+        }
+    }
+
+    return time;
+}`,
   },
   defaultInput: { tasks: ['A', 'A', 'A', 'B', 'B', 'B'], n: 2 },
   run: runTaskScheduler,

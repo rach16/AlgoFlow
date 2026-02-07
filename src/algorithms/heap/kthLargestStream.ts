@@ -241,7 +241,29 @@ class KthLargest:
         return this.minHeap.front().element;
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class KthLargest {
+    private PriorityQueue<Integer> minHeap;
+    private int k;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        this.minHeap = new PriorityQueue<>();
+        for (int num : nums) {
+            minHeap.offer(num);
+            if (minHeap.size() > k) {
+                minHeap.poll();
+            }
+        }
+    }
+
+    public int add(int val) {
+        minHeap.offer(val);
+        if (minHeap.size() > k) {
+            minHeap.poll();
+        }
+        return minHeap.peek();
+    }
+}`,
   },
   defaultInput: { k: 3, nums: [4, 5, 8, 2], adds: [3, 5, 10, 9, 4] },
   run: runKthLargestStream,

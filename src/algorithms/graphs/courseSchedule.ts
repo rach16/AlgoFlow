@@ -223,7 +223,32 @@ export const courseSchedule: Algorithm = {
         if (!dfs(c)) return false;
     return true;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public boolean canFinish(int numCourses, int[][] prerequisites) {
+    Map<Integer, List<Integer>> adj = new HashMap<>();
+    for (int i = 0; i < numCourses; i++) {
+        adj.put(i, new ArrayList<>());
+    }
+    for (int[] pre : prerequisites) {
+        adj.get(pre[1]).add(pre[0]);
+    }
+
+    int[] visited = new int[numCourses]; // 0=unvisited, 1=in-path, 2=done
+    for (int c = 0; c < numCourses; c++) {
+        if (!dfs(c, adj, visited)) return false;
+    }
+    return true;
+}
+
+private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited) {
+    if (visited[crs] == 1) return false; // cycle
+    if (visited[crs] == 2) return true;
+    visited[crs] = 1;
+    for (int nei : adj.get(crs)) {
+        if (!dfs(nei, adj, visited)) return false;
+    }
+    visited[crs] = 2;
+    return true;
+}`,
   },
   defaultInput: { numCourses: 4, prerequisites: [[1, 0], [2, 1], [3, 2]] },
   run: runCourseSchedule,

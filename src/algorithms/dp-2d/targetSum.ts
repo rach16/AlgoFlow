@@ -163,7 +163,23 @@ export const targetSum: Algorithm = {
     }
     return dp[nums.length][subsetSum];
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int findTargetSumWays(int[] nums, int target) {
+    int total = 0;
+    for (int num : nums) total += num;
+    if ((target + total) % 2 != 0 || target + total < 0) return 0;
+    int subsetSum = (target + total) / 2;
+    int[][] dp = new int[nums.length + 1][subsetSum + 1];
+    dp[0][0] = 1;
+    for (int i = 1; i <= nums.length; i++) {
+        for (int j = 0; j <= subsetSum; j++) {
+            dp[i][j] = dp[i - 1][j];
+            if (j >= nums[i - 1]) {
+                dp[i][j] += dp[i - 1][j - nums[i - 1]];
+            }
+        }
+    }
+    return dp[nums.length][subsetSum];
+}`,
   },
   defaultInput: { nums: [1, 1, 1, 1, 1], target: 3 },
   run: runTargetSum,

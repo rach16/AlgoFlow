@@ -205,7 +205,37 @@ export const letterCombinations: Algorithm = {
     backtrack(0, []);
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static List<String> letterCombinations(String digits) {
+    List<String> result = new ArrayList<>();
+    if (digits.length() == 0) return result;
+
+    Map<Character, String> phone = new HashMap<>();
+    phone.put('2', "abc");
+    phone.put('3', "def");
+    phone.put('4', "ghi");
+    phone.put('5', "jkl");
+    phone.put('6', "mno");
+    phone.put('7', "pqrs");
+    phone.put('8', "tuv");
+    phone.put('9', "wxyz");
+
+    backtrack(0, new StringBuilder(), digits, phone, result);
+    return result;
+}
+
+private static void backtrack(int idx, StringBuilder current, String digits, Map<Character, String> phone, List<String> result) {
+    if (idx == digits.length()) {
+        result.add(current.toString());
+        return;
+    }
+
+    String letters = phone.get(digits.charAt(idx));
+    for (char c : letters.toCharArray()) {
+        current.append(c);
+        backtrack(idx + 1, current, digits, phone, result);
+        current.deleteCharAt(current.length() - 1);
+    }
+}`,
   },
   defaultInput: '23',
   run: runLetterCombinations,

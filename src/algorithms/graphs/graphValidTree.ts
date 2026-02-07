@@ -239,7 +239,41 @@ export const graphValidTree: Algorithm = {
         if (!union(a, b)) return false;
     return true;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public boolean validTree(int n, int[][] edges) {
+    if (edges.length != n - 1) return false;
+
+    int[] parent = new int[n];
+    int[] rank = new int[n];
+    for (int i = 0; i < n; i++) parent[i] = i;
+
+    for (int[] edge : edges) {
+        if (!union(edge[0], edge[1], parent, rank)) return false;
+    }
+    return true;
+}
+
+private int find(int x, int[] parent) {
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+private boolean union(int a, int b, int[] parent, int[] rank) {
+    int rootA = find(a, parent);
+    int rootB = find(b, parent);
+    if (rootA == rootB) return false;
+    if (rank[rootA] < rank[rootB]) {
+        parent[rootA] = rootB;
+    } else if (rank[rootA] > rank[rootB]) {
+        parent[rootB] = rootA;
+    } else {
+        parent[rootB] = rootA;
+        rank[rootA]++;
+    }
+    return true;
+}`,
   },
   defaultInput: { n: 5, edges: [[0, 1], [0, 2], [0, 3], [1, 4]] },
   run: runGraphValidTree,

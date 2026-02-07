@@ -202,7 +202,34 @@ export const courseScheduleII: Algorithm = {
         if (!dfs(c)) return [];
     return order;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int[] findOrder(int numCourses, int[][] prerequisites) {
+    Map<Integer, List<Integer>> adj = new HashMap<>();
+    for (int i = 0; i < numCourses; i++) {
+        adj.put(i, new ArrayList<>());
+    }
+    for (int[] pre : prerequisites) {
+        adj.get(pre[0]).add(pre[1]);
+    }
+
+    int[] visited = new int[numCourses]; // 0=unvisited, 1=in-path, 2=done
+    List<Integer> order = new ArrayList<>();
+    for (int c = 0; c < numCourses; c++) {
+        if (!dfs(c, adj, visited, order)) return new int[0];
+    }
+    return order.stream().mapToInt(i -> i).toArray();
+}
+
+private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited, List<Integer> order) {
+    if (visited[crs] == 1) return false; // cycle
+    if (visited[crs] == 2) return true;
+    visited[crs] = 1;
+    for (int pre : adj.get(crs)) {
+        if (!dfs(pre, adj, visited, order)) return false;
+    }
+    visited[crs] = 2;
+    order.add(crs);
+    return true;
+}`,
   },
   defaultInput: { numCourses: 4, prerequisites: [[1, 0], [2, 0], [3, 1], [3, 2]] },
   run: runCourseScheduleII,

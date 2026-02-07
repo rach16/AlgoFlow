@@ -134,7 +134,25 @@ export const powXN: Algorithm = {
     }
     return x * myPow(x, n - 1);
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static double myPow(double x, int n) {
+    if (n == 0) return 1.0;
+    if (n == Integer.MIN_VALUE) {
+        return myPow(x * x, n / 2);
+    }
+    if (n < 0) {
+        x = 1 / x;
+        n = -n;
+    }
+    double result = 1.0;
+    while (n > 0) {
+        if ((n & 1) == 1) {
+            result *= x;
+        }
+        x *= x;
+        n >>= 1;
+    }
+    return result;
+}`,
   },
   defaultInput: { x: 2.0, n: 10 },
   run: runPowXN,

@@ -255,7 +255,59 @@ class Twitter:
             this.followMap.get(followerId).delete(followeeId);
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class Twitter {
+    private int count;
+    private Map<Integer, List<int[]>> tweetMap; // userId -> [[count, tweetId], ...]
+    private Map<Integer, Set<Integer>> followMap; // userId -> set of followeeIds
+
+    public Twitter() {
+        count = 0;
+        tweetMap = new HashMap<>();
+        followMap = new HashMap<>();
+    }
+
+    public void postTweet(int userId, int tweetId) {
+        tweetMap.putIfAbsent(userId, new ArrayList<>());
+        tweetMap.get(userId).add(new int[]{count--, tweetId});
+    }
+
+    public List<Integer> getNewsFeed(int userId) {
+        List<Integer> res = new ArrayList<>();
+        followMap.putIfAbsent(userId, new HashSet<>());
+        followMap.get(userId).add(userId);
+
+        PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+        for (int followeeId : followMap.get(userId)) {
+            if (tweetMap.containsKey(followeeId)) {
+                List<int[]> tweets = tweetMap.get(followeeId);
+                int idx = tweets.size() - 1;
+                int[] tweet = tweets.get(idx);
+                minHeap.offer(new int[]{tweet[0], tweet[1], followeeId, idx - 1});
+            }
+        }
+
+        while (!minHeap.isEmpty() && res.size() < 10) {
+            int[] curr = minHeap.poll();
+            res.add(curr[1]);
+            if (curr[3] >= 0) {
+                int[] tweet = tweetMap.get(curr[2]).get(curr[3]);
+                minHeap.offer(new int[]{tweet[0], tweet[1], curr[2], curr[3] - 1});
+            }
+        }
+        return res;
+    }
+
+    public void follow(int followerId, int followeeId) {
+        followMap.putIfAbsent(followerId, new HashSet<>());
+        followMap.get(followerId).add(followeeId);
+    }
+
+    public void unfollow(int followerId, int followeeId) {
+        if (followMap.containsKey(followerId)) {
+            followMap.get(followerId).remove(followeeId);
+        }
+    }
+}`,
   },
   defaultInput: [
     ['postTweet', 1, 5],

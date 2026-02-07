@@ -112,7 +112,16 @@ export const validateBST: Algorithm = {
 
     return dfs(root, -Infinity, Infinity);
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean isValidBST(TreeNode root) {
+    return dfs(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+
+private static boolean dfs(TreeNode node, long lower, long upper) {
+    if (node == null) return true;
+    if (node.val <= lower || node.val >= upper) return false;
+    return dfs(node.left, lower, node.val) &&
+           dfs(node.right, node.val, upper);
+}`,
   },
   defaultInput: [2, 1, 3],
   run: runValidateBST,

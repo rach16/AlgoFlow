@@ -92,7 +92,14 @@ export const numberOf1Bits: Algorithm = {
     }
     return count;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int hammingWeight(int n) {
+    int count = 0;
+    while (n != 0) {
+        n &= n - 1;
+        count++;
+    }
+    return count;
+}`,
   },
   defaultInput: 11,
   run: runNumberOf1Bits,

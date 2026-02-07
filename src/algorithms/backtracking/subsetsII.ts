@@ -148,7 +148,22 @@ export const subsetsII: Algorithm = {
     backtrack(0, []);
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static List<List<Integer>> subsetsWithDup(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(nums);
+    backtrack(0, new ArrayList<>(), nums, result);
+    return result;
+}
+
+private static void backtrack(int start, List<Integer> current, int[] nums, List<List<Integer>> result) {
+    result.add(new ArrayList<>(current));
+    for (int i = start; i < nums.length; i++) {
+        if (i > start && nums[i] == nums[i - 1]) continue;
+        current.add(nums[i]);
+        backtrack(i + 1, current, nums, result);
+        current.remove(current.size() - 1);
+    }
+}`,
   },
   defaultInput: [1, 2, 2],
   run: runSubsetsII,

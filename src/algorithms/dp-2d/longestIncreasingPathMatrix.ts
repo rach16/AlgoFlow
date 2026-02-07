@@ -166,7 +166,32 @@ export const longestIncreasingPathMatrix: Algorithm = {
             ans = Math.max(ans, dfs(r, c));
     return ans;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int longestIncreasingPath(int[][] matrix) {
+    int m = matrix.length, n = matrix[0].length;
+    int[][] memo = new int[m][n];
+    int result = 0;
+    for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+            result = Math.max(result, dfs(matrix, r, c, memo));
+        }
+    }
+    return result;
+}
+
+private int dfs(int[][] matrix, int r, int c, int[][] memo) {
+    if (memo[r][c] != 0) return memo[r][c];
+    int res = 1;
+    int[][] dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    for (int[] dir : dirs) {
+        int nr = r + dir[0], nc = c + dir[1];
+        if (nr >= 0 && nr < matrix.length && nc >= 0 && nc < matrix[0].length
+                && matrix[nr][nc] > matrix[r][c]) {
+            res = Math.max(res, 1 + dfs(matrix, nr, nc, memo));
+        }
+    }
+    memo[r][c] = res;
+    return res;
+}`,
   },
   defaultInput: [[9, 9, 4], [6, 6, 8], [2, 1, 1]],
   run: runLongestIncreasingPathMatrix,

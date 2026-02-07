@@ -144,7 +144,20 @@ function isSameTree(p, q) {
         isSameTree(p.right, q.right)
     );
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean isSubtree(TreeNode root, TreeNode subRoot) {
+    if (root == null) return false;
+    if (isSameTree(root, subRoot)) return true;
+    return isSubtree(root.left, subRoot) ||
+           isSubtree(root.right, subRoot);
+}
+
+private static boolean isSameTree(TreeNode p, TreeNode q) {
+    if (p == null && q == null) return true;
+    if (p == null || q == null) return false;
+    return p.val == q.val &&
+           isSameTree(p.left, q.left) &&
+           isSameTree(p.right, q.right);
+}`,
   },
   defaultInput: { root: [3, 4, 5, 1, 2], subRoot: [4, 1, 2] },
   run: runSubtreeOfAnotherTree,

@@ -281,7 +281,40 @@ class MedianFinder:
                 this.large.front().element) / 2;
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class MedianFinder {
+    private PriorityQueue<Integer> small; // max heap (left half)
+    private PriorityQueue<Integer> large; // min heap (right half)
+
+    public MedianFinder() {
+        small = new PriorityQueue<>((a, b) -> b - a);
+        large = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        small.offer(num);
+
+        // Ensure max of small <= min of large
+        if (!small.isEmpty() && !large.isEmpty() &&
+            small.peek() > large.peek()) {
+            large.offer(small.poll());
+        }
+
+        // Balance sizes
+        if (small.size() > large.size() + 1) {
+            large.offer(small.poll());
+        }
+        if (large.size() > small.size()) {
+            small.offer(large.poll());
+        }
+    }
+
+    public double findMedian() {
+        if (small.size() > large.size()) {
+            return small.peek();
+        }
+        return (small.peek() + large.peek()) / 2.0;
+    }
+}`,
   },
   defaultInput: [5, 2, 8, 1, 9, 3],
   run: runFindMedianDataStream,

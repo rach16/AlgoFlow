@@ -118,7 +118,18 @@ export const balancedBinaryTree: Algorithm = {
 
     return dfs(root) !== -1;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean isBalanced(TreeNode root) {
+    return dfs(root) != -1;
+}
+
+private static int dfs(TreeNode node) {
+    if (node == null) return 0;
+    int left = dfs(node.left);
+    if (left == -1) return -1;
+    int right = dfs(node.right);
+    if (Math.abs(left - right) > 1) return -1;
+    return 1 + Math.max(left, right);
+}`,
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runBalancedBinaryTree,

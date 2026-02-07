@@ -178,7 +178,23 @@ export const cloneGraph: Algorithm = {
 
     return dfs(node);
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public Node cloneGraph(Node node) {
+    if (node == null) return null;
+    Map<Node, Node> oldToNew = new HashMap<>();
+    return dfs(node, oldToNew);
+}
+
+private Node dfs(Node node, Map<Node, Node> oldToNew) {
+    if (oldToNew.containsKey(node)) {
+        return oldToNew.get(node);
+    }
+    Node copy = new Node(node.val);
+    oldToNew.put(node, copy);
+    for (Node nei : node.neighbors) {
+        copy.neighbors.add(dfs(nei, oldToNew));
+    }
+    return copy;
+}`,
   },
   defaultInput: [[2, 4], [1, 3], [2, 4], [1, 3]],
   run: runCloneGraph,

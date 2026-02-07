@@ -157,7 +157,22 @@ export const kthSmallestBST: Algorithm = {
         curr = curr.right;
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int kthSmallest(TreeNode root, int k) {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    TreeNode curr = root;
+    int n = 0;
+    while (curr != null || !stack.isEmpty()) {
+        while (curr != null) {
+            stack.push(curr);
+            curr = curr.left;
+        }
+        curr = stack.pop();
+        n++;
+        if (n == k) return curr.val;
+        curr = curr.right;
+    }
+    return -1;
+}`,
   },
   defaultInput: { root: [3, 1, 4, null, 2], k: 1 },
   run: runKthSmallestBST,

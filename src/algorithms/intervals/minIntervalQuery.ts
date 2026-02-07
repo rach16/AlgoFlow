@@ -194,7 +194,36 @@ export const minIntervalQuery: Algorithm = {
 
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int[] minInterval(int[][] intervals, int[] queries) {
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+    int[][] sortedQueries = new int[queries.length][2];
+    for (int i = 0; i < queries.length; i++) {
+        sortedQueries[i] = new int[]{queries[i], i};
+    }
+    Arrays.sort(sortedQueries, (a, b) -> a[0] - b[0]);
+
+    int[] result = new int[queries.length];
+    PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+    int i = 0;
+
+    for (int[] query : sortedQueries) {
+        int q = query[0], idx = query[1];
+
+        while (i < intervals.length && intervals[i][0] <= q) {
+            int l = intervals[i][0], r = intervals[i][1];
+            heap.offer(new int[]{r - l + 1, r});
+            i++;
+        }
+
+        while (!heap.isEmpty() && heap.peek()[1] < q) {
+            heap.poll();
+        }
+
+        result[idx] = heap.isEmpty() ? -1 : heap.peek()[0];
+    }
+
+    return result;
+}`,
   },
   defaultInput: {
     intervals: [[1, 4], [2, 4], [3, 6], [4, 4]],

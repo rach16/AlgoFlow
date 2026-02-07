@@ -175,7 +175,27 @@ export const combinationSum: Algorithm = {
     backtrack(0, [], target);
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(candidates);
+    backtrack(0, new ArrayList<>(), target, candidates, result);
+    return result;
+}
+
+private static void backtrack(int start, List<Integer> current, int remaining, int[] candidates, List<List<Integer>> result) {
+    if (remaining == 0) {
+        result.add(new ArrayList<>(current));
+        return;
+    }
+    if (remaining < 0) return;
+
+    for (int i = start; i < candidates.length; i++) {
+        if (candidates[i] > remaining) break;
+        current.add(candidates[i]);
+        backtrack(i, current, remaining - candidates[i], candidates, result);
+        current.remove(current.size() - 1);
+    }
+}`,
   },
   defaultInput: { candidates: [2, 3, 6, 7], target: 7 },
   run: runCombinationSum,

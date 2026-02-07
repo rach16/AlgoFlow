@@ -230,7 +230,50 @@ export const nQueens: Algorithm = {
     backtrack(0);
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static List<List<String>> solveNQueens(int n) {
+    List<List<String>> result = new ArrayList<>();
+    char[][] board = new char[n][n];
+    for (int i = 0; i < n; i++) {
+        Arrays.fill(board[i], '.');
+    }
+
+    Set<Integer> cols = new HashSet<>();
+    Set<Integer> posDiag = new HashSet<>();
+    Set<Integer> negDiag = new HashSet<>();
+
+    backtrack(0, board, cols, posDiag, negDiag, result);
+    return result;
+}
+
+private static void backtrack(int row, char[][] board, Set<Integer> cols,
+                             Set<Integer> posDiag, Set<Integer> negDiag,
+                             List<List<String>> result) {
+    if (row == board.length) {
+        List<String> solution = new ArrayList<>();
+        for (char[] r : board) {
+            solution.add(new String(r));
+        }
+        result.add(solution);
+        return;
+    }
+
+    for (int col = 0; col < board.length; col++) {
+        if (cols.contains(col) || posDiag.contains(row + col) ||
+            negDiag.contains(row - col)) continue;
+
+        board[row][col] = 'Q';
+        cols.add(col);
+        posDiag.add(row + col);
+        negDiag.add(row - col);
+
+        backtrack(row + 1, board, cols, posDiag, negDiag, result);
+
+        board[row][col] = '.';
+        cols.remove(col);
+        posDiag.remove(row + col);
+        negDiag.remove(row - col);
+    }
+}`,
   },
   defaultInput: 4,
   run: runNQueens,

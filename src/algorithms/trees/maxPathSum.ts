@@ -132,7 +132,22 @@ export const maxPathSum: Algorithm = {
     dfs(root);
     return maxSum;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `private static int maxSum;
+
+public static int maxPathSum(TreeNode root) {
+    maxSum = Integer.MIN_VALUE;
+    dfs(root);
+    return maxSum;
+}
+
+private static int dfs(TreeNode node) {
+    if (node == null) return 0;
+    int leftGain = Math.max(0, dfs(node.left));
+    int rightGain = Math.max(0, dfs(node.right));
+    int pathSum = node.val + leftGain + rightGain;
+    maxSum = Math.max(maxSum, pathSum);
+    return node.val + Math.max(leftGain, rightGain);
+}`,
   },
   defaultInput: [1, 2, 3],
   run: runMaxPathSum,

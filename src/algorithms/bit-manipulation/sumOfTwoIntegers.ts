@@ -113,7 +113,14 @@ export const sumOfTwoIntegers: Algorithm = {
     }
     return a;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int getSum(int a, int b) {
+    while (b != 0) {
+        int carry = (a & b) << 1;
+        a = a ^ b;
+        b = carry;
+    }
+    return a;
+}`,
   },
   defaultInput: { a: 1, b: 2 },
   run: runSumOfTwoIntegers,

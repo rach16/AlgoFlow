@@ -158,7 +158,38 @@ export const detectSquares: Algorithm = {
         return res;
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class DetectSquares {
+    private Map<String, Integer> pointCount;
+
+    public DetectSquares() {
+        pointCount = new HashMap<>();
+    }
+
+    public void add(int[] point) {
+        String key = point[0] + "," + point[1];
+        pointCount.put(key, pointCount.getOrDefault(key, 0) + 1);
+    }
+
+    public int count(int[] point) {
+        int x1 = point[0], y1 = point[1];
+        int result = 0;
+
+        for (String key : pointCount.keySet()) {
+            String[] parts = key.split(",");
+            int x3 = Integer.parseInt(parts[0]);
+            int y3 = Integer.parseInt(parts[1]);
+
+            if (Math.abs(x1 - x3) != Math.abs(y1 - y3) || x1 == x3 || y1 == y3) continue;
+
+            String p2 = x1 + "," + y3;
+            String p4 = x3 + "," + y1;
+            result += pointCount.get(key) *
+                     pointCount.getOrDefault(p2, 0) *
+                     pointCount.getOrDefault(p4, 0);
+        }
+        return result;
+    }
+}`,
   },
   defaultInput: [
     ['add', [3, 10]],

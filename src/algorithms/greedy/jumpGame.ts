@@ -92,7 +92,15 @@ export const jumpGame: Algorithm = {
     }
     return goal === 0;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean canJump(int[] nums) {
+    int goal = nums.length - 1;
+    for (int i = nums.length - 2; i >= 0; i--) {
+        if (i + nums[i] >= goal) {
+            goal = i;
+        }
+    }
+    return goal == 0;
+}`,
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGame,

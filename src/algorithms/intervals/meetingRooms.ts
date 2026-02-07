@@ -118,7 +118,15 @@ export const meetingRooms: Algorithm = {
 
     return true;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static boolean canAttendMeetings(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] < intervals[i - 1][1]) {
+            return false;
+        }
+    }
+    return true;
+}`,
   },
   defaultInput: [[0, 30], [5, 10], [15, 20]],
   run: runMeetingRooms,

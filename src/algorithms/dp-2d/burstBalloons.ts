@@ -136,7 +136,27 @@ export const burstBalloons: Algorithm = {
     }
     return dp[0][n-1];
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int maxCoins(int[] nums) {
+    int[] arr = new int[nums.length + 2];
+    arr[0] = 1;
+    arr[arr.length - 1] = 1;
+    for (int i = 0; i < nums.length; i++) {
+        arr[i + 1] = nums[i];
+    }
+    int n = arr.length;
+    int[][] dp = new int[n][n];
+    for (int length = 2; length < n; length++) {
+        for (int left = 0; left < n - length; left++) {
+            int right = left + length;
+            for (int k = left + 1; k < right; k++) {
+                int coins = arr[left] * arr[k] * arr[right]
+                    + dp[left][k] + dp[k][right];
+                dp[left][right] = Math.max(dp[left][right], coins);
+            }
+        }
+    }
+    return dp[0][n - 1];
+}`,
   },
   defaultInput: [3, 1, 5, 8],
   run: runBurstBalloons,

@@ -232,7 +232,36 @@ export const wordLadder: Algorithm = {
     }
     return 0;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+    if (!wordList.contains(endWord)) return 0;
+    Set<String> wordSet = new HashSet<>(wordList);
+    Queue<String> queue = new LinkedList<>();
+    Set<String> visited = new HashSet<>();
+    queue.offer(beginWord);
+    visited.add(beginWord);
+    int level = 1;
+
+    while (!queue.isEmpty()) {
+        int size = queue.size();
+        for (int i = 0; i < size; i++) {
+            String word = queue.poll();
+            for (int j = 0; j < word.length(); j++) {
+                char[] chars = word.toCharArray();
+                for (char c = 'a'; c <= 'z'; c++) {
+                    chars[j] = c;
+                    String newWord = new String(chars);
+                    if (newWord.equals(endWord)) return level + 1;
+                    if (wordSet.contains(newWord) && !visited.contains(newWord)) {
+                        visited.add(newWord);
+                        queue.offer(newWord);
+                    }
+                }
+            }
+        }
+        level++;
+    }
+    return 0;
+}`,
   },
   defaultInput: {
     beginWord: 'hit',

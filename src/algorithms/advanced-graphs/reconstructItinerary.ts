@@ -184,7 +184,27 @@ export const reconstructItinerary: Algorithm = {
 
     return route.reverse();
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public List<String> findItinerary(List<List<String>> tickets) {
+    Map<String, PriorityQueue<String>> graph = new HashMap<>();
+    for (List<String> ticket : tickets) {
+        graph.putIfAbsent(ticket.get(0), new PriorityQueue<>());
+        graph.get(ticket.get(0)).offer(ticket.get(1));
+    }
+
+    Deque<String> stack = new ArrayDeque<>();
+    List<String> route = new ArrayList<>();
+    stack.push("JFK");
+
+    while (!stack.isEmpty()) {
+        while (graph.containsKey(stack.peek()) && !graph.get(stack.peek()).isEmpty()) {
+            stack.push(graph.get(stack.peek()).poll());
+        }
+        route.add(stack.pop());
+    }
+
+    Collections.reverse(route);
+    return route;
+}`,
   },
   defaultInput: [
     ['MUC', 'LHR'],

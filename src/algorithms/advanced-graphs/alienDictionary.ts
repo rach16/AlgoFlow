@@ -269,7 +269,49 @@ export const alienDictionary: Algorithm = {
     }
     return result.length === Object.keys(adj).length ? result.join("") : "";
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public String alienOrder(String[] words) {
+    Map<Character, Set<Character>> adj = new HashMap<>();
+    Map<Character, Integer> inDegree = new HashMap<>();
+    for (String w : words) {
+        for (char c : w.toCharArray()) {
+            adj.putIfAbsent(c, new HashSet<>());
+            inDegree.putIfAbsent(c, 0);
+        }
+    }
+
+    for (int i = 0; i < words.length - 1; i++) {
+        String w1 = words[i], w2 = words[i + 1];
+        int minLen = Math.min(w1.length(), w2.length());
+        if (w1.length() > w2.length() && w1.substring(0, minLen).equals(w2.substring(0, minLen))) {
+            return "";
+        }
+        for (int j = 0; j < minLen; j++) {
+            if (w1.charAt(j) != w2.charAt(j)) {
+                if (!adj.get(w1.charAt(j)).contains(w2.charAt(j))) {
+                    adj.get(w1.charAt(j)).add(w2.charAt(j));
+                    inDegree.put(w2.charAt(j), inDegree.get(w2.charAt(j)) + 1);
+                }
+                break;
+            }
+        }
+    }
+
+    Queue<Character> queue = new LinkedList<>();
+    for (char c : inDegree.keySet()) {
+        if (inDegree.get(c) == 0) queue.offer(c);
+    }
+
+    StringBuilder result = new StringBuilder();
+    while (!queue.isEmpty()) {
+        char c = queue.poll();
+        result.append(c);
+        for (char nei : adj.get(c)) {
+            inDegree.put(nei, inDegree.get(nei) - 1);
+            if (inDegree.get(nei) == 0) queue.offer(nei);
+        }
+    }
+    return result.length() == adj.size() ? result.toString() : "";
+}`,
   },
   defaultInput: ['wrt', 'wrf', 'er', 'ett', 'rftt'],
   run: runAlienDictionary,

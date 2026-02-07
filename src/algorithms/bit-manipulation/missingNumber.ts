@@ -124,7 +124,14 @@ export const missingNumber: Algorithm = {
     }
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int missingNumber(int[] nums) {
+    int result = nums.length;
+    for (int i = 0; i < nums.length; i++) {
+        result ^= i;
+        result ^= nums[i];
+    }
+    return result;
+}`,
   },
   defaultInput: [3, 0, 1],
   run: runMissingNumber,

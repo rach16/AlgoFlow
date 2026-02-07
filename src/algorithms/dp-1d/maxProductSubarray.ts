@@ -119,7 +119,17 @@ export const maxProductSubarray: Algorithm = {
     }
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int maxProduct(int[] nums) {
+    int result = nums[0];
+    int curMax = 1, curMin = 1;
+    for (int n : nums) {
+        int temp = Math.max(n, Math.max(n * curMax, n * curMin));
+        curMin = Math.min(n, Math.min(n * curMax, n * curMin));
+        curMax = temp;
+        result = Math.max(result, curMax);
+    }
+    return result;
+}`,
   },
   defaultInput: [2, 3, -2, 4],
   run: runMaxProductSubarray,

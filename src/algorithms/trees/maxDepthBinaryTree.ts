@@ -114,7 +114,13 @@ export const maxDepthBinaryTree: Algorithm = {
     return 1 + Math.max(left, right);
     // Final result
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    // Visit current node
+    int left = maxDepth(root.left);
+    int right = maxDepth(root.right);
+    return 1 + Math.max(left, right);
+}`,
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runMaxDepthBinaryTree,

@@ -95,7 +95,22 @@ export const plusOne: Algorithm = {
     if (carry) digits.unshift(carry);
     return digits;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int[] plusOne(int[] digits) {
+    int carry = 1;
+    for (int i = digits.length - 1; i >= 0; i--) {
+        int total = digits[i] + carry;
+        digits[i] = total % 10;
+        carry = total / 10;
+        if (carry == 0) break;
+    }
+    if (carry > 0) {
+        int[] result = new int[digits.length + 1];
+        result[0] = carry;
+        System.arraycopy(digits, 0, result, 1, digits.length);
+        return result;
+    }
+    return digits;
+}`,
   },
   defaultInput: [1, 2, 3],
   run: runPlusOne,

@@ -220,7 +220,42 @@ export const connectedComponents: Algorithm = {
         components -= union(a, b);
     return components;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int countComponents(int n, int[][] edges) {
+    int[] parent = new int[n];
+    int[] rank = new int[n];
+    for (int i = 0; i < n; i++) parent[i] = i;
+
+    int components = n;
+    for (int[] edge : edges) {
+        if (union(edge[0], edge[1], parent, rank)) {
+            components--;
+        }
+    }
+    return components;
+}
+
+private int find(int x, int[] parent) {
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+private boolean union(int a, int b, int[] parent, int[] rank) {
+    int rootA = find(a, parent);
+    int rootB = find(b, parent);
+    if (rootA == rootB) return false;
+    if (rank[rootA] < rank[rootB]) {
+        parent[rootA] = rootB;
+    } else if (rank[rootA] > rank[rootB]) {
+        parent[rootB] = rootA;
+    } else {
+        parent[rootB] = rootA;
+        rank[rootA]++;
+    }
+    return true;
+}`,
   },
   defaultInput: { n: 5, edges: [[0, 1], [1, 2], [3, 4]] },
   run: runConnectedComponents,

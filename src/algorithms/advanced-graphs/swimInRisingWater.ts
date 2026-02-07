@@ -169,7 +169,30 @@ export const swimInRisingWater: Algorithm = {
     }
     return -1;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int swimInWater(int[][] grid) {
+    int n = grid.length;
+    Set<String> visited = new HashSet<>();
+    PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+    heap.offer(new int[]{grid[0][0], 0, 0});
+    visited.add("0,0");
+
+    int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    while (!heap.isEmpty()) {
+        int[] curr = heap.poll();
+        int maxElev = curr[0], r = curr[1], c = curr[2];
+        if (r == n - 1 && c == n - 1) return maxElev;
+
+        for (int[] dir : directions) {
+            int nr = r + dir[0], nc = c + dir[1];
+            String key = nr + "," + nc;
+            if (nr >= 0 && nr < n && nc >= 0 && nc < n && !visited.contains(key)) {
+                visited.add(key);
+                heap.offer(new int[]{Math.max(maxElev, grid[nr][nc]), nr, nc});
+            }
+        }
+    }
+    return -1;
+}`,
   },
   defaultInput: [
     [0, 2],

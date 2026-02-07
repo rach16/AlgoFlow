@@ -308,7 +308,49 @@ class WordDictionary {
         return dfs(this.root, 0);
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `class TrieNode {
+    Map<Character, TrieNode> children;
+    boolean isEnd;
+
+    TrieNode() {
+        children = new HashMap<>();
+        isEnd = false;
+    }
+}
+
+class WordDictionary {
+    private TrieNode root;
+
+    public WordDictionary() {
+        root = new TrieNode();
+    }
+
+    public void addWord(String word) {
+        TrieNode node = root;
+        for (char c : word.toCharArray()) {
+            node.children.putIfAbsent(c, new TrieNode());
+            node = node.children.get(c);
+        }
+        node.isEnd = true;
+    }
+
+    public boolean search(String word) {
+        return dfs(root, word, 0);
+    }
+
+    private boolean dfs(TrieNode node, String word, int i) {
+        if (i == word.length()) return node.isEnd;
+        char c = word.charAt(i);
+        if (c == '.') {
+            for (TrieNode child : node.children.values()) {
+                if (dfs(child, word, i + 1)) return true;
+            }
+            return false;
+        }
+        if (!node.children.containsKey(c)) return false;
+        return dfs(node.children.get(c), word, i + 1);
+    }
+}`,
   },
   defaultInput: [
     ['addWord', 'bad'],

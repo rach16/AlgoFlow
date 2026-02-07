@@ -148,7 +148,22 @@ export const houseRobberII: Algorithm = {
     return Math.max(robRange(0, nums.length-2),
                     robRange(1, nums.length-1));
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int rob(int[] nums) {
+    if (nums.length == 0) return 0;
+    if (nums.length == 1) return nums[0];
+    return Math.max(robRange(nums, 0, nums.length-2),
+                    robRange(nums, 1, nums.length-1));
+}
+
+private int robRange(int[] nums, int start, int end) {
+    int dp1 = 0, dp2 = 0;
+    for (int i = start; i <= end; i++) {
+        int temp = Math.max(dp2, dp1 + nums[i]);
+        dp1 = dp2;
+        dp2 = temp;
+    }
+    return dp2;
+}`,
   },
   defaultInput: [2, 3, 2],
   run: runHouseRobberII,

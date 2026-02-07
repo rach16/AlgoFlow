@@ -176,7 +176,33 @@ export const wallsAndGates: Algorithm = {
         }
     }
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public void wallsAndGates(int[][] rooms) {
+    if (rooms.length == 0) return;
+    int rows = rooms.length, cols = rooms[0].length;
+    int INF = 2147483647;
+    Queue<int[]> queue = new LinkedList<>();
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (rooms[r][c] == 0) {
+                queue.offer(new int[]{r, c});
+            }
+        }
+    }
+
+    int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    while (!queue.isEmpty()) {
+        int[] pos = queue.poll();
+        int r = pos[0], c = pos[1];
+        for (int[] dir : directions) {
+            int nr = r + dir[0], nc = c + dir[1];
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && rooms[nr][nc] == INF) {
+                rooms[nr][nc] = rooms[r][c] + 1;
+                queue.offer(new int[]{nr, nc});
+            }
+        }
+    }
+}`,
   },
   defaultInput: [
     [INF, -1, 0, INF],

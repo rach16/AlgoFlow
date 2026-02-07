@@ -144,7 +144,20 @@ export const buySellStockCooldown: Algorithm = {
     }
     return Math.max(sold, rest);
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int maxProfit(int[] prices) {
+    int n = prices.length;
+    if (n == 0) return 0;
+    int hold = -prices[0];
+    int sold = 0;
+    int rest = 0;
+    for (int i = 1; i < n; i++) {
+        int prevHold = hold;
+        hold = Math.max(hold, rest - prices[i]);
+        rest = Math.max(rest, sold);
+        sold = prevHold + prices[i];
+    }
+    return Math.max(sold, rest);
+}`,
   },
   defaultInput: [1, 2, 3, 0, 2],
   run: runBuySellStockCooldown,

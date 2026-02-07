@@ -198,7 +198,40 @@ export const networkDelayTime: Algorithm = {
     const mx = Math.max(...Object.values(dist));
     return mx === Infinity ? -1 : mx;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int networkDelayTime(int[][] times, int n, int k) {
+    Map<Integer, List<int[]>> graph = new HashMap<>();
+    for (int i = 1; i <= n; i++) graph.put(i, new ArrayList<>());
+    for (int[] time : times) {
+        graph.get(time[0]).add(new int[]{time[1], time[2]});
+    }
+
+    Map<Integer, Integer> dist = new HashMap<>();
+    for (int i = 1; i <= n; i++) dist.put(i, Integer.MAX_VALUE);
+    dist.put(k, 0);
+
+    PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+    heap.offer(new int[]{0, k});
+
+    while (!heap.isEmpty()) {
+        int[] curr = heap.poll();
+        int d = curr[0], u = curr[1];
+        if (d > dist.get(u)) continue;
+        for (int[] edge : graph.get(u)) {
+            int v = edge[0], w = edge[1];
+            if (dist.get(u) + w < dist.get(v)) {
+                dist.put(v, dist.get(u) + w);
+                heap.offer(new int[]{dist.get(v), v});
+            }
+        }
+    }
+
+    int mx = 0;
+    for (int d : dist.values()) {
+        if (d == Integer.MAX_VALUE) return -1;
+        mx = Math.max(mx, d);
+    }
+    return mx;
+}`,
   },
   defaultInput: { times: [[2, 1, 1], [2, 3, 1], [3, 4, 1]], n: 4, k: 2 },
   run: runNetworkDelayTime,

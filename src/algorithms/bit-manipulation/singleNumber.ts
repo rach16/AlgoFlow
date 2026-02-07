@@ -86,7 +86,13 @@ export const singleNumber: Algorithm = {
     }
     return result;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public static int singleNumber(int[] nums) {
+    int result = 0;
+    for (int num : nums) {
+        result ^= num;
+    }
+    return result;
+}`,
   },
   defaultInput: [2, 2, 1],
   run: runSingleNumber,

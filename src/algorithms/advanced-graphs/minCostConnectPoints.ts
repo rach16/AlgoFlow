@@ -191,7 +191,34 @@ export const minCostConnectPoints: Algorithm = {
     }
     return total;
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int minCostConnectPoints(int[][] points) {
+    int n = points.length;
+    Set<Integer> visited = new HashSet<>();
+    int[] minCost = new int[n];
+    Arrays.fill(minCost, Integer.MAX_VALUE);
+    minCost[0] = 0;
+    int total = 0;
+
+    for (int iter = 0; iter < n; iter++) {
+        int u = -1;
+        for (int i = 0; i < n; i++) {
+            if (!visited.contains(i) && (u == -1 || minCost[i] < minCost[u])) {
+                u = i;
+            }
+        }
+        visited.add(u);
+        total += minCost[u];
+
+        for (int v = 0; v < n; v++) {
+            if (!visited.contains(v)) {
+                int dist = Math.abs(points[u][0] - points[v][0])
+                        + Math.abs(points[u][1] - points[v][1]);
+                minCost[v] = Math.min(minCost[v], dist);
+            }
+        }
+    }
+    return total;
+}`,
   },
   defaultInput: [[0, 0], [2, 2], [3, 10], [5, 2], [7, 0]],
   run: runMinCostConnectPoints,

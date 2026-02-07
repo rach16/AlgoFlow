@@ -214,7 +214,41 @@ export const redundantConnection: Algorithm = {
     for (const [a, b] of edges)
         if (!union(a, b)) return [a, b];
 }`,
-    java: `// Java implementation coming soon`,
+    java: `public int[] findRedundantConnection(int[][] edges) {
+    int[] parent = new int[edges.length + 1];
+    int[] rank = new int[edges.length + 1];
+    for (int i = 0; i <= edges.length; i++) parent[i] = i;
+
+    for (int[] edge : edges) {
+        if (!union(edge[0], edge[1], parent, rank)) {
+            return edge;
+        }
+    }
+    return new int[0];
+}
+
+private int find(int x, int[] parent) {
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+private boolean union(int a, int b, int[] parent, int[] rank) {
+    int rootA = find(a, parent);
+    int rootB = find(b, parent);
+    if (rootA == rootB) return false;
+    if (rank[rootA] < rank[rootB]) {
+        parent[rootA] = rootB;
+    } else if (rank[rootA] > rank[rootB]) {
+        parent[rootB] = rootA;
+    } else {
+        parent[rootB] = rootA;
+        rank[rootA]++;
+    }
+    return true;
+}`,
   },
   defaultInput: [[1, 2], [1, 3], [2, 3]],
   run: runRedundantConnection,
