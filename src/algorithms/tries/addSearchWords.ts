@@ -308,6 +308,7 @@ class WordDictionary {
         return dfs(this.root, 0);
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['addWord', 'bad'],

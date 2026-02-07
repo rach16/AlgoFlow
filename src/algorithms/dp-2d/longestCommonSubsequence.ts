@@ -133,6 +133,7 @@ export const longestCommonSubsequence: Algorithm = {
     }
     return dp[m][n];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { text1: 'abcde', text2: 'ace' },
   run: runLongestCommonSubsequence,

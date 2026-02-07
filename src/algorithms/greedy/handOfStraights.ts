@@ -149,6 +149,7 @@ export const handOfStraights: Algorithm = {
     }
     return true;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { hand: [1, 2, 3, 6, 2, 3, 4, 7, 8], groupSize: 3 },
   run: runHandOfStraights,

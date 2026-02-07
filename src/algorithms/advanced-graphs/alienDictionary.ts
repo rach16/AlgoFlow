@@ -269,6 +269,7 @@ export const alienDictionary: Algorithm = {
     }
     return result.length === Object.keys(adj).length ? result.join("") : "";
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: ['wrt', 'wrf', 'er', 'ett', 'rftt'],
   run: runAlienDictionary,

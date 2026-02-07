@@ -124,6 +124,7 @@ export const missingNumber: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [3, 0, 1],
   run: runMissingNumber,

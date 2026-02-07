@@ -178,6 +178,35 @@ export const numberOfIslands: Algorithm = {
     }
     return islands;
 }`,
+    java: `public static int numIslands(char[][] grid) {
+    if (grid.length == 0) return 0;
+    int rows = grid.length, cols = grid[0].length;
+    Set<String> visited = new HashSet<>();
+    int islands = 0;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == '1' && !visited.contains(r + "," + c)) {
+                islands++;
+                dfs(grid, r, c, visited, rows, cols);
+            }
+        }
+    }
+    return islands;
+}
+
+private static void dfs(char[][] grid, int r, int c, Set<String> visited,
+                        int rows, int cols) {
+    if (r < 0 || r >= rows || c < 0 || c >= cols ||
+        grid[r][c] == '0' || visited.contains(r + "," + c)) {
+        return;
+    }
+    visited.add(r + "," + c);
+    dfs(grid, r + 1, c, visited, rows, cols);
+    dfs(grid, r - 1, c, visited, rows, cols);
+    dfs(grid, r, c + 1, visited, rows, cols);
+    dfs(grid, r, c - 1, visited, rows, cols);
+}`,
   },
   defaultInput: [
     ['1', '1', '1', '1', '0'],

@@ -119,6 +119,7 @@ export const countGoodNodes: Algorithm = {
 
     return dfs(root, root.val);
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [3, 1, 4, 3, null, 1, 5],
   run: runCountGoodNodes,

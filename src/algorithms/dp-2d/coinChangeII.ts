@@ -149,6 +149,7 @@ export const coinChangeII: Algorithm = {
     }
     return dp[coins.length][amount];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { amount: 5, coins: [1, 2, 5] },
   run: runCoinChangeII,

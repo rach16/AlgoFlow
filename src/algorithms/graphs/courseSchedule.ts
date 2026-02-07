@@ -223,6 +223,7 @@ export const courseSchedule: Algorithm = {
         if (!dfs(c)) return false;
     return true;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { numCourses: 4, prerequisites: [[1, 0], [2, 1], [3, 2]] },
   run: runCourseSchedule,

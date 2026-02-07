@@ -157,6 +157,7 @@ export const longestPalindromicSubstring: Algorithm = {
     }
     return res;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 'babad',
   run: runLongestPalindromicSubstring,

@@ -136,6 +136,7 @@ export const reverseInteger: Algorithm = {
     result *= sign;
     return result >= INT_MIN && result <= INT_MAX ? result : 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 123,
   run: runReverseInteger,

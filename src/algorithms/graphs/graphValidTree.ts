@@ -239,6 +239,7 @@ export const graphValidTree: Algorithm = {
         if (!union(a, b)) return false;
     return true;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { n: 5, edges: [[0, 1], [0, 2], [0, 3], [1, 4]] },
   run: runGraphValidTree,

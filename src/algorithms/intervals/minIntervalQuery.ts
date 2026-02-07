@@ -194,6 +194,7 @@ export const minIntervalQuery: Algorithm = {
 
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     intervals: [[1, 4], [2, 4], [3, 6], [4, 4]],

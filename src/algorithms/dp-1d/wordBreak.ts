@@ -122,6 +122,7 @@ export const wordBreak: Algorithm = {
     }
     return dp[s.length];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { s: 'leetcode', wordDict: ['leet', 'code'] },
   run: runWordBreak,

@@ -232,6 +232,7 @@ export const wordLadder: Algorithm = {
     }
     return 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     beginWord: 'hit',

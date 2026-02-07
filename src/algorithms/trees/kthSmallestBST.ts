@@ -157,6 +157,7 @@ export const kthSmallestBST: Algorithm = {
         curr = curr.right;
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { root: [3, 1, 4, null, 2], k: 1 },
   run: runKthSmallestBST,

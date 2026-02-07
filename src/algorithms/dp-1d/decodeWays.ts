@@ -144,6 +144,7 @@ export const decodeWays: Algorithm = {
     }
     return dp[s.length];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: '226',
   run: runDecodeWays,

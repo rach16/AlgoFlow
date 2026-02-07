@@ -146,6 +146,7 @@ export const editDistance: Algorithm = {
     }
     return dp[m][n];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { word1: 'horse', word2: 'ros' },
   run: runEditDistance,

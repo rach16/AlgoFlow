@@ -182,6 +182,31 @@ export const slidingWindowMaximum: Algorithm = {
 
     return output;
 }`,
+    java: `public static int[] maxSlidingWindow(int[] nums, int k) {
+    int[] output = new int[nums.length - k + 1];
+    Deque<Integer> deque = new ArrayDeque<>(); // indices
+
+    for (int i = 0; i < nums.length; i++) {
+        // Remove indices outside window
+        while (!deque.isEmpty() && deque.peekFirst() < i - k + 1) {
+            deque.pollFirst();
+        }
+
+        // Remove smaller elements from back
+        while (!deque.isEmpty() && nums[deque.peekLast()] <= nums[i]) {
+            deque.pollLast();
+        }
+
+        deque.offerLast(i);
+
+        // Record max once window is full
+        if (i >= k - 1) {
+            output[i - k + 1] = nums[deque.peekFirst()];
+        }
+    }
+
+    return output;
+}`,
   },
   defaultInput: { nums: [1, 3, -1, -3, 5, 3, 6, 7], k: 3 },
   run: runSlidingWindowMaximum,

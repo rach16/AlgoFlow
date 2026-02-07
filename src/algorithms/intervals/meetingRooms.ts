@@ -118,6 +118,7 @@ export const meetingRooms: Algorithm = {
 
     return true;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[0, 30], [5, 10], [15, 20]],
   run: runMeetingRooms,

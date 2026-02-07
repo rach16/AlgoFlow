@@ -127,6 +127,7 @@ export const palindromicSubstrings: Algorithm = {
     }
     return count;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 'abc',
   run: runPalindromicSubstrings,

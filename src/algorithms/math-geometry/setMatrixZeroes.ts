@@ -205,6 +205,7 @@ export const setMatrixZeroes: Algorithm = {
     if (firstRow) for (let c = 0; c < n; c++) matrix[0][c] = 0;
     if (firstCol) for (let r = 0; r < m; r++) matrix[r][0] = 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[1, 1, 1], [1, 0, 1], [1, 1, 1]],
   run: runSetMatrixZeroes,

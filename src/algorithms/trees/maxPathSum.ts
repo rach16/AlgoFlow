@@ -132,6 +132,7 @@ export const maxPathSum: Algorithm = {
     dfs(root);
     return maxSum;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3],
   run: runMaxPathSum,

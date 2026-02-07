@@ -238,6 +238,40 @@ export const search2DMatrix: Algorithm = {
 
     return false;
 }`,
+    java: `public static boolean searchMatrix(int[][] matrix, int target) {
+    int ROWS = matrix.length;
+    int COLS = matrix[0].length;
+    int top = 0, bot = ROWS - 1;
+
+    while (top <= bot) {
+        int midRow = top + (bot - top) / 2;
+        if (target > matrix[midRow][COLS - 1]) {
+            top = midRow + 1;
+        } else if (target < matrix[midRow][0]) {
+            bot = midRow - 1;
+        } else {
+            break;
+        }
+    }
+
+    if (!(top <= bot)) return false;
+
+    int row = top + (bot - top) / 2;
+    int left = 0, right = COLS - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (matrix[row][mid] == target) {
+            return true;
+        } else if (matrix[row][mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return false;
+}`,
   },
   defaultInput: {
     matrix: [

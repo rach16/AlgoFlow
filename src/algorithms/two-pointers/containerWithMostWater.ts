@@ -195,6 +195,27 @@ export const containerWithMostWater: Algorithm = {
 
     return res;
 }`,
+    java: `public static int maxArea(int[] height) {
+    int l = 0;
+    int r = height.length - 1;
+    int res = 0;
+
+    while (l < r) {
+        int area = (r - l) * Math.min(height[l], height[r]);
+        res = Math.max(res, area);
+
+        if (height[l] < height[r]) {
+            l++;
+        } else if (height[l] > height[r]) {
+            r--;
+        } else {
+            l++;
+            r--;
+        }
+    }
+
+    return res;
+}`,
   },
   defaultInput: [1, 8, 6, 2, 5, 4, 8, 3, 7],
   run: runContainerWithMostWater,

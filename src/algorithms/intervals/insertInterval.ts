@@ -179,6 +179,7 @@ export const insertInterval: Algorithm = {
 
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { intervals: [[1, 3], [6, 9]], newInterval: [2, 5] },
   run: runInsertInterval,

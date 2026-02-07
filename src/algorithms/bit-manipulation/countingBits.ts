@@ -95,6 +95,7 @@ export const countingBits: Algorithm = {
     }
     return dp;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 5,
   run: runCountingBits,

@@ -86,6 +86,16 @@ export const containsDuplicate: Algorithm = {
     }
     return false;
 }`,
+    java: `public static boolean containsDuplicate(int[] nums) {
+    Set<Integer> seen = new HashSet<>();
+    for (int num : nums) {
+        if (seen.contains(num)) {
+            return true;
+        }
+        seen.add(num);
+    }
+    return false;
+}`,
   },
   defaultInput: [1, 2, 3, 1],
   run: runContainsDuplicate,

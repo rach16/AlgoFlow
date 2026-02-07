@@ -92,6 +92,7 @@ export const jumpGame: Algorithm = {
     }
     return goal === 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGame,

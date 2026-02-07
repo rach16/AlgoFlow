@@ -176,6 +176,7 @@ export const wallsAndGates: Algorithm = {
         }
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     [INF, -1, 0, INF],

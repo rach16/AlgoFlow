@@ -230,6 +230,7 @@ export const nQueens: Algorithm = {
     backtrack(0);
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 4,
   run: runNQueens,

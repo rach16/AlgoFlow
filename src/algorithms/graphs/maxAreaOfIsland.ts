@@ -161,6 +161,7 @@ export const maxAreaOfIsland: Algorithm = {
     }
     return maxArea;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],

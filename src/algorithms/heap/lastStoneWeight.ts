@@ -121,6 +121,7 @@ def lastStoneWeight(stones):
 
     return maxHeap.size() ? maxHeap.front().element : 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 7, 4, 1, 8, 1],
   run: runLastStoneWeight,

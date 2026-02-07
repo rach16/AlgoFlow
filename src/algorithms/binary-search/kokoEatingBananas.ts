@@ -174,6 +174,31 @@ export const kokoEatingBananas: Algorithm = {
 
     return result;
 }`,
+    java: `public static int minEatingSpeed(int[] piles, int h) {
+    int left = 1;
+    int right = 0;
+    for (int pile : piles) {
+        right = Math.max(right, pile);
+    }
+    int result = right;
+
+    while (left <= right) {
+        int k = left + (right - left) / 2;
+        long hours = 0;
+        for (int p : piles) {
+            hours += (p + k - 1) / k; // ceiling division
+        }
+
+        if (hours <= h) {
+            result = k;
+            right = k - 1;
+        } else {
+            left = k + 1;
+        }
+    }
+
+    return result;
+}`,
   },
   defaultInput: { piles: [3, 6, 7, 11], h: 8 },
   run: runKokoEatingBananas,

@@ -158,6 +158,7 @@ export const detectSquares: Algorithm = {
         return res;
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['add', [3, 10]],

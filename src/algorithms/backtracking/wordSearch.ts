@@ -226,6 +226,7 @@ export const wordSearch: Algorithm = {
             if (backtrack(r, c, 0)) return true;
     return false;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     board: [

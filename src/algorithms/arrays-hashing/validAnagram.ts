@@ -130,6 +130,23 @@ export const validAnagram: Algorithm = {
     }
     return true;
 }`,
+    java: `public static boolean isAnagram(String s, String t) {
+    if (s.length() != t.length()) {
+        return false;
+    }
+
+    Map<Character, Integer> countS = new HashMap<>();
+    for (char c : s.toCharArray()) {
+        countS.put(c, countS.getOrDefault(c, 0) + 1);
+    }
+
+    Map<Character, Integer> countT = new HashMap<>();
+    for (char c : t.toCharArray()) {
+        countT.put(c, countT.getOrDefault(c, 0) + 1);
+    }
+
+    return countS.equals(countT);
+}`,
   },
   defaultInput: { s: 'anagram', t: 'nagaram' },
   run: runValidAnagram,

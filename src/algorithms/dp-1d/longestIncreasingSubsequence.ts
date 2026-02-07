@@ -126,6 +126,7 @@ export const longestIncreasingSubsequence: Algorithm = {
     }
     return Math.max(...dp);
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [10, 9, 2, 5, 3, 7, 101, 18],
   run: runLongestIncreasingSubsequence,

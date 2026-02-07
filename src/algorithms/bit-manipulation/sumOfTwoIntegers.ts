@@ -113,6 +113,7 @@ export const sumOfTwoIntegers: Algorithm = {
     }
     return a;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { a: 1, b: 2 },
   run: runSumOfTwoIntegers,

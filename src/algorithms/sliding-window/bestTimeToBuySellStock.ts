@@ -129,6 +129,23 @@ export const bestTimeToBuySellStock: Algorithm = {
 
     return maxProfit;
 }`,
+    java: `public static int maxProfit(int[] prices) {
+    int left = 0;  // buy
+    int right = 1; // sell
+    int maxProfit = 0;
+
+    while (right < prices.length) {
+        int profit = prices[right] - prices[left];
+        if (profit > 0) {
+            maxProfit = Math.max(maxProfit, profit);
+        } else {
+            left = right;
+        }
+        right++;
+    }
+
+    return maxProfit;
+}`,
   },
   defaultInput: [7, 1, 5, 3, 6, 4],
   run: runBestTimeToBuySellStock,

@@ -169,6 +169,7 @@ export const swimInRisingWater: Algorithm = {
     }
     return -1;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     [0, 2],

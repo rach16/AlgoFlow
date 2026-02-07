@@ -204,6 +204,20 @@ export const linkedListCycle: Algorithm = {
     }
     return false;
 }`,
+    java: `public static boolean hasCycle(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) {
+            return true;
+        }
+    }
+
+    return false;
+}`,
   },
   defaultInput: { list: [3, 2, 0, -4], pos: 1 },
   run: runLinkedListCycle,

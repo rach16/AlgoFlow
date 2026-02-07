@@ -112,6 +112,7 @@ export const validateBST: Algorithm = {
 
     return dfs(root, -Infinity, Infinity);
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 1, 3],
   run: runValidateBST,

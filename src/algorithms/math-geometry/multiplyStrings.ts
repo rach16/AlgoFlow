@@ -117,6 +117,7 @@ export const multiplyStrings: Algorithm = {
     while (str.length > 1 && str[0] === '0') str = str.slice(1);
     return str;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { num1: '123', num2: '456' },
   run: runMultiplyStrings,

@@ -114,6 +114,7 @@ export const lowestCommonAncestorBST: Algorithm = {
         }
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { root: [6, 2, 8, 0, 4, 7, 9, null, null, 3, 5], p: 2, q: 8 },
   run: runLowestCommonAncestorBST,

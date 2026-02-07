@@ -134,6 +134,7 @@ export const powXN: Algorithm = {
     }
     return x * myPow(x, n - 1);
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { x: 2.0, n: 10 },
   run: runPowXN,

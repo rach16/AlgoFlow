@@ -181,6 +181,7 @@ export const regexMatching: Algorithm = {
     }
     return dp[m][n];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { s: 'aa', p: 'a*' },
   run: runRegexMatching,

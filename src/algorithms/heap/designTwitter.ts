@@ -255,6 +255,7 @@ class Twitter:
             this.followMap.get(followerId).delete(followeeId);
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['postTweet', 1, 5],

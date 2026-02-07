@@ -94,6 +94,7 @@ export const reverseBits: Algorithm = {
     }
     return result >>> 0;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 43261596,
   run: runReverseBits,

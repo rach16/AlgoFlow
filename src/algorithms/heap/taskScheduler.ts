@@ -205,6 +205,7 @@ def leastInterval(tasks, n):
 
     return time;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { tasks: ['A', 'A', 'A', 'B', 'B', 'B'], n: 2 },
   run: runTaskScheduler,

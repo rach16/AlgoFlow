@@ -194,6 +194,7 @@ export const palindromePartitioning: Algorithm = {
     backtrack(0, []);
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 'aab',
   run: runPalindromePartitioning,

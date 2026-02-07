@@ -148,6 +148,7 @@ export const invertBinaryTree: Algorithm = {
     invertTree(root.right);
     return root;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [4, 2, 7, 1, 3, 6, 9],
   run: runInvertBinaryTree,

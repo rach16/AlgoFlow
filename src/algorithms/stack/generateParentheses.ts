@@ -182,6 +182,31 @@ export const generateParentheses: Algorithm = {
     backtrack([], 0, 0);
     return result;
 }`,
+    java: `public static List<String> generateParenthesis(int n) {
+    List<String> result = new ArrayList<>();
+
+    backtrack(result, new StringBuilder(), 0, 0, n);
+    return result;
+}
+
+private static void backtrack(List<String> result, StringBuilder current, int openCount, int closeCount, int n) {
+    if (openCount == closeCount && openCount == n) {
+        result.add(current.toString());
+        return;
+    }
+
+    if (openCount < n) {
+        current.append("(");
+        backtrack(result, current, openCount + 1, closeCount, n);
+        current.deleteCharAt(current.length() - 1);
+    }
+
+    if (closeCount < openCount) {
+        current.append(")");
+        backtrack(result, current, openCount, closeCount + 1, n);
+        current.deleteCharAt(current.length() - 1);
+    }
+}`,
   },
   defaultInput: 3,
   run: runGenerateParentheses,

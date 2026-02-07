@@ -142,6 +142,7 @@ export const nonOverlappingIntervals: Algorithm = {
 
     return count;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[1, 2], [2, 3], [3, 4], [1, 3]],
   run: runNonOverlappingIntervals,

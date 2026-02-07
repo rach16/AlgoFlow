@@ -118,6 +118,7 @@ export const balancedBinaryTree: Algorithm = {
 
     return dfs(root) !== -1;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runBalancedBinaryTree,

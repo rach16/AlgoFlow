@@ -154,6 +154,23 @@ export const longestConsecutive: Algorithm = {
     }
     return longest;
 }`,
+    java: `public static int longestConsecutive(int[] nums) {
+    Set<Integer> numSet = new HashSet<>();
+    for (int num : nums) {
+        numSet.add(num);
+    }
+    int longest = 0;
+    for (int num : numSet) {
+        if (!numSet.contains(num - 1)) {
+            int length = 1;
+            while (numSet.contains(num + length)) {
+                length++;
+            }
+            longest = Math.max(longest, length);
+        }
+    }
+    return longest;
+}`,
   },
   defaultInput: [100, 4, 200, 1, 3, 2],
   run: runLongestConsecutive,

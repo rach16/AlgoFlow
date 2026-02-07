@@ -207,6 +207,7 @@ export const pacificAtlanticWaterFlow: Algorithm = {
                 result.push([r, c]);
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     [1, 2, 2, 3, 5],

@@ -138,6 +138,22 @@ export const evalRPN: Algorithm = {
     }
     return stack[0];
 }`,
+    java: `public static int evalRPN(String[] tokens) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    for (String token : tokens) {
+        if ("+-*/".contains(token)) {
+            int b = stack.pop();
+            int a = stack.pop();
+            if (token.equals("+")) stack.push(a + b);
+            else if (token.equals("-")) stack.push(a - b);
+            else if (token.equals("*")) stack.push(a * b);
+            else stack.push(a / b);
+        } else {
+            stack.push(Integer.parseInt(token));
+        }
+    }
+    return stack.peek();
+}`,
   },
   defaultInput: ['2', '1', '+', '3', '*'],
   run: runEvalRPN,

@@ -151,6 +151,7 @@ export const meetingRoomsII: Algorithm = {
 
     return maxRooms;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[0, 30], [5, 10], [15, 20]],
   run: runMeetingRoomsII,

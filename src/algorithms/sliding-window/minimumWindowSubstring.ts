@@ -238,6 +238,44 @@ export const minimumWindowSubstring: Algorithm = {
     const [l, r] = result;
     return resultLen !== Infinity ? s.slice(l, r + 1) : "";
 }`,
+    java: `public static String minWindow(String s, String t) {
+    if (t == null || s == null || t.length() == 0 || s.length() == 0) return "";
+    Map<Character, Integer> tCount = new HashMap<>();
+    for (char c : t.toCharArray()) {
+        tCount.put(c, tCount.getOrDefault(c, 0) + 1);
+    }
+    int have = 0;
+    int need = tCount.size();
+    Map<Character, Integer> windowCount = new HashMap<>();
+
+    int[] result = {-1, -1};
+    int resultLen = Integer.MAX_VALUE;
+    int left = 0;
+
+    for (int right = 0; right < s.length(); right++) {
+        char c = s.charAt(right);
+        windowCount.put(c, windowCount.getOrDefault(c, 0) + 1);
+        if (tCount.containsKey(c) && windowCount.get(c).equals(tCount.get(c))) {
+            have++;
+        }
+
+        while (have == need) {
+            if ((right - left + 1) < resultLen) {
+                result[0] = left;
+                result[1] = right;
+                resultLen = right - left + 1;
+            }
+            char leftChar = s.charAt(left);
+            windowCount.put(leftChar, windowCount.get(leftChar) - 1);
+            if (tCount.containsKey(leftChar) && windowCount.get(leftChar) < tCount.get(leftChar)) {
+                have--;
+            }
+            left++;
+        }
+    }
+
+    return resultLen != Integer.MAX_VALUE ? s.substring(result[0], result[1] + 1) : "";
+}`,
   },
   defaultInput: { s: 'ADOBECODEBANC', t: 'ABC' },
   run: runMinimumWindowSubstring,

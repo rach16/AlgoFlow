@@ -95,6 +95,7 @@ export const plusOne: Algorithm = {
     if (carry) digits.unshift(carry);
     return digits;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3],
   run: runPlusOne,

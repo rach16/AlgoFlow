@@ -198,6 +198,7 @@ export const networkDelayTime: Algorithm = {
     const mx = Math.max(...Object.values(dist));
     return mx === Infinity ? -1 : mx;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { times: [[2, 1, 1], [2, 3, 1], [3, 4, 1]], n: 4, k: 2 },
   run: runNetworkDelayTime,

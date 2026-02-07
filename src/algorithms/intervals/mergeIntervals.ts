@@ -161,6 +161,7 @@ export const mergeIntervals: Algorithm = {
 
     return merged;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[1, 3], [2, 6], [8, 10], [15, 18]],
   run: runMergeIntervals,

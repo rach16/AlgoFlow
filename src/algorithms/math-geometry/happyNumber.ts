@@ -133,6 +133,7 @@ export const happyNumber: Algorithm = {
     }
     return true;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 19,
   run: runHappyNumber,

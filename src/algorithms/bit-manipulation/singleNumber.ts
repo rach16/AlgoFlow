@@ -86,6 +86,7 @@ export const singleNumber: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 2, 1],
   run: runSingleNumber,

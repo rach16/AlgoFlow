@@ -213,6 +213,35 @@ export const permutationInString: Algorithm = {
 
     return false;
 }`,
+    java: `public static boolean checkInclusion(String s1, String s2) {
+    if (s1.length() > s2.length()) return false;
+    Map<Character, Integer> s1Count = new HashMap<>();
+    for (char c : s1.toCharArray()) {
+        s1Count.put(c, s1Count.getOrDefault(c, 0) + 1);
+    }
+    Map<Character, Integer> windowCount = new HashMap<>();
+    for (int i = 0; i < s1.length(); i++) {
+        char c = s2.charAt(i);
+        windowCount.put(c, windowCount.getOrDefault(c, 0) + 1);
+    }
+
+    if (s1Count.equals(windowCount)) return true;
+
+    for (int right = s1.length(); right < s2.length(); right++) {
+        int left = right - s1.length();
+        char leftChar = s2.charAt(left);
+        windowCount.put(leftChar, windowCount.get(leftChar) - 1);
+        if (windowCount.get(leftChar) == 0) {
+            windowCount.remove(leftChar);
+        }
+        char rightChar = s2.charAt(right);
+        windowCount.put(rightChar, windowCount.getOrDefault(rightChar, 0) + 1);
+
+        if (s1Count.equals(windowCount)) return true;
+    }
+
+    return false;
+}`,
   },
   defaultInput: { s1: 'ab', s2: 'eidbaooo' },
   run: runPermutationInString,

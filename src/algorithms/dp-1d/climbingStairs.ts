@@ -96,6 +96,7 @@ export const climbingStairs: Algorithm = {
     }
     return dp[n];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 5,
   run: runClimbingStairs,

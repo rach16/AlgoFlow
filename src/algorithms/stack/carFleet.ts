@@ -145,6 +145,23 @@ export const carFleet: Algorithm = {
 
     return stack.length;
 }`,
+    java: `public static int carFleet(int target, int[] position, int[] speed) {
+    int[][] pairs = new int[position.length][2];
+    for (int i = 0; i < position.length; i++) {
+        pairs[i] = new int[] { position[i], speed[i] };
+    }
+    Arrays.sort(pairs, (a, b) -> b[0] - a[0]);
+    Deque<Double> stack = new ArrayDeque<>();
+
+    for (int[] pair : pairs) {
+        double time = (double) (target - pair[0]) / pair[1];
+        if (stack.isEmpty() || time > stack.peek()) {
+            stack.push(time);
+        }
+    }
+
+    return stack.size();
+}`,
   },
   defaultInput: { target: 12, position: [10, 8, 0, 5, 3], speed: [2, 4, 1, 1, 3] },
   run: runCarFleet,

@@ -33,6 +33,16 @@ export function CodeBlock({ code, currentLine }: CodeBlockProps) {
         >
           JavaScript
         </button>
+        <button
+          onClick={() => setLanguage('java')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            language === 'java'
+              ? 'bg-slate-700 text-white'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Java
+        </button>
       </div>
 
       {/* Code */}

@@ -139,6 +139,7 @@ export const partitionLabels: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 'ababcbacadefegdehijhklij',
   run: runPartitionLabels,

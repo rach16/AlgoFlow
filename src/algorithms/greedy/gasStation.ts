@@ -146,6 +146,7 @@ export const gasStation: Algorithm = {
     }
     return start;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { gas: [1, 2, 3, 4, 5], cost: [3, 4, 5, 1, 2] },
   run: runGasStation,

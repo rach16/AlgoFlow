@@ -112,6 +112,7 @@ export const maximumSubarray: Algorithm = {
     }
     return maxSub;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
   run: runMaximumSubarray,

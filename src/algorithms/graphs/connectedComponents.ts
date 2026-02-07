@@ -220,6 +220,7 @@ export const connectedComponents: Algorithm = {
         components -= union(a, b);
     return components;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { n: 5, edges: [[0, 1], [1, 2], [3, 4]] },
   run: runConnectedComponents,

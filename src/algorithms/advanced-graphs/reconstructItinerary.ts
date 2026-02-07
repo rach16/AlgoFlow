@@ -184,6 +184,7 @@ export const reconstructItinerary: Algorithm = {
 
     return route.reverse();
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['MUC', 'LHR'],

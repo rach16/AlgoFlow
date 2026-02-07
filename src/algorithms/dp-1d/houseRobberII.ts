@@ -148,6 +148,7 @@ export const houseRobberII: Algorithm = {
     return Math.max(robRange(0, nums.length-2),
                     robRange(1, nums.length-1));
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 3, 2],
   run: runHouseRobberII,

@@ -157,6 +157,7 @@ export const cheapestFlightsKStops: Algorithm = {
 
     return prices[dst] === Infinity ? -1 : prices[dst];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     n: 4,

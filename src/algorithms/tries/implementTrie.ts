@@ -315,6 +315,7 @@ class Trie {
         return true;
     }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['insert', 'apple'],

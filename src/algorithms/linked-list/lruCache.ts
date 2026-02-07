@@ -277,6 +277,73 @@ export const lruCache: Algorithm = {
         }
     }
 }`,
+    java: `class LRUCache {
+    private int cap;
+    private Map<Integer, Node> cache;
+    private Node left;
+    private Node right;
+
+    class Node {
+        int key;
+        int val;
+        Node prev;
+        Node next;
+
+        Node(int key, int val) {
+            this.key = key;
+            this.val = val;
+        }
+    }
+
+    public LRUCache(int capacity) {
+        cap = capacity;
+        cache = new HashMap<>();
+        left = new Node(0, 0);
+        right = new Node(0, 0);
+        left.next = right;
+        right.prev = left;
+    }
+
+    private void remove(Node node) {
+        Node prev = node.prev;
+        Node next = node.next;
+        prev.next = next;
+        next.prev = prev;
+    }
+
+    private void insert(Node node) {
+        Node prev = right.prev;
+        prev.next = node;
+        right.prev = node;
+        node.prev = prev;
+        node.next = right;
+    }
+
+    public int get(int key) {
+        if (cache.containsKey(key)) {
+            Node node = cache.get(key);
+            remove(node);
+            insert(node);
+            return node.val;
+        }
+        return -1;
+    }
+
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            remove(cache.get(key));
+        }
+        Node node = new Node(key, value);
+        cache.put(key, node);
+        insert(node);
+
+        if (cache.size() > cap) {
+            Node lru = left.next;
+            remove(lru);
+            cache.remove(lru.key);
+        }
+    }
+}`,
   },
   defaultInput: [
     ['put', 1, 1],

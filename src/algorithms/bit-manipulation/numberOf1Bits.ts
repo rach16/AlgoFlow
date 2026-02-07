@@ -92,6 +92,7 @@ export const numberOf1Bits: Algorithm = {
     }
     return count;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: 11,
   run: runNumberOf1Bits,

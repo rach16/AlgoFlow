@@ -23,6 +23,7 @@ export interface Algorithm {
   code: {
     python: string;
     javascript: string;
+    java: string;
   };
   defaultInput: unknown;
   run: (input: unknown) => AlgorithmStep[];

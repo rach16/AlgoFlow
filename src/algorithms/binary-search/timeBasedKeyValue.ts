@@ -246,6 +246,49 @@ export const timeBasedKeyValue: Algorithm = {
         return result;
     }
 }`,
+    java: `class TimeMap {
+    private Map<String, List<Pair<String, Integer>>> store;
+
+    public TimeMap() {
+        store = new HashMap<>();
+    }
+
+    public void set(String key, String value, int timestamp) {
+        store.putIfAbsent(key, new ArrayList<>());
+        store.get(key).add(new Pair<>(value, timestamp));
+    }
+
+    public String get(String key, int timestamp) {
+        List<Pair<String, Integer>> values = store.getOrDefault(key, new ArrayList<>());
+        String result = "";
+        int left = 0, right = values.size() - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (values.get(mid).getValue() <= timestamp) {
+                result = values.get(mid).getKey();
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return result;
+    }
+
+    static class Pair<K, V> {
+        private K key;
+        private V value;
+
+        public Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() { return key; }
+        public V getValue() { return value; }
+    }
+}`,
   },
   defaultInput: [
     ['set', 'foo', 'bar', '1'],

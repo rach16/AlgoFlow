@@ -162,6 +162,27 @@ export const copyListRandomPointer: Algorithm = {
     }
     return oldToNew.get(head);
 }`,
+    java: `public static Node copyRandomList(Node head) {
+    Map<Node, Node> oldToNew = new HashMap<>();
+    oldToNew.put(null, null);
+
+    // Pass 1: create copies
+    Node curr = head;
+    while (curr != null) {
+        oldToNew.put(curr, new Node(curr.val));
+        curr = curr.next;
+    }
+
+    // Pass 2: connect pointers
+    curr = head;
+    while (curr != null) {
+        oldToNew.get(curr).next = oldToNew.get(curr.next);
+        oldToNew.get(curr).random = oldToNew.get(curr.random);
+        curr = curr.next;
+    }
+
+    return oldToNew.get(head);
+}`,
   },
   defaultInput: [7, 13, 11, 10, 1],
   run: runCopyListRandomPointer,

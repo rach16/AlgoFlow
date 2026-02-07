@@ -166,6 +166,7 @@ export const longestIncreasingPathMatrix: Algorithm = {
             ans = Math.max(ans, dfs(r, c));
     return ans;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[9, 9, 4], [6, 6, 8], [2, 1, 1]],
   run: runLongestIncreasingPathMatrix,

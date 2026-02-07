@@ -111,6 +111,7 @@ export const mergeTriplets: Algorithm = {
 
     return good.size === 3;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     triplets: [[2, 5, 3], [1, 8, 4], [1, 7, 5]],

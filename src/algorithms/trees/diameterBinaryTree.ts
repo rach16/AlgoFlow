@@ -106,6 +106,7 @@ export const diameterBinaryTree: Algorithm = {
     dfs(root);
     return diameter;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3, 4, 5],
   run: runDiameterBinaryTree,

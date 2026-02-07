@@ -129,6 +129,7 @@ export const distinctSubsequences: Algorithm = {
     }
     return dp[m][n];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { s: 'rabbbit', t: 'rabbit' },
   run: runDistinctSubsequences,

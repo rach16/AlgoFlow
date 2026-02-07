@@ -156,6 +156,7 @@ def kClosest(points, k):
         result.push(minHeap.dequeue().element);
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { points: [[1, 3], [-2, 2]], k: 1 },
   run: runKClosestPoints,

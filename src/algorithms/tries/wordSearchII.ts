@@ -245,6 +245,7 @@ def findWords(board, words):
             dfs(r, c, root);
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: {
     board: [

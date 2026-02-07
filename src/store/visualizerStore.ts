@@ -23,8 +23,8 @@ interface VisualizerState {
   setSpeed: (speed: number) => void;
 
   // Code language
-  language: 'python' | 'javascript';
-  setLanguage: (lang: 'python' | 'javascript') => void;
+  language: 'python' | 'javascript' | 'java';
+  setLanguage: (lang: 'python' | 'javascript' | 'java') => void;
 
   // Actions
   nextStep: () => void;

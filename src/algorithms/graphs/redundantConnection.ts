@@ -214,6 +214,7 @@ export const redundantConnection: Algorithm = {
     for (const [a, b] of edges)
         if (!union(a, b)) return [a, b];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[1, 2], [1, 3], [2, 3]],
   run: runRedundantConnection,

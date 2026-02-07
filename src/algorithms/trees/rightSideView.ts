@@ -140,6 +140,7 @@ export const rightSideView: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3, null, 5, null, 4],
   run: runRightSideView,

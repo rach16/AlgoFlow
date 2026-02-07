@@ -183,6 +183,7 @@ export const spiralMatrix: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
   run: runSpiralMatrix,

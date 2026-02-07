@@ -195,6 +195,7 @@ export const rottingOranges: Algorithm = {
     }
     return fresh > 0 ? -1 : minutes;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     [2, 1, 1],

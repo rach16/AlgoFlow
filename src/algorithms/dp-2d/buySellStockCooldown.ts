@@ -144,6 +144,7 @@ export const buySellStockCooldown: Algorithm = {
     }
     return Math.max(sold, rest);
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3, 0, 2],
   run: runBuySellStockCooldown,

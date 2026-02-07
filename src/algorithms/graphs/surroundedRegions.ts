@@ -222,6 +222,7 @@ export const surroundedRegions: Algorithm = {
             else if (board[r][c] === "T") board[r][c] = "O";
         }
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [
     ['X', 'X', 'X', 'X'],

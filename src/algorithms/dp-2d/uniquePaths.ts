@@ -136,6 +136,7 @@ export const uniquePaths: Algorithm = {
     }
     return dp[m-1][n-1];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { m: 3, n: 7 },
   run: runUniquePaths,

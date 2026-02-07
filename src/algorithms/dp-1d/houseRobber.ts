@@ -114,6 +114,7 @@ export const houseRobber: Algorithm = {
     }
     return dp[nums.length - 1];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 2, 3, 1],
   run: runHouseRobber,

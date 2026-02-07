@@ -119,6 +119,7 @@ export const maxProductSubarray: Algorithm = {
     }
     return result;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 3, -2, 4],
   run: runMaxProductSubarray,

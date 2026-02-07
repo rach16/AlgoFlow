@@ -135,6 +135,7 @@ export const sameTree: Algorithm = {
     // Check children
     // Final result
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: { p: [1, 2, 3], q: [1, 2, 3] },
   run: runSameTree,

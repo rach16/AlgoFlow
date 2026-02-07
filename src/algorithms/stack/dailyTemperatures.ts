@@ -110,6 +110,20 @@ export const dailyTemperatures: Algorithm = {
 
     return result;
 }`,
+    java: `public static int[] dailyTemperatures(int[] temperatures) {
+    int[] result = new int[temperatures.length];
+    Deque<Integer> stack = new ArrayDeque<>(); // indices
+
+    for (int i = 0; i < temperatures.length; i++) {
+        while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
+            int prevDay = stack.pop();
+            result[prevDay] = i - prevDay;
+        }
+        stack.push(i);
+    }
+
+    return result;
+}`,
   },
   defaultInput: [73, 74, 75, 71, 69, 72, 76, 73],
   run: runDailyTemperatures,

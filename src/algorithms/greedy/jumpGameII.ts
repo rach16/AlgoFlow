@@ -124,6 +124,7 @@ export const jumpGameII: Algorithm = {
 
     return jumps;
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGameII,

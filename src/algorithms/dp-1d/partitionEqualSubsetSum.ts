@@ -144,6 +144,7 @@ export const partitionEqualSubsetSum: Algorithm = {
     }
     return dp[target];
 }`,
+    java: `// Java implementation coming soon`,
   },
   defaultInput: [1, 5, 11, 5],
   run: runPartitionEqualSubsetSum,
