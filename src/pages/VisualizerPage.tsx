@@ -88,9 +88,9 @@ export function VisualizerPage() {
   const activeDataStructures = detectDataStructures(state, currentAlgorithm.category);
 
   return (
-    <div className="flex flex-col lg:flex-row lg:flex-1 gap-4 p-4 lg:overflow-hidden">
+    <div className="flex flex-col lg:flex-row lg:h-full gap-4 p-4 lg:overflow-hidden">
       {/* Visualization Panel */}
-      <div className="flex flex-col gap-4 lg:flex-1 min-h-0">
+      <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         {/* Algorithm info bar — compact on mobile */}
         <div className="bg-slate-800 rounded-xl p-3 lg:p-4 flex flex-wrap gap-2 lg:gap-3 items-center text-sm">
           <span className="font-medium lg:hidden truncate max-w-[160px]">{currentAlgorithm.name}</span>
@@ -146,7 +146,7 @@ export function VisualizerPage() {
         )}
 
         {/* Visualization area (hidden on mobile when showing code) */}
-        <div className={`${showCode ? 'hidden' : ''} lg:block lg:flex-1 bg-slate-800 rounded-xl p-4 overflow-auto min-h-0`}>
+        <div className={`${showCode ? 'hidden' : ''} lg:block lg:flex-1 bg-slate-800 rounded-xl p-4 overflow-y-auto lg:min-h-0`}>
           <h3 className="text-sm font-medium text-slate-400 mb-4">Visualization</h3>
 
           {/* Array visualization */}
