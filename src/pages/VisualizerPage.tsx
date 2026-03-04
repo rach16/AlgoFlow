@@ -12,6 +12,8 @@ import { IntervalView } from '../components/visualizer/IntervalView';
 import { BitView } from '../components/visualizer/BitView';
 import { Controls } from '../components/visualizer/Controls';
 import { CodeBlock } from '../components/common/CodeBlock';
+import { DataStructureInfoPanel } from '../components/visualizer/data-structure-info/DataStructureInfoPanel';
+import { detectDataStructures } from '../utils/detectDataStructures';
 import { useProgressStore } from '../store/progressStore';
 
 export function VisualizerPage() {
@@ -82,6 +84,8 @@ export function VisualizerPage() {
   const bitSecondary = state?.bitSecondary as number[] | undefined;
   const intervalHighlights = state?.intervalHighlights as number[] | undefined;
   const intervalSecondary = state?.intervalSecondary as number[] | undefined;
+
+  const activeDataStructures = detectDataStructures(state, currentAlgorithm.category);
 
   return (
     <div className="flex flex-col lg:flex-row lg:flex-1 gap-4 p-4 lg:overflow-hidden">
@@ -299,6 +303,9 @@ export function VisualizerPage() {
               <HashMapView hashMap={count} title="Count" />
             )}
           </div>
+
+          {/* Data Structure Reference Panels */}
+          <DataStructureInfoPanel activeTypes={activeDataStructures} />
 
           {/* Result */}
           {result !== undefined && result !== null && typeof state?.result !== 'undefined' && (
