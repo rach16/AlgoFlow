@@ -113,4 +113,33 @@ export const twoSum: Algorithm = {
   },
   defaultInput: { nums: [2, 7, 11, 15], target: 9 },
   run: runTwoSum,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking nums array and target',
+      2: 'Create empty hashmap to store {value: index} pairs',
+      3: 'Loop through each number with its index',
+      4: 'Calculate what number we need (target minus current)',
+      5: 'Check if that complement was already seen',
+      6: 'Found it! Return both indices',
+      7: "Haven't found match yet — store current number and index",
+    },
+    javascript: {
+      1: 'Define function taking nums array and target',
+      2: 'Create empty hashmap to store {value: index} pairs',
+      3: 'Loop through each index in the array',
+      4: 'Calculate what number we need (target minus current)',
+      5: 'Check if that complement was already seen',
+      6: 'Found it! Return both indices',
+      8: "Haven't found match yet — store current number and index",
+    },
+    java: {
+      1: 'Define function taking nums array and target',
+      2: 'Create empty HashMap to store {value: index} pairs',
+      3: 'Loop through each index in the array',
+      4: 'Calculate what number we need (target minus current)',
+      5: 'Check if that complement was already seen',
+      6: 'Found it! Return both indices',
+      8: "Haven't found match yet — store current number and index",
+    },
+  },
 };

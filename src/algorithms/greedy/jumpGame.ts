@@ -104,4 +104,30 @@ export const jumpGame: Algorithm = {
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGame,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking nums array',
+      2: 'Set goal to last index',
+      3: 'Iterate backwards from second-to-last index',
+      4: 'Check if current index can reach the goal',
+      5: 'Move goal closer to start',
+      6: 'Return true if goal reached index 0',
+    },
+    javascript: {
+      1: 'Define function taking nums array',
+      2: 'Set goal to last index',
+      3: 'Iterate backwards from second-to-last index',
+      4: 'Check if current index can reach the goal',
+      5: 'Move goal closer to start',
+      8: 'Return true if goal reached index 0',
+    },
+    java: {
+      1: 'Define method taking nums array',
+      2: 'Set goal to last index',
+      3: 'Iterate backwards from second-to-last index',
+      4: 'Check if current index can reach the goal',
+      5: 'Move goal closer to start',
+      8: 'Return true if goal reached index 0',
+    },
+  },
 };

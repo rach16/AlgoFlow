@@ -124,4 +124,31 @@ export const sumOfTwoIntegers: Algorithm = {
   },
   defaultInput: { a: 1, b: 2 },
   run: runSumOfTwoIntegers,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking two integers a, b',
+      2: 'Mask to simulate 32-bit overflow',
+      3: 'Loop while there are carry bits',
+      4: 'Compute carry: AND then shift left',
+      5: 'Compute sum without carry using XOR',
+      6: 'Set b to carry for next iteration',
+      7: 'Handle negative numbers via mask',
+    },
+    javascript: {
+      1: 'Define function taking two integers a, b',
+      2: 'Loop while there are carry bits',
+      3: 'Compute carry: AND then shift left',
+      4: 'Compute sum without carry using XOR',
+      5: 'Set b to carry for next iteration',
+      7: 'Return final sum stored in a',
+    },
+    java: {
+      1: 'Define function taking two integers a, b',
+      2: 'Loop while there are carry bits',
+      3: 'Compute carry: AND then shift left',
+      4: 'Compute sum without carry using XOR',
+      5: 'Set b to carry for next iteration',
+      7: 'Return final sum stored in a',
+    },
+  },
 };

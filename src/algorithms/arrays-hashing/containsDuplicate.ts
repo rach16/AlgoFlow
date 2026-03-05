@@ -99,4 +99,33 @@ export const containsDuplicate: Algorithm = {
   },
   defaultInput: [1, 2, 3, 1],
   run: runContainsDuplicate,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking nums array',
+      2: 'Create empty set to track numbers we have seen',
+      3: 'Loop through each number in the array',
+      4: 'Check if this number is already in our set',
+      5: 'Duplicate found — return True immediately',
+      6: 'Not seen before — add this number to the set',
+      7: 'No duplicates found after checking all numbers',
+    },
+    javascript: {
+      1: 'Define function taking nums array',
+      2: 'Create empty Set to track numbers we have seen',
+      3: 'Loop through each number in the array',
+      4: 'Check if this number is already in our set',
+      5: 'Duplicate found — return true immediately',
+      7: 'Not seen before — add this number to the set',
+      9: 'No duplicates found after checking all numbers',
+    },
+    java: {
+      1: 'Define function taking nums array',
+      2: 'Create empty HashSet to track numbers we have seen',
+      3: 'Loop through each number in the array',
+      4: 'Check if this number is already in our set',
+      5: 'Duplicate found — return true immediately',
+      7: 'Not seen before — add this number to the set',
+      9: 'No duplicates found after checking all numbers',
+    },
+  },
 };

@@ -141,6 +141,7 @@ export function VisualizerPage() {
             <CodeBlock
               code={currentAlgorithm.code[language]}
               currentLine={currentStep?.codeLine}
+              lineExplanations={currentAlgorithm.lineExplanations?.[language]}
             />
           </div>
         )}
@@ -331,6 +332,7 @@ export function VisualizerPage() {
         <CodeBlock
           code={currentAlgorithm.code[language]}
           currentLine={currentStep?.codeLine}
+          lineExplanations={currentAlgorithm.lineExplanations?.[language]}
         />
       </div>
     </div>

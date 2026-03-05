@@ -27,6 +27,11 @@ export interface Algorithm {
   };
   defaultInput: unknown;
   run: (input: unknown) => AlgorithmStep[];
+  lineExplanations?: {
+    python: Record<number, string>;
+    javascript: Record<number, string>;
+    java: Record<number, string>;
+  };
 }
 
 export interface Category {

@@ -96,4 +96,27 @@ export const singleNumber: Algorithm = {
   },
   defaultInput: [2, 2, 1],
   run: runSingleNumber,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking nums array',
+      2: 'Initialize result to 0 (XOR identity: 0 ^ x = x)',
+      3: 'Loop through every number in the array',
+      4: 'XOR result with current number — duplicates cancel out (a ^ a = 0)',
+      5: 'Only the single number remains after all XORs',
+    },
+    javascript: {
+      1: 'Define function taking nums array',
+      2: 'Initialize result to 0 (XOR identity: 0 ^ x = x)',
+      3: 'Loop through every number in the array',
+      4: 'XOR result with current number — duplicates cancel out (a ^ a = 0)',
+      6: 'Only the single number remains after all XORs',
+    },
+    java: {
+      1: 'Define function taking nums array',
+      2: 'Initialize result to 0 (XOR identity: 0 ^ x = x)',
+      3: 'Loop through every number in the array',
+      4: 'XOR result with current number — duplicates cancel out (a ^ a = 0)',
+      6: 'Only the single number remains after all XORs',
+    },
+  },
 };
