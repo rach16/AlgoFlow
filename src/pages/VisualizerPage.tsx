@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useVisualizerStore } from '../store/visualizerStore';
 import { ArrayBar } from '../components/visualizer/ArrayBar';
 import { HashMapView } from '../components/visualizer/HashMapView';
@@ -20,6 +20,38 @@ export function VisualizerPage() {
   const { currentAlgorithm, steps, currentStepIndex, language } = useVisualizerStore();
   const { solvedProblems, toggleSolved } = useProgressStore();
   const [showCode, setShowCode] = useState(false);
+  const [codePanelWidth, setCodePanelWidth] = useState(400);
+  const isDragging = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const onMouseDown = useCallback(() => {
+    isDragging.current = true;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !containerRef.current) return;
+      const containerRight = containerRef.current.getBoundingClientRect().right;
+      const newWidth = Math.min(700, Math.max(300, containerRight - e.clientX));
+      setCodePanelWidth(newWidth);
+    };
+    const onMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, []);
 
   if (!currentAlgorithm) {
     return (
@@ -88,9 +120,9 @@ export function VisualizerPage() {
   const activeDataStructures = detectDataStructures(state, currentAlgorithm.category);
 
   return (
-    <div className="flex flex-col lg:flex-row lg:h-full gap-4 p-4 lg:overflow-hidden">
+    <div ref={containerRef} className="flex flex-col lg:flex-row lg:h-full gap-4 lg:gap-0 p-4 lg:overflow-hidden">
       {/* Visualization Panel */}
-      <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+      <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden lg:mr-1">
         {/* Algorithm info bar — compact on mobile */}
         <div className="bg-slate-800 rounded-xl p-3 lg:p-4 flex flex-wrap gap-2 lg:gap-3 items-center text-sm">
           <span className="font-medium lg:hidden truncate max-w-[160px]">{currentAlgorithm.name}</span>
@@ -327,8 +359,17 @@ export function VisualizerPage() {
         <Controls />
       </div>
 
+      {/* Drag Handle — desktop only */}
+      <div
+        onMouseDown={onMouseDown}
+        className="hidden lg:flex items-center justify-center cursor-col-resize group self-stretch -mx-1 z-10"
+        style={{ width: 12 }}
+      >
+        <div className="w-[2px] h-full bg-slate-600 group-hover:w-1 group-hover:bg-indigo-400 group-active:bg-indigo-400 transition-all rounded-full" />
+      </div>
+
       {/* Code Panel — desktop only (mobile uses toggle above) */}
-      <div className="hidden lg:block lg:w-[400px]">
+      <div className="hidden lg:block flex-shrink-0 lg:ml-1" style={{ width: codePanelWidth }}>
         <CodeBlock
           code={currentAlgorithm.code[language]}
           currentLine={currentStep?.codeLine}

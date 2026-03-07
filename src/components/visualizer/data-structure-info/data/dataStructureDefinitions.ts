@@ -26,10 +26,15 @@ export const dataStructureDefinitions: Record<string, DataStructureDefinition> =
     methods: [
       { name: 'put(key, val)', description: 'Insert or update a key-value pair', timeComplexity: 'O(1)*' },
       { name: 'get(key)', description: 'Retrieve value by key', timeComplexity: 'O(1)*' },
+      { name: 'getOrDefault(key, default)', description: 'Get value or return default if key missing', timeComplexity: 'O(1)*' },
+      { name: 'putIfAbsent(key, val)', description: 'Insert only if key is not already present', timeComplexity: 'O(1)*' },
       { name: 'containsKey(key)', description: 'Check if key exists', timeComplexity: 'O(1)*' },
       { name: 'remove(key)', description: 'Delete a key-value pair', timeComplexity: 'O(1)*' },
+      { name: 'isEmpty()', description: 'Check if map has no entries', timeComplexity: 'O(1)' },
       { name: 'size()', description: 'Number of entries', timeComplexity: 'O(1)' },
       { name: 'keySet()', description: 'Return all keys', timeComplexity: 'O(n)' },
+      { name: 'values()', description: 'Return all values', timeComplexity: 'O(n)' },
+      { name: 'entrySet()', description: 'Return all key-value pairs', timeComplexity: 'O(n)' },
     ],
   },
   hashset: {
@@ -46,7 +51,9 @@ export const dataStructureDefinitions: Record<string, DataStructureDefinition> =
       { name: 'add(val)', description: 'Insert an element', timeComplexity: 'O(1)*' },
       { name: 'contains(val)', description: 'Check membership', timeComplexity: 'O(1)*' },
       { name: 'remove(val)', description: 'Delete an element', timeComplexity: 'O(1)*' },
+      { name: 'isEmpty()', description: 'Check if set is empty', timeComplexity: 'O(1)' },
       { name: 'size()', description: 'Number of elements', timeComplexity: 'O(1)' },
+      { name: 'addAll(collection)', description: 'Add all elements from another collection', timeComplexity: 'O(n)' },
     ],
   },
   stack: {
@@ -65,6 +72,11 @@ export const dataStructureDefinitions: Record<string, DataStructureDefinition> =
       { name: 'peek()', description: 'View top element without removing', timeComplexity: 'O(1)' },
       { name: 'isEmpty()', description: 'Check if stack is empty', timeComplexity: 'O(1)' },
       { name: 'size()', description: 'Number of elements', timeComplexity: 'O(1)' },
+      { name: 'peekFirst()', description: 'View front element (Deque)', timeComplexity: 'O(1)' },
+      { name: 'peekLast()', description: 'View back element (Deque)', timeComplexity: 'O(1)' },
+      { name: 'pollFirst()', description: 'Remove and return front element (Deque)', timeComplexity: 'O(1)' },
+      { name: 'pollLast()', description: 'Remove and return back element (Deque)', timeComplexity: 'O(1)' },
+      { name: 'offerLast(val)', description: 'Add element to back (Deque)', timeComplexity: 'O(1)' },
     ],
   },
   queue: {
@@ -78,6 +90,7 @@ export const dataStructureDefinitions: Record<string, DataStructureDefinition> =
       'Deque variant allows both-end operations',
     ],
     methods: [
+      { name: 'add(val)', description: 'Add element, throw if full', timeComplexity: 'O(1)' },
       { name: 'offer(val)', description: 'Add element to back', timeComplexity: 'O(1)' },
       { name: 'poll()', description: 'Remove and return front element', timeComplexity: 'O(1)' },
       { name: 'peek()', description: 'View front element without removing', timeComplexity: 'O(1)' },
@@ -154,6 +167,7 @@ export const dataStructureDefinitions: Record<string, DataStructureDefinition> =
       { name: 'offer(val)', description: 'Insert and bubble up', timeComplexity: 'O(log n)' },
       { name: 'poll()', description: 'Remove root and heapify down', timeComplexity: 'O(log n)' },
       { name: 'peek()', description: 'View root without removing', timeComplexity: 'O(1)' },
+      { name: 'isEmpty()', description: 'Check if heap is empty', timeComplexity: 'O(1)' },
       { name: 'size()', description: 'Number of elements', timeComplexity: 'O(1)' },
       { name: 'heapify(arr)', description: 'Build heap from array', timeComplexity: 'O(n)' },
     ],
