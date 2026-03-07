@@ -130,4 +130,30 @@ export const meetingRooms: Algorithm = {
   },
   defaultInput: [[0, 30], [5, 10], [15, 20]],
   run: runMeetingRooms,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking list of intervals',
+      2: 'Sort intervals by start time',
+      4: 'Loop through consecutive meeting pairs',
+      5: 'If current meeting starts before previous ends',
+      6: 'Overlap found, cannot attend all meetings',
+      8: 'No overlaps, can attend all meetings',
+    },
+    javascript: {
+      1: 'Define function taking array of intervals',
+      2: 'Sort intervals by start time',
+      4: 'Loop through consecutive meeting pairs',
+      5: 'If current meeting starts before previous ends',
+      6: 'Overlap found, cannot attend all meetings',
+      9: 'No overlaps, can attend all meetings',
+    },
+    java: {
+      1: 'Define method taking 2D intervals array',
+      2: 'Sort intervals by start time',
+      3: 'Loop through consecutive meeting pairs',
+      4: 'If current meeting starts before previous ends',
+      5: 'Overlap found, cannot attend all meetings',
+      8: 'No overlaps, can attend all meetings',
+    },
+  },
 };

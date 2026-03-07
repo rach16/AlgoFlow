@@ -124,4 +124,28 @@ export const maxDepthBinaryTree: Algorithm = {
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runMaxDepthBinaryTree,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking tree root node',
+      2: 'Base case: null node has depth 0',
+      3: 'Return 0 for null node',
+      5: 'Recursively find depth of left subtree',
+      6: 'Recursively find depth of right subtree',
+      7: 'Depth is 1 plus the deeper subtree',
+    },
+    javascript: {
+      1: 'Define function taking tree root node',
+      2: 'Base case: null node returns depth 0',
+      4: 'Recursively find depth of left subtree',
+      5: 'Recursively find depth of right subtree',
+      6: 'Depth is 1 plus the deeper subtree',
+    },
+    java: {
+      1: 'Define method taking tree root node',
+      2: 'Base case: null node returns depth 0',
+      4: 'Recursively find depth of left subtree',
+      5: 'Recursively find depth of right subtree',
+      6: 'Depth is 1 plus the deeper subtree',
+    },
+  },
 };

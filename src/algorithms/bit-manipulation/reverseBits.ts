@@ -105,4 +105,32 @@ export const reverseBits: Algorithm = {
   },
   defaultInput: 43261596,
   run: runReverseBits,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking 32-bit integer n',
+      2: 'Initialize result to 0',
+      3: 'Loop through all 32 bits',
+      4: 'Extract the least significant bit of n',
+      5: 'Shift result left and add extracted bit',
+      6: 'Right-shift n to process next bit',
+      7: 'Return the reversed 32-bit integer',
+    },
+    javascript: {
+      1: 'Define function taking 32-bit integer n',
+      2: 'Initialize result to 0',
+      3: 'Loop through all 32 bits',
+      4: 'Extract the least significant bit of n',
+      5: 'Shift result left and add extracted bit',
+      6: 'Unsigned right-shift n to process next bit',
+      8: 'Return result as unsigned 32-bit integer',
+    },
+    java: {
+      1: 'Define method taking 32-bit integer n',
+      2: 'Initialize result to 0',
+      3: 'Loop through all 32 bits',
+      4: 'Shift result left and OR with LSB of n',
+      5: 'Right-shift n to process next bit',
+      7: 'Return the reversed 32-bit integer',
+    },
+  },
 };

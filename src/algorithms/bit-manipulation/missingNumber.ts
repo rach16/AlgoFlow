@@ -135,4 +135,30 @@ export const missingNumber: Algorithm = {
   },
   defaultInput: [3, 0, 1],
   run: runMissingNumber,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking array of numbers',
+      2: 'Start result with n (array length)',
+      3: 'Loop through each index in array',
+      4: 'XOR result with index to cancel paired values',
+      5: 'XOR result with nums[i] to cancel paired values',
+      6: 'Remaining value is the missing number',
+    },
+    javascript: {
+      1: 'Define function taking array of numbers',
+      2: 'Start result with n (array length)',
+      3: 'Loop through each index in array',
+      4: 'XOR result with index to cancel paired values',
+      5: 'XOR result with nums[i] to cancel paired values',
+      7: 'Remaining value is the missing number',
+    },
+    java: {
+      1: 'Define method taking array of numbers',
+      2: 'Start result with n (array length)',
+      3: 'Loop through each index in array',
+      4: 'XOR result with index to cancel paired values',
+      5: 'XOR result with nums[i] to cancel paired values',
+      7: 'Remaining value is the missing number',
+    },
+  },
 };

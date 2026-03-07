@@ -103,4 +103,30 @@ export const numberOf1Bits: Algorithm = {
   },
   defaultInput: 11,
   run: runNumberOf1Bits,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking integer n',
+      2: 'Initialize count of set bits to 0',
+      3: 'Loop while n has any set bits',
+      4: 'Clear lowest set bit using n & (n-1) trick',
+      5: 'Increment count for each cleared bit',
+      6: 'Return total number of 1-bits',
+    },
+    javascript: {
+      1: 'Define function taking integer n',
+      2: 'Initialize count of set bits to 0',
+      3: 'Loop while n has any set bits',
+      4: 'Clear lowest set bit using n & (n-1) trick',
+      5: 'Increment count for each cleared bit',
+      7: 'Return total number of 1-bits',
+    },
+    java: {
+      1: 'Define method taking integer n',
+      2: 'Initialize count of set bits to 0',
+      3: 'Loop while n has any set bits',
+      4: 'Clear lowest set bit using n & (n-1) trick',
+      5: 'Increment count for each cleared bit',
+      7: 'Return total number of 1-bits',
+    },
+  },
 };

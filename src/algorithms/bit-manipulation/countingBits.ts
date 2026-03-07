@@ -105,4 +105,27 @@ export const countingBits: Algorithm = {
   },
   defaultInput: 5,
   run: runCountingBits,
+  lineExplanations: {
+    python: {
+      1: 'Define function taking integer n',
+      2: 'Create DP array of size n+1, initialized to 0',
+      3: 'Loop from 1 to n inclusive',
+      4: 'Bits in i = bits in i/2 plus last bit of i',
+      5: 'Return array of bit counts',
+    },
+    javascript: {
+      1: 'Define function taking integer n',
+      2: 'Create DP array of size n+1, filled with 0',
+      3: 'Loop from 1 to n inclusive',
+      4: 'Bits in i = bits in i/2 plus last bit of i',
+      6: 'Return array of bit counts',
+    },
+    java: {
+      1: 'Define method taking integer n',
+      2: 'Create result array of size n+1',
+      3: 'Loop from 0 to n inclusive',
+      4: 'Bits in i = bits in i/2 plus last bit of i',
+      6: 'Return array of bit counts',
+    },
+  },
 };
