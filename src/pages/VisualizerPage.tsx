@@ -148,6 +148,12 @@ export function VisualizerPage() {
               {showCode ? 'Viz' : 'Code'}
             </button>
             <button
+              onClick={() => window.open(`/animate/${currentAlgorithm.id}`, '_blank')}
+              className="px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
+            >
+              Animate
+            </button>
+            <button
               onClick={() => toggleSolved(currentAlgorithm.id)}
               className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
                 solvedProblems.includes(currentAlgorithm.id)

@@ -58,3 +58,36 @@ body {
     transform: translateY(-20px);
   }
 }
+
+/* Animation page styles */
+.anim-page {
+  background: #0d0d0d;
+  color: #e5e5e5;
+  font-family: 'Courier New', monospace;
+}
+
+.anim-pulse-glow {
+  animation: pulseGlow 1s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(52, 211, 153, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.6);
+  }
+}
+
+.anim-flash {
+  animation: flash 0.4s ease-out;
+}
+
+@keyframes flash {
+  0% {
+    background-color: rgba(52, 211, 153, 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
