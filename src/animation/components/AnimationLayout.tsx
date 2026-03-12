@@ -73,10 +73,10 @@ export default function AnimationLayout({
             <div className="w-2 h-2 rounded-full bg-red-500/70" />
             <div className="w-2 h-2 rounded-full bg-yellow-500/70" />
             <div className="w-2 h-2 rounded-full bg-green-500/70" />
-            <span className="text-[10px] font-mono text-gray-600 ml-2">{config.title.toLowerCase().replace(/\s+/g, '_')}.py</span>
+            <span className="text-[10px] font-mono text-gray-600 ml-2">{config.title.replace(/\s+/g, '')}.java</span>
           </div>
           <div className="flex-1 overflow-auto py-2">
-            <AnimationCodeBlock code={config.codeSnippet} activeLine={currentStep.codeLine} />
+            <AnimationCodeBlock code={algorithm.code.java} activeLine={currentStep.codeLine} />
           </div>
         </div>
 

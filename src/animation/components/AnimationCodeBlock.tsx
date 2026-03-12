@@ -7,7 +7,7 @@ interface AnimationCodeBlockProps {
 
 export default function AnimationCodeBlock({ code, activeLine }: AnimationCodeBlockProps) {
   return (
-    <Highlight theme={themes.nightOwl} code={code.trim()} language="python">
+    <Highlight theme={themes.nightOwl} code={code.trim()} language="java">
       {({ tokens, getLineProps, getTokenProps }) => (
         <pre className="text-xs font-mono leading-relaxed overflow-auto">
           {tokens.map((line, i) => {
