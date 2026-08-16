@@ -121,6 +121,69 @@ function runCombinationSum(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCombinationSumDP(input: unknown): AlgorithmStep[] {
+  const { candidates, target } = input as { candidates: number[]; target: number };
+  const steps: AlgorithmStep[] = [];
+  const nums = [...candidates].sort((a, b) => a - b);
+
+  const dp: number[][][] = Array.from({ length: target + 1 }, () => []);
+  dp[0] = [[]];
+
+  steps.push({
+    state: { nums: [...nums], stack: [], hashMap: { target, 'dp[0]': '[[]]' }, result: [] },
+    highlights: [],
+    message: `Bottom-up DP: dp[t] stores every combination summing to t. Seed dp[0] = [[]] (one way to make 0: pick nothing)`,
+    codeLine: 4,
+  });
+
+  for (let ci = 0; ci < nums.length; ci++) {
+    const c = nums[ci];
+
+    steps.push({
+      state: { nums: [...nums], stack: [c], hashMap: { target, candidate: c }, result: dp[target].map((r) => `[${r.join(',')}]`) },
+      highlights: [ci],
+      message: `Process candidate ${c}: for every sub-target t from ${c} to ${target}, extend each dp[t - ${c}] combination with ${c}`,
+      codeLine: 6,
+      action: 'visit',
+    });
+
+    for (let t = c; t <= target; t++) {
+      if (dp[t - c].length === 0) continue;
+
+      const added = dp[t - c].map((combo) => [...combo, c]);
+      dp[t].push(...added);
+
+      steps.push({
+        state: {
+          nums: [...nums],
+          stack: [...added[added.length - 1]],
+          hashMap: { target, candidate: c, subTarget: t, from: `dp[${t - c}]` },
+          result: dp[target].map((r) => `[${r.join(',')}]`),
+        },
+        highlights: [ci],
+        message: `dp[${t}] += ${added.map((r) => `[${r.join(',')}]`).join(', ')} (each dp[${t - c}] combo + ${c})`,
+        codeLine: 9,
+        action: 'insert',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      stack: [],
+      hashMap: { target },
+      result: dp[target].map((r) => `[${r.join(',')}]`),
+    },
+    highlights: [],
+    message: `Done! dp[${target}] holds all ${dp[target].length} combination${dp[target].length !== 1 ? 's' : ''} — built from small targets up, no recursion. Iterating candidates in the outer loop keeps combos ordered (no duplicates)`,
+    codeLine: 11,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const combinationSum: Algorithm = {
   id: 'combination-sum',
   name: 'Combination Sum',
@@ -199,6 +262,101 @@ private static void backtrack(int start, List<Integer> current, int remaining, i
   },
   defaultInput: { candidates: [2, 3, 6, 7], target: 7 },
   run: runCombinationSum,
+  optimalApproachName: 'Backtracking with Pruning',
+  approaches: [
+    {
+      id: 'bottom-up-dp',
+      name: 'Bottom-Up DP',
+      timeComplexity: 'O(n·target·k)',
+      spaceComplexity: 'O(target·k)',
+      description:
+        'Instead of a recursive decision tree, build a table where dp[t] lists every combination summing to t, filling it from 0 up to target one candidate at a time (unbounded-knapsack style).',
+      code: {
+        python: `def combinationSum(candidates, target):
+    # dp[t] = list of combinations summing to t
+    dp = [[] for _ in range(target + 1)]
+    dp[0] = [[]]
+
+    for c in candidates:
+        for t in range(c, target + 1):
+            for combo in dp[t - c]:
+                dp[t].append(combo + [c])
+
+    return dp[target]`,
+        javascript: `function combinationSum(candidates, target) {
+    // dp[t] = list of combinations summing to t
+    const dp = Array.from({ length: target + 1 }, () => []);
+    dp[0] = [[]];
+
+    for (const c of candidates) {
+        for (let t = c; t <= target; t++) {
+            for (const combo of dp[t - c]) {
+                dp[t].push([...combo, c]);
+            }
+        }
+    }
+
+    return dp[target];
+}`,
+        java: `public static List<List<Integer>> combinationSum(int[] candidates, int target) {
+    // dp[t] = list of combinations summing to t
+    List<List<List<Integer>>> dp = new ArrayList<>();
+    for (int t = 0; t <= target; t++) dp.add(new ArrayList<>());
+    dp.get(0).add(new ArrayList<>());
+
+    for (int c : candidates) {
+        for (int t = c; t <= target; t++) {
+            for (List<Integer> combo : dp.get(t - c)) {
+                List<Integer> next = new ArrayList<>(combo);
+                next.add(c);
+                dp.get(t).add(next);
+            }
+        }
+    }
+    return dp.get(target);
+}`,
+      },
+      run: runCombinationSumDP,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking candidates and target',
+          2: 'The table maps each sub-target to its combinations',
+          3: 'One empty bucket per sub-target 0..target',
+          4: 'Base case: one way to make 0 — the empty combination',
+          6: 'Candidates in the outer loop → combos stay ordered, no duplicates',
+          7: 'Ascending t lets a candidate be reused (unbounded knapsack)',
+          8: 'Every combination that reaches t - c ...',
+          9: '... plus c is a combination that reaches t',
+          11: 'dp[target] is the full answer',
+        },
+        javascript: {
+          1: 'Define function taking candidates and target',
+          2: 'The table maps each sub-target to its combinations',
+          3: 'One empty bucket per sub-target 0..target',
+          4: 'Base case: one way to make 0 — the empty combination',
+          6: 'Candidates in the outer loop → combos stay ordered, no duplicates',
+          7: 'Ascending t lets a candidate be reused (unbounded knapsack)',
+          8: 'Every combination that reaches t - c ...',
+          9: '... plus c is a combination that reaches t',
+          14: 'dp[target] is the full answer',
+        },
+        java: {
+          1: 'Define method taking candidates and target',
+          2: 'The table maps each sub-target to its combinations',
+          3: 'Nested lists: dp[t] is a list of combinations',
+          4: 'One empty bucket per sub-target 0..target',
+          5: 'Base case: one way to make 0 — the empty combination',
+          7: 'Candidates in the outer loop → combos stay ordered, no duplicates',
+          8: 'Ascending t lets a candidate be reused (unbounded knapsack)',
+          9: 'Every combination that reaches t - c ...',
+          10: 'Copy the smaller combination',
+          11: 'Append candidate c to it',
+          12: '... giving a combination that reaches t',
+          16: 'dp[target] is the full answer',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking candidates and target',

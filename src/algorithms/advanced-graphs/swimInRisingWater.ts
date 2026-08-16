@@ -118,6 +118,141 @@ function runSwimInRisingWater(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSwimBinarySearchDFS(input: unknown): AlgorithmStep[] {
+  const grid = (input as number[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const n = grid.length;
+  const MAX_STEPS = 75;
+
+  const emit = (step: AlgorithmStep) => {
+    if (steps.length < MAX_STEPS) steps.push(step);
+  };
+
+  steps.push({
+    state: {
+      matrix: grid.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'Binary search on the answer t...',
+    },
+    highlights: [],
+    message: `Key insight: "can we cross at time t?" is monotonic — once true, it stays true. So binary search t and check each guess with a DFS.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  const canReach = (t: number): { ok: boolean; reached: [number, number][] } => {
+    const visited: boolean[][] = Array.from({ length: n }, () => Array(n).fill(false));
+    const reached: [number, number][] = [];
+    const dfs = (r: number, c: number): boolean => {
+      if (r < 0 || r >= n || c < 0 || c >= n) return false;
+      if (grid[r][c] > t || visited[r][c]) return false;
+      visited[r][c] = true;
+      reached.push([r, c]);
+      if (r === n - 1 && c === n - 1) return true;
+      for (const [dr, dc] of dirs) {
+        if (dfs(r + dr, c + dc)) return true;
+      }
+      return false;
+    };
+    return { ok: dfs(0, 0), reached };
+  };
+
+  let lo = grid[0][0];
+  let hi = n * n - 1;
+
+  emit({
+    state: {
+      matrix: grid.map(row => [...row]),
+      matrixHighlights: [[0, 0], [n - 1, n - 1]],
+      matrixSecondary: [],
+      result: `Search range: t in [${lo}, ${hi}]`,
+    },
+    highlights: [],
+    message: `Search range: lo = grid[0][0] = ${lo} (must at least cover the start), hi = n²-1 = ${hi} (largest possible elevation).`,
+    codeLine: 17,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+
+    emit({
+      state: {
+        matrix: grid.map(row => [...row]),
+        matrixHighlights: [],
+        matrixSecondary: [[0, 0]],
+        result: `Trying t = ${mid} (range [${lo}, ${hi}])`,
+      },
+      highlights: [],
+      message: `Guess mid = ${mid}: can we swim to the corner using only cells with elevation <= ${mid}?`,
+      codeLine: 19,
+      action: 'compare',
+    } as AlgorithmStep);
+
+    const { ok, reached } = canReach(mid);
+
+    emit({
+      state: {
+        matrix: grid.map(row => [...row]),
+        matrixHighlights: reached.map(p => [...p] as [number, number]),
+        matrixSecondary: ok ? [[n - 1, n - 1]] : [],
+        result: `t = ${mid}: ${ok ? 'reachable' : 'NOT reachable'}`,
+      },
+      highlights: [],
+      message: `DFS from (0,0) touched ${reached.length} cell(s) with elevation <= ${mid} — destination ${ok ? 'reached!' : 'not reachable.'}`,
+      codeLine: 15,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    if (ok) {
+      hi = mid;
+      emit({
+        state: {
+          matrix: grid.map(row => [...row]),
+          matrixHighlights: reached.map(p => [...p] as [number, number]),
+          matrixSecondary: [],
+          result: `Feasible — shrink range to [${lo}, ${hi}]`,
+        },
+        highlights: [],
+        message: `t = ${mid} works, but maybe a smaller t does too. Keep mid: hi = ${mid}.`,
+        codeLine: 21,
+        action: 'insert',
+      } as AlgorithmStep);
+    } else {
+      lo = mid + 1;
+      emit({
+        state: {
+          matrix: grid.map(row => [...row]),
+          matrixHighlights: reached.map(p => [...p] as [number, number]),
+          matrixSecondary: [],
+          result: `Infeasible — shrink range to [${lo}, ${hi}]`,
+        },
+        highlights: [],
+        message: `t = ${mid} is too shallow to cross. Search higher: lo = ${mid + 1}.`,
+        codeLine: 23,
+        action: 'delete',
+      } as AlgorithmStep);
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: grid.map(row => [...row]),
+      matrixHighlights: canReach(lo).reached.map(p => [...p] as [number, number]),
+      matrixSecondary: [[n - 1, n - 1]],
+      result: `Answer: ${lo}`,
+    },
+    highlights: [],
+    message: `Binary search converged: the minimum time to swim from (0,0) to (${n - 1},${n - 1}) is ${lo}.`,
+    codeLine: 24,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const swimInRisingWater: Algorithm = {
   id: 'swim-in-rising-water',
   name: 'Swim in Rising Water',
@@ -199,6 +334,158 @@ export const swimInRisingWater: Algorithm = {
     [1, 3],
   ],
   run: runSwimInRisingWater,
+  optimalApproachName: 'Dijkstra (Min-Heap)',
+  approaches: [
+    {
+      id: 'binary-search-dfs',
+      name: 'Binary Search + DFS',
+      timeComplexity: 'O(n² log n)',
+      spaceComplexity: 'O(n²)',
+      description:
+        'Rather than growing the cheapest path with a heap like Dijkstra, it binary-searches the answer t and runs a fresh DFS per guess to test "can we cross using only cells <= t?" — exploiting that feasibility is monotonic in t.',
+      code: {
+        python: `def swimInWater(grid):
+    n = len(grid)
+
+    def canReach(t):
+        visited = set()
+        def dfs(r, c):
+            if r < 0 or r >= n or c < 0 or c >= n:
+                return False
+            if grid[r][c] > t or (r, c) in visited:
+                return False
+            visited.add((r, c))
+            if r == n - 1 and c == n - 1:
+                return True
+            return dfs(r+1, c) or dfs(r-1, c) or dfs(r, c+1) or dfs(r, c-1)
+        return dfs(0, 0)
+
+    lo, hi = grid[0][0], n * n - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if canReach(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo`,
+        javascript: `function swimInWater(grid) {
+    const n = grid.length;
+
+    function canReach(t) {
+        const visited = new Set();
+        function dfs(r, c) {
+            if (r < 0 || r >= n || c < 0 || c >= n) return false;
+            if (grid[r][c] > t || visited.has(r + "," + c)) return false;
+            visited.add(r + "," + c);
+            if (r === n - 1 && c === n - 1) return true;
+            return dfs(r+1, c) || dfs(r-1, c) || dfs(r, c+1) || dfs(r, c-1);
+        }
+        return dfs(0, 0);
+    }
+
+    let lo = grid[0][0], hi = n * n - 1;
+    while (lo < hi) {
+        const mid = Math.floor((lo + hi) / 2);
+        if (canReach(mid)) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}`,
+        java: `public int swimInWater(int[][] grid) {
+    int n = grid.length;
+    int lo = grid[0][0], hi = n * n - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (canReach(grid, mid, 0, 0, new boolean[n][n])) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+private boolean canReach(int[][] grid, int t, int r, int c, boolean[][] visited) {
+    int n = grid.length;
+    if (r < 0 || r >= n || c < 0 || c >= n) return false;
+    if (grid[r][c] > t || visited[r][c]) return false;
+    visited[r][c] = true;
+    if (r == n - 1 && c == n - 1) return true;
+    return canReach(grid, t, r + 1, c, visited)
+        || canReach(grid, t, r - 1, c, visited)
+        || canReach(grid, t, r, c + 1, visited)
+        || canReach(grid, t, r, c - 1, visited);
+}`,
+      },
+      run: runSwimBinarySearchDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking elevation grid',
+          2: 'Get grid side length',
+          4: 'Feasibility check: crossable at time t?',
+          5: 'Track visited cells for this DFS',
+          6: 'DFS flood-fill through cells <= t',
+          7: 'Out of bounds?',
+          8: 'Blocked: outside the grid',
+          9: 'Cell too high for time t, or already seen?',
+          10: 'Blocked: water not deep enough here',
+          11: 'Mark cell reachable at time t',
+          12: 'Reached bottom-right corner?',
+          13: 'Feasible — a path exists at time t',
+          14: 'Try all 4 neighbors; any success bubbles up',
+          15: 'Start the flood-fill from (0,0)',
+          17: 'Answer lies between start elevation and n²-1',
+          18: 'Standard binary search on the answer',
+          19: 'Guess the midpoint time',
+          20: 'Is the grid crossable at time mid?',
+          21: 'Yes — try smaller times (keep mid)',
+          22: 'No —',
+          23: 'the water must rise more: search above mid',
+          24: 'lo == hi: the minimum feasible time',
+        },
+        javascript: {
+          1: 'Define function taking elevation grid',
+          2: 'Get grid side length',
+          4: 'Feasibility check: crossable at time t?',
+          5: 'Track visited cells for this DFS',
+          6: 'DFS flood-fill through cells <= t',
+          7: 'Blocked: outside the grid',
+          8: 'Blocked: cell too high for t, or already seen',
+          9: 'Mark cell reachable at time t',
+          10: 'Feasible if we reached bottom-right corner',
+          11: 'Try all 4 neighbors; any success bubbles up',
+          13: 'Start the flood-fill from (0,0)',
+          16: 'Answer lies between start elevation and n²-1',
+          17: 'Standard binary search on the answer',
+          18: 'Guess the midpoint time',
+          19: 'Feasible — try smaller times (keep mid)',
+          20: 'Infeasible — search above mid',
+          22: 'lo == hi: the minimum feasible time',
+        },
+        java: {
+          1: 'Define method taking elevation grid',
+          2: 'Get grid side length',
+          3: 'Answer lies between start elevation and n²-1',
+          4: 'Standard binary search on the answer',
+          5: 'Guess the midpoint time',
+          6: 'Is the grid crossable at time mid?',
+          7: 'Feasible — try smaller times (keep mid)',
+          9: 'Infeasible — search above mid',
+          12: 'lo == hi: the minimum feasible time',
+          15: 'DFS feasibility check: crossable at time t?',
+          16: 'Get grid side length',
+          17: 'Blocked: outside the grid',
+          18: 'Blocked: cell too high for t, or already seen',
+          19: 'Mark cell reachable at time t',
+          20: 'Feasible if we reached bottom-right corner',
+          21: 'Try all 4 neighbors...',
+          22: '...up...',
+          23: '...right...',
+          24: '...and left; any success bubbles up',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking elevation grid',

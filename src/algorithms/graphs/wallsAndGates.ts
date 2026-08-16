@@ -117,6 +117,99 @@ function runWallsAndGates(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runWallsAndGatesDFS(input: unknown): AlgorithmStep[] {
+  const grid = (input as number[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const rows = grid.length;
+  const cols = grid[0].length;
+
+  function displayMatrix() {
+    return grid.map(row => row.map(v => cellDisplay(v)));
+  }
+
+  steps.push({
+    state: {
+      matrix: displayMatrix(),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'INF = empty room, W = wall, 0 = gate',
+    },
+    highlights: [],
+    message: 'DFS from each gate one at a time, carrying the distance. The pruning rule "stop if the cell already holds a smaller-or-equal distance" keeps later gates from redoing earlier work.',
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  let currentGate: [number, number] = [0, 0];
+
+  function dfs(r: number, c: number, dist: number) {
+    if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+    if (grid[r][c] < dist) return; // wall (-1), gate (0), or already closer
+
+    const oldVal = grid[r][c];
+    grid[r][c] = dist;
+
+    if (dist > 0 && oldVal > dist) {
+      steps.push({
+        state: {
+          matrix: displayMatrix(),
+          matrixHighlights: [[r, c]],
+          matrixSecondary: [currentGate],
+          result: `(${r}, ${c}): ${cellDisplay(oldVal)} -> ${dist}`,
+        },
+        highlights: [],
+        message: oldVal === INF
+          ? `Room (${r}, ${c}) is ${dist} step(s) from gate (${currentGate[0]}, ${currentGate[1]}). Write ${dist} and keep going deeper.`
+          : `Room (${r}, ${c}) was ${oldVal} via an earlier gate, but gate (${currentGate[0]}, ${currentGate[1]}) is closer: overwrite with ${dist}.`,
+        codeLine: 8,
+        action: 'insert',
+      } as AlgorithmStep);
+    }
+
+    dfs(r + 1, c, dist + 1);
+    dfs(r - 1, c, dist + 1);
+    dfs(r, c + 1, dist + 1);
+    dfs(r, c - 1, dist + 1);
+  }
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] === 0) {
+        currentGate = [r, c];
+
+        steps.push({
+          state: {
+            matrix: displayMatrix(),
+            matrixHighlights: [[r, c]],
+            matrixSecondary: [],
+            result: `Gate found at (${r}, ${c})`,
+          },
+          highlights: [],
+          message: `Gate at (${r}, ${c}): launch a DFS with distance 0. It will flood outward, but only into cells it can improve.`,
+          codeLine: 17,
+          action: 'visit',
+        } as AlgorithmStep);
+
+        dfs(r, c, 0);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: displayMatrix(),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'All rooms filled with shortest distance to nearest gate',
+    },
+    highlights: [],
+    message: 'Done! Every reachable room holds its nearest-gate distance. Unlike BFS, some rooms were written more than once — the pruning check is what guarantees the final values are minimal.',
+    codeLine: 17,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const wallsAndGates: Algorithm = {
   id: 'walls-and-gates',
   name: 'Walls and Gates',
@@ -211,6 +304,129 @@ export const wallsAndGates: Algorithm = {
     [0, -1, INF, INF],
   ],
   run: runWallsAndGates,
+  optimalApproachName: 'Multi-source BFS',
+  approaches: [
+    {
+      id: 'dfs-per-gate',
+      name: 'DFS per Gate',
+      timeComplexity: 'O(m·n·g)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Runs a pruned DFS from each gate separately instead of one simultaneous BFS: a cell is only entered if the new distance improves it, so later gates overwrite earlier ones where they are closer.',
+      code: {
+        python: `def wallsAndGates(rooms):
+    rows, cols = len(rooms), len(rooms[0])
+
+    def dfs(r, c, dist):
+        if (r < 0 or r >= rows or c < 0 or c >= cols
+                or rooms[r][c] < dist):
+            return
+        rooms[r][c] = dist
+        dfs(r+1, c, dist + 1)
+        dfs(r-1, c, dist + 1)
+        dfs(r, c+1, dist + 1)
+        dfs(r, c-1, dist + 1)
+
+    for r in range(rows):
+        for c in range(cols):
+            if rooms[r][c] == 0:
+                dfs(r, c, 0)`,
+        javascript: `function wallsAndGates(rooms) {
+    const rows = rooms.length, cols = rooms[0].length;
+
+    function dfs(r, c, dist) {
+        if (r < 0 || r >= rows || c < 0 || c >= cols ||
+            rooms[r][c] < dist)
+            return;
+        rooms[r][c] = dist;
+        dfs(r+1, c, dist + 1);
+        dfs(r-1, c, dist + 1);
+        dfs(r, c+1, dist + 1);
+        dfs(r, c-1, dist + 1);
+    }
+
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+            if (rooms[r][c] === 0)
+                dfs(r, c, 0);
+}`,
+        java: `public void wallsAndGates(int[][] rooms) {
+    for (int r = 0; r < rooms.length; r++) {
+        for (int c = 0; c < rooms[0].length; c++) {
+            if (rooms[r][c] == 0) {
+                dfs(rooms, r, c, 0);
+            }
+        }
+    }
+}
+
+private void dfs(int[][] rooms, int r, int c, int dist) {
+    if (r < 0 || r >= rooms.length || c < 0 || c >= rooms[0].length
+            || rooms[r][c] < dist) {
+        return;
+    }
+    rooms[r][c] = dist;
+    dfs(rooms, r + 1, c, dist + 1);
+    dfs(rooms, r - 1, c, dist + 1);
+    dfs(rooms, r, c + 1, dist + 1);
+    dfs(rooms, r, c - 1, dist + 1);
+}`,
+      },
+      run: runWallsAndGatesDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking rooms grid in-place',
+          2: 'Get grid dimensions',
+          4: 'DFS carries the distance from the current gate',
+          5: 'Stop when out of bounds...',
+          6: '...or the cell already holds a smaller-or-equal value (walls are -1, so they always prune)',
+          7: 'Prune: this path cannot improve anything here',
+          8: 'Record the better (or first) distance',
+          9: 'Recurse down with distance + 1',
+          10: 'Recurse up with distance + 1',
+          11: 'Recurse right with distance + 1',
+          12: 'Recurse left with distance + 1',
+          14: 'Scan every row...',
+          15: '...and every column for gates',
+          16: 'A gate has value 0',
+          17: 'Flood outward from this gate with distance 0',
+        },
+        javascript: {
+          1: 'Define function taking rooms grid in-place',
+          2: 'Get grid dimensions',
+          4: 'DFS carries the distance from the current gate',
+          5: 'Stop when out of bounds...',
+          6: '...or the cell already holds a smaller-or-equal value (walls are -1, so they always prune)',
+          7: 'Prune: this path cannot improve anything here',
+          8: 'Record the better (or first) distance',
+          9: 'Recurse down with distance + 1',
+          10: 'Recurse up with distance + 1',
+          11: 'Recurse right with distance + 1',
+          12: 'Recurse left with distance + 1',
+          15: 'Scan every row...',
+          16: '...and every column for gates',
+          17: 'A gate has value 0',
+          18: 'Flood outward from this gate with distance 0',
+        },
+        java: {
+          1: 'Define method taking rooms grid in-place',
+          2: 'Scan every row...',
+          3: '...and every column for gates',
+          4: 'A gate has value 0',
+          5: 'Flood outward from this gate with distance 0',
+          11: 'DFS carries the distance from the current gate',
+          12: 'Stop when out of bounds...',
+          13: '...or the cell already holds a smaller-or-equal value (walls are -1, so they always prune)',
+          14: 'Prune: this path cannot improve anything here',
+          16: 'Record the better (or first) distance',
+          17: 'Recurse down with distance + 1',
+          18: 'Recurse up with distance + 1',
+          19: 'Recurse right with distance + 1',
+          20: 'Recurse left with distance + 1',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking rooms grid in-place',

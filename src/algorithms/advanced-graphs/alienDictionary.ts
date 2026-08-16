@@ -198,6 +198,187 @@ function runAlienDictionary(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runAlienDictionaryDFS(input: unknown): AlgorithmStep[] {
+  const words = input as string[];
+  const steps: AlgorithmStep[] = [];
+  const MAX_STEPS = 75;
+
+  const emit = (step: AlgorithmStep) => {
+    if (steps.length < MAX_STEPS) steps.push(step);
+  };
+
+  const allChars = new Set<string>();
+  for (const word of words) {
+    for (const ch of word) allChars.add(ch);
+  }
+  const charList = Array.from(allChars);
+
+  const adj: Record<string, Set<string>> = {};
+  for (const ch of charList) adj[ch] = new Set();
+
+  steps.push({
+    state: {
+      graph: { nodes: charList, edges: [] },
+      graphDirected: true,
+      graphHighlights: [],
+      graphVisitedEdges: [],
+      chars: [...words],
+      result: 'Building character ordering graph...',
+    },
+    highlights: [],
+    message: `DFS topological sort: build the ordering graph, then post-order DFS — a character is appended only after everything that comes AFTER it.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const graphEdges: { from: string; to: string }[] = [];
+  let invalid = false;
+
+  for (let i = 0; i < words.length - 1; i++) {
+    const w1 = words[i];
+    const w2 = words[i + 1];
+    const minLen = Math.min(w1.length, w2.length);
+
+    if (w1.length > w2.length && w1.startsWith(w2)) {
+      invalid = true;
+      emit({
+        state: {
+          graph: { nodes: charList, edges: graphEdges.map(e => ({ ...e })) },
+          graphDirected: true,
+          graphHighlights: [],
+          graphVisitedEdges: [],
+          chars: [...words],
+          result: 'Result: "" (invalid)',
+        },
+        highlights: [i, i + 1],
+        message: `"${w1}" comes before "${w2}" but "${w2}" is its prefix — impossible in any dictionary. Return "".`,
+        codeLine: 8,
+        action: 'compare',
+      } as AlgorithmStep);
+      break;
+    }
+
+    for (let j = 0; j < minLen; j++) {
+      if (w1[j] !== w2[j]) {
+        if (!adj[w1[j]].has(w2[j])) {
+          adj[w1[j]].add(w2[j]);
+          graphEdges.push({ from: w1[j], to: w2[j] });
+
+          emit({
+            state: {
+              graph: { nodes: charList, edges: graphEdges.map(e => ({ ...e })) },
+              graphDirected: true,
+              graphHighlights: [w1[j], w2[j]],
+              graphVisitedEdges: [{ from: w1[j], to: w2[j] }],
+              chars: [...words],
+              result: `Edge: ${w1[j]} -> ${w2[j]}`,
+            },
+            highlights: [i, i + 1],
+            message: `"${w1}" vs "${w2}": first difference '${w1[j]}' != '${w2[j]}' proves '${w1[j]}' < '${w2[j]}'. Add edge ${w1[j]} -> ${w2[j]}.`,
+            codeLine: 11,
+            action: 'insert',
+          } as AlgorithmStep);
+        }
+        break;
+      }
+    }
+  }
+
+  if (invalid) return steps;
+
+  const graph = { nodes: charList, edges: graphEdges.map(e => ({ ...e })) };
+  // visited[c] === true: in current DFS path; false: fully processed
+  const visited: Record<string, boolean> = {};
+  const order: string[] = [];
+  const visitedEdgesViz: { from: string; to: string }[] = [];
+  let cycle = false;
+
+  const dfs = (c: string): boolean => {
+    if (c in visited) return visited[c];
+    visited[c] = true;
+
+    emit({
+      state: {
+        graph,
+        graphDirected: true,
+        graphHighlights: [c],
+        graphVisitedEdges: visitedEdgesViz.map(e => ({ ...e })),
+        chars: [...words],
+        result: `Post-order so far: [${order.join(', ')}]`,
+      },
+      highlights: [],
+      message: `DFS enters '${c}' — mark it as "on the current path" and explore every character that must come after it.`,
+      codeLine: 20,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    for (const nei of Array.from(adj[c]).sort()) {
+      visitedEdgesViz.push({ from: c, to: nei });
+      if (dfs(nei)) return true;
+    }
+
+    visited[c] = false;
+    order.push(c);
+
+    emit({
+      state: {
+        graph,
+        graphDirected: true,
+        graphHighlights: [c],
+        graphVisitedEdges: visitedEdgesViz.map(e => ({ ...e })),
+        chars: [...words],
+        result: `Post-order so far: [${order.join(', ')}]`,
+      },
+      highlights: [],
+      message: `All characters after '${c}' are placed — append '${c}' post-order. It will sit BEFORE them once we reverse.`,
+      codeLine: 25,
+      action: 'insert',
+    } as AlgorithmStep);
+
+    return false;
+  };
+
+  for (const c of charList) {
+    if (dfs(c)) {
+      cycle = true;
+      emit({
+        state: {
+          graph,
+          graphDirected: true,
+          graphHighlights: [c],
+          graphVisitedEdges: visitedEdgesViz.map(e => ({ ...e })),
+          chars: [...words],
+          result: 'Result: "" (cycle detected)',
+        },
+        highlights: [],
+        message: `DFS re-entered '${c}' while it was still on the path — a cycle! No valid ordering exists. Return "".`,
+        codeLine: 23,
+        action: 'compare',
+      } as AlgorithmStep);
+      break;
+    }
+  }
+
+  const result = cycle ? '' : [...order].reverse().join('');
+
+  steps.push({
+    state: {
+      graph,
+      graphDirected: true,
+      graphHighlights: [],
+      graphVisitedEdges: visitedEdgesViz.map(e => ({ ...e })),
+      result: cycle ? 'Result: "" (cycle detected)' : `Alien alphabet: "${result}"`,
+    },
+    highlights: [],
+    message: cycle
+      ? 'Cycle detected — return the empty string.'
+      : `Reverse the post-order list to get the alien alphabet: "${result}".`,
+    codeLine: 33,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const alienDictionary: Algorithm = {
   id: 'alien-dictionary',
   name: 'Alien Dictionary',
@@ -315,6 +496,214 @@ export const alienDictionary: Algorithm = {
   },
   defaultInput: ['wrt', 'wrf', 'er', 'ett', 'rftt'],
   run: runAlienDictionary,
+  optimalApproachName: "Kahn's BFS Topological Sort",
+  approaches: [
+    {
+      id: 'dfs-topological-sort',
+      name: 'DFS Post-Order',
+      timeComplexity: 'O(C)',
+      spaceComplexity: 'O(V+E)',
+      description:
+        "Where Kahn's BFS peels off zero in-degree characters level by level, DFS dives deep and appends each character post-order (after all its successors), then reverses — cycles are caught by re-entering a node still on the path.",
+      code: {
+        python: `def alienOrder(words):
+    adj = {c: set() for w in words for c in w}
+
+    for i in range(len(words) - 1):
+        w1, w2 = words[i], words[i + 1]
+        minLen = min(len(w1), len(w2))
+        if len(w1) > len(w2) and w1[:minLen] == w2[:minLen]:
+            return ""
+        for j in range(minLen):
+            if w1[j] != w2[j]:
+                adj[w1[j]].add(w2[j])
+                break
+
+    visited = {}
+    result = []
+
+    def dfs(c):
+        if c in visited:
+            return visited[c]
+        visited[c] = True
+        for nei in adj[c]:
+            if dfs(nei):
+                return True
+        visited[c] = False
+        result.append(c)
+        return False
+
+    for c in adj:
+        if dfs(c):
+            return ""
+
+    result.reverse()
+    return "".join(result)`,
+        javascript: `function alienOrder(words) {
+    const adj = {};
+    for (const w of words)
+        for (const c of w) adj[c] = adj[c] || new Set();
+
+    for (let i = 0; i < words.length - 1; i++) {
+        const [w1, w2] = [words[i], words[i + 1]];
+        const minLen = Math.min(w1.length, w2.length);
+        if (w1.length > w2.length && w1.startsWith(w2)) return "";
+        for (let j = 0; j < minLen; j++) {
+            if (w1[j] !== w2[j]) {
+                adj[w1[j]].add(w2[j]);
+                break;
+            }
+        }
+    }
+
+    const visited = {};
+    const result = [];
+
+    function dfs(c) {
+        if (c in visited) return visited[c];
+        visited[c] = true;
+        for (const nei of adj[c]) {
+            if (dfs(nei)) return true;
+        }
+        visited[c] = false;
+        result.push(c);
+        return false;
+    }
+
+    for (const c of Object.keys(adj)) {
+        if (dfs(c)) return "";
+    }
+
+    return result.reverse().join("");
+}`,
+        java: `public String alienOrder(String[] words) {
+    Map<Character, Set<Character>> adj = new HashMap<>();
+    for (String w : words)
+        for (char c : w.toCharArray()) adj.putIfAbsent(c, new HashSet<>());
+
+    for (int i = 0; i < words.length - 1; i++) {
+        String w1 = words[i], w2 = words[i + 1];
+        int minLen = Math.min(w1.length(), w2.length());
+        if (w1.length() > w2.length() && w1.startsWith(w2)) return "";
+        for (int j = 0; j < minLen; j++) {
+            if (w1.charAt(j) != w2.charAt(j)) {
+                adj.get(w1.charAt(j)).add(w2.charAt(j));
+                break;
+            }
+        }
+    }
+
+    Map<Character, Boolean> visited = new HashMap<>();
+    StringBuilder result = new StringBuilder();
+
+    for (char c : adj.keySet()) {
+        if (dfs(c, adj, visited, result)) return "";
+    }
+
+    return result.reverse().toString();
+}
+
+private boolean dfs(char c, Map<Character, Set<Character>> adj,
+                    Map<Character, Boolean> visited, StringBuilder result) {
+    if (visited.containsKey(c)) return visited.get(c);
+    visited.put(c, true);
+    for (char nei : adj.get(c)) {
+        if (dfs(nei, adj, visited, result)) return true;
+    }
+    visited.put(c, false);
+    result.append(c);
+    return false;
+}`,
+      },
+      run: runAlienDictionaryDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking sorted word list',
+          2: 'Adjacency set for each unique character',
+          4: 'Compare adjacent word pairs',
+          5: 'Get the two adjacent words',
+          6: 'Only compare up to the shorter length',
+          7: 'Invalid: longer word before its own prefix',
+          8: 'No valid ordering — return empty string',
+          9: 'Scan for the first differing position',
+          10: 'Found the first difference',
+          11: "Edge: w1's char comes before w2's char",
+          12: 'Only the first difference carries information',
+          14: 'True = on current DFS path, False = done',
+          15: 'Characters collected in post-order',
+          17: 'DFS returns True if it finds a cycle',
+          18: 'Already seen this character?',
+          19: 'True (on path) = cycle; False (done) = safe',
+          20: 'Mark as on the current path',
+          21: 'Visit every character that must come after c',
+          22: 'Propagate any cycle upward',
+          23: 'Cycle found deeper in — abort',
+          24: 'Done: safely off the path',
+          25: 'Post-order: appended after all successors',
+          26: 'No cycle through this character',
+          28: 'Run DFS from every character',
+          29: 'Any cycle invalidates the whole ordering',
+          30: 'Return empty string on cycle',
+          32: 'Reverse post-order = topological order',
+          33: 'Join characters into the alien alphabet',
+        },
+        javascript: {
+          1: 'Define function taking sorted word list',
+          2: 'Adjacency map of character sets',
+          3: 'Scan every word',
+          4: 'Create a set for each unique character',
+          6: 'Compare adjacent word pairs',
+          7: 'Get the two adjacent words',
+          8: 'Only compare up to the shorter length',
+          9: 'Invalid: longer word before its own prefix — return ""',
+          10: 'Scan for the first differing position',
+          11: 'Found the first difference',
+          12: "Edge: w1's char comes before w2's char",
+          13: 'Only the first difference carries information',
+          18: 'true = on current DFS path, false = done',
+          19: 'Characters collected in post-order',
+          21: 'DFS returns true if it finds a cycle',
+          22: 'On path = cycle; done = safe to skip',
+          23: 'Mark as on the current path',
+          24: 'Visit every character that must come after c',
+          25: 'Propagate any cycle upward',
+          27: 'Done: safely off the path',
+          28: 'Post-order: appended after all successors',
+          29: 'No cycle through this character',
+          32: 'Run DFS from every character',
+          33: 'Any cycle invalidates the ordering — return ""',
+          36: 'Reverse post-order = the alien alphabet',
+        },
+        java: {
+          1: 'Define method taking sorted word array',
+          2: 'Adjacency map of character sets',
+          3: 'Scan every word',
+          4: 'Create a set for each unique character',
+          6: 'Compare adjacent word pairs',
+          7: 'Get the two adjacent words',
+          8: 'Only compare up to the shorter length',
+          9: 'Invalid: longer word before its own prefix — return ""',
+          10: 'Scan for the first differing position',
+          11: 'Found the first difference',
+          12: "Edge: w1's char comes before w2's char",
+          13: 'Only the first difference carries information',
+          18: 'true = on current DFS path, false = done',
+          19: 'Characters collected in post-order',
+          21: 'Run DFS from every character',
+          22: 'Any cycle invalidates the ordering — return ""',
+          25: 'Reverse post-order = the alien alphabet',
+          28: 'DFS returns true if it finds a cycle',
+          30: 'On path = cycle; done = safe to skip',
+          31: 'Mark as on the current path',
+          32: 'Visit every character that must come after c',
+          33: 'Propagate any cycle upward',
+          35: 'Done: safely off the path',
+          36: 'Post-order: appended after all successors',
+          37: 'No cycle through this character',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking sorted word list',

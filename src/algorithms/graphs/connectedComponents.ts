@@ -150,6 +150,128 @@ function runConnectedComponents(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runConnectedComponentsDFS(input: unknown): AlgorithmStep[] {
+  const { n, edges } = input as { n: number; edges: number[][] };
+  const steps: AlgorithmStep[] = [];
+
+  // Build adjacency list
+  const adj: number[][] = Array.from({ length: n }, () => []);
+  for (const [a, b] of edges) {
+    adj[a].push(b);
+    adj[b].push(a);
+  }
+
+  function buildGraphState(
+    highlights: number[] = [],
+    secondary: number[] = [],
+    visitedEdges: [number, number][] = []
+  ) {
+    const nodes = [];
+    for (let i = 0; i < n; i++) {
+      nodes.push({ id: i, label: `${i}` });
+    }
+    const graphEdges = edges.map(([a, b]) => ({ from: a, to: b }));
+    return {
+      graph: { nodes, edges: graphEdges },
+      graphHighlights: highlights,
+      graphSecondary: secondary,
+      graphVisitedEdges: visitedEdges,
+      graphDirected: false,
+    };
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      result: 'Components: 0',
+    },
+    highlights: [],
+    message: `DFS approach: scan nodes 0..${n - 1}. Each time we hit a node no DFS has reached yet, that's a brand-new component — flood it entirely before moving on.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const visited = new Array(n).fill(false);
+  const visitedEdges: [number, number][] = [];
+  let components = 0;
+
+  function dfs(node: number, componentMembers: number[]) {
+    visited[node] = true;
+    componentMembers.push(node);
+
+    steps.push({
+      state: {
+        ...buildGraphState([...componentMembers], [], visitedEdges),
+        result: `Components: ${components}`,
+      },
+      highlights: [],
+      message: `DFS visits node ${node} — it joins component #${components}. Neighbors to try: [${adj[node].join(', ')}]`,
+      codeLine: 10,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    for (const nei of adj[node]) {
+      if (!visited[nei]) {
+        visitedEdges.push([node, nei]);
+        dfs(nei, componentMembers);
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    if (!visited[i]) {
+      components++;
+
+      steps.push({
+        state: {
+          ...buildGraphState([], [i], visitedEdges),
+          result: `Components: ${components}`,
+        },
+        highlights: [],
+        message: `Node ${i} is unvisited — no previous DFS reached it, so it starts component #${components}.`,
+        codeLine: 18,
+        action: 'found',
+      } as AlgorithmStep);
+
+      const componentMembers: number[] = [];
+      dfs(i, componentMembers);
+
+      steps.push({
+        state: {
+          ...buildGraphState([...componentMembers], [], visitedEdges),
+          result: `Components: ${components}`,
+        },
+        highlights: [],
+        message: `Component #${components} fully explored: nodes [${componentMembers.join(', ')}].`,
+        codeLine: 19,
+      } as AlgorithmStep);
+    } else {
+      steps.push({
+        state: {
+          ...buildGraphState([], [i], visitedEdges),
+          result: `Components: ${components}`,
+        },
+        highlights: [],
+        message: `Node ${i} was already reached by an earlier DFS — it belongs to an existing component. Skip.`,
+        codeLine: 17,
+        action: 'compare',
+      } as AlgorithmStep);
+    }
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      result: `Total connected components: ${components}`,
+    },
+    highlights: [],
+    message: `Done! ${components} DFS launches were needed to cover every node, so there are ${components} connected component(s).`,
+    codeLine: 20,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const connectedComponents: Algorithm = {
   id: 'connected-components',
   name: 'Number of Connected Components',
@@ -259,6 +381,148 @@ private boolean union(int a, int b, int[] parent, int[] rank) {
   },
   defaultInput: { n: 5, edges: [[0, 1], [1, 2], [3, 4]] },
   run: runConnectedComponents,
+  optimalApproachName: 'Union-Find',
+  approaches: [
+    {
+      id: 'dfs-traversal',
+      name: 'DFS Traversal',
+      timeComplexity: 'O(V+E)',
+      spaceComplexity: 'O(V+E)',
+      description:
+        'Builds an adjacency list and flood-fills with DFS: every node that no previous DFS reached starts a new component — no parent/rank bookkeeping needed.',
+      code: {
+        python: `def countComponents(n, edges):
+    adj = {i: [] for i in range(n)}
+    for a, b in edges:
+        adj[a].append(b)
+        adj[b].append(a)
+
+    visited = set()
+
+    def dfs(node):
+        visited.add(node)
+        for nei in adj[node]:
+            if nei not in visited:
+                dfs(nei)
+
+    components = 0
+    for i in range(n):
+        if i not in visited:
+            components += 1
+            dfs(i)
+    return components`,
+        javascript: `function countComponents(n, edges) {
+    const adj = Array.from({length: n}, () => []);
+    for (const [a, b] of edges) {
+        adj[a].push(b);
+        adj[b].push(a);
+    }
+
+    const visited = new Set();
+
+    function dfs(node) {
+        visited.add(node);
+        for (const nei of adj[node]) {
+            if (!visited.has(nei)) dfs(nei);
+        }
+    }
+
+    let components = 0;
+    for (let i = 0; i < n; i++) {
+        if (!visited.has(i)) {
+            components++;
+            dfs(i);
+        }
+    }
+    return components;
+}`,
+        java: `public int countComponents(int n, int[][] edges) {
+    List<List<Integer>> adj = new ArrayList<>();
+    for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+    for (int[] e : edges) {
+        adj.get(e[0]).add(e[1]);
+        adj.get(e[1]).add(e[0]);
+    }
+
+    boolean[] visited = new boolean[n];
+    int components = 0;
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            components++;
+            dfs(i, adj, visited);
+        }
+    }
+    return components;
+}
+
+private void dfs(int node, List<List<Integer>> adj, boolean[] visited) {
+    visited[node] = true;
+    for (int nei : adj.get(node)) {
+        if (!visited[nei]) dfs(nei, adj, visited);
+    }
+}`,
+      },
+      run: runConnectedComponentsDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function with node count and edges',
+          2: 'Create an empty adjacency list per node',
+          3: 'Process each undirected edge',
+          4: 'Record b as a neighbor of a',
+          5: 'Record a as a neighbor of b',
+          7: 'Track which nodes any DFS has reached',
+          9: 'Define DFS flood-fill helper',
+          10: 'Mark the current node as visited',
+          11: 'Walk each neighbor',
+          12: 'Only recurse into unvisited neighbors',
+          13: 'DFS spreads through the whole component',
+          15: 'No components found yet',
+          16: 'Scan every node in order',
+          17: 'Unvisited node = start of a new component',
+          18: 'Count the new component',
+          19: 'Flood-fill it so its nodes are never recounted',
+          20: 'Number of DFS launches = number of components',
+        },
+        javascript: {
+          1: 'Define function with node count and edges',
+          2: 'Create an empty adjacency list per node',
+          3: 'Process each undirected edge',
+          4: 'Record b as a neighbor of a',
+          5: 'Record a as a neighbor of b',
+          8: 'Track which nodes any DFS has reached',
+          10: 'Define DFS flood-fill helper',
+          11: 'Mark the current node as visited',
+          12: 'Walk each neighbor',
+          13: 'Only recurse into unvisited neighbors',
+          17: 'No components found yet',
+          18: 'Scan every node in order',
+          19: 'Unvisited node = start of a new component',
+          20: 'Count the new component',
+          21: 'Flood-fill it so its nodes are never recounted',
+          24: 'Number of DFS launches = number of components',
+        },
+        java: {
+          1: 'Define method with node count and edges',
+          2: 'Create adjacency list container',
+          3: 'Add an empty neighbor list per node',
+          4: 'Process each undirected edge',
+          5: 'Record e[1] as a neighbor of e[0]',
+          6: 'Record e[0] as a neighbor of e[1]',
+          9: 'Track which nodes any DFS has reached',
+          10: 'No components found yet',
+          11: 'Scan every node in order',
+          12: 'Unvisited node = start of a new component',
+          13: 'Count the new component',
+          14: 'Flood-fill it so its nodes are never recounted',
+          17: 'Number of DFS launches = number of components',
+          20: 'Define DFS flood-fill helper',
+          21: 'Mark the current node as visited',
+          22: 'Walk each neighbor',
+          23: 'Only recurse into unvisited neighbors',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with node count and edges',

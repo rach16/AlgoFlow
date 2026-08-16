@@ -94,6 +94,88 @@ function runLongestIncreasingSubsequence(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLISBinarySearch(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+
+  if (n === 0) {
+    steps.push({ state: { nums: [], dp: [], result: 0 }, highlights: [], message: 'Empty array. Result: 0', codeLine: 1 });
+    return steps;
+  }
+
+  const tails: number[] = [];
+  const dpLabels = Array.from({ length: n }, (_, i) => `len ${i + 1}`);
+
+  const dpView = () => {
+    const view: (number | null)[] = new Array(n).fill(null);
+    tails.forEach((v, idx) => (view[idx] = v));
+    return view;
+  };
+
+  steps.push({
+    state: { nums: [...nums], dp: dpView(), dpLabels, result: 0 },
+    highlights: [],
+    message: `Patience sorting: tails[k] = smallest possible tail of an increasing subsequence of length k+1. Keeping tails small leaves maximum room to grow`,
+    codeLine: 2,
+  });
+
+  for (let i = 0; i < n; i++) {
+    const num = nums[i];
+
+    // Binary search for the leftmost position where tails[pos] >= num
+    let lo = 0;
+    let hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (tails[mid] < num) lo = mid + 1;
+      else hi = mid;
+    }
+
+    steps.push({
+      state: { nums: [...nums], dp: dpView(), dpLabels, dpSecondary: lo < tails.length ? [lo] : [], result: tails.length },
+      highlights: [i],
+      pointers: { i, pos: lo },
+      message: `nums[${i}] = ${num}: binary search tails [${tails.join(', ')}] → position ${lo} (first tail ≥ ${num})`,
+      codeLine: 5,
+      action: 'compare',
+    });
+
+    if (lo === tails.length) {
+      tails.push(num);
+      steps.push({
+        state: { nums: [...nums], dp: dpView(), dpLabels, dpHighlights: [lo], result: tails.length },
+        highlights: [i],
+        pointers: { i, pos: lo },
+        message: `${num} is bigger than every tail — it EXTENDS the longest subsequence. tails = [${tails.join(', ')}], LIS length now ${tails.length}`,
+        codeLine: 12,
+        action: 'push',
+      });
+    } else {
+      const old = tails[lo];
+      tails[lo] = num;
+      steps.push({
+        state: { nums: [...nums], dp: dpView(), dpLabels, dpHighlights: [lo], result: tails.length },
+        highlights: [i],
+        pointers: { i, pos: lo },
+        message: `Replace tails[${lo}] = ${old} with ${num}: a length-${lo + 1} subsequence now ends lower, making future extensions easier. Length stays ${tails.length}`,
+        codeLine: 14,
+        action: 'swap',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], dp: dpView(), dpLabels, result: tails.length },
+    highlights: [],
+    message: `LIS length = ${tails.length} (size of tails). Note: tails itself is not necessarily a real subsequence — only its LENGTH is the answer`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const longestIncreasingSubsequence: Algorithm = {
   id: 'longest-increasing-subsequence',
   name: 'Longest Increasing Subsequence',
@@ -143,6 +225,108 @@ export const longestIncreasingSubsequence: Algorithm = {
   },
   defaultInput: [10, 9, 2, 5, 3, 7, 101, 18],
   run: runLongestIncreasingSubsequence,
+  optimalApproachName: 'O(n²) DP',
+  approaches: [
+    {
+      id: 'binary-search-patience',
+      name: 'Patience Sorting (Binary Search)',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of comparing every pair, maintain tails[k] = smallest tail of any increasing subsequence of length k+1 and binary-search where each number belongs — O(n log n) vs the DP\'s O(n²).',
+      code: {
+        python: `def lengthOfLIS(nums):
+    tails = []
+    for num in nums:
+        lo, hi = 0, len(tails)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if tails[mid] < num:
+                lo = mid + 1
+            else:
+                hi = mid
+        if lo == len(tails):
+            tails.append(num)
+        else:
+            tails[lo] = num
+    return len(tails)`,
+        javascript: `function lengthOfLIS(nums) {
+    const tails = [];
+    for (const num of nums) {
+        let lo = 0, hi = tails.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (tails[mid] < num) lo = mid + 1;
+            else hi = mid;
+        }
+        if (lo === tails.length) tails.push(num);
+        else tails[lo] = num;
+    }
+    return tails.length;
+}`,
+        java: `public int lengthOfLIS(int[] nums) {
+    int[] tails = new int[nums.length];
+    int size = 0;
+    for (int num : nums) {
+        int lo = 0, hi = size;
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if (tails[mid] < num) lo = mid + 1;
+            else hi = mid;
+        }
+        tails[lo] = num;
+        if (lo == size) size++;
+    }
+    return size;
+}`,
+      },
+      run: runLISBinarySearch,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'tails[k] = smallest tail of an increasing subsequence of length k+1',
+          3: 'Process each number in order',
+          4: 'Binary search bounds over the tails array',
+          5: 'Standard binary search loop',
+          6: 'Middle of the search range',
+          7: 'Tail too small: our number must land further right',
+          8: 'Search the right half',
+          10: 'Otherwise search the left half',
+          11: 'Landed past the end: num beats every tail',
+          12: 'Extend — the LIS just got longer',
+          14: 'Otherwise replace: same length, but a smaller tail is easier to extend',
+          15: 'The number of tails is the LIS length',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'tails[k] = smallest tail of an increasing subsequence of length k+1',
+          3: 'Process each number in order',
+          4: 'Binary search bounds over the tails array',
+          5: 'Standard binary search loop',
+          6: 'Middle of the search range',
+          7: 'Tail too small: search the right half',
+          8: 'Otherwise search the left half',
+          10: 'Landed past the end: extend — the LIS just got longer',
+          11: 'Otherwise replace: same length, but a smaller tail is easier to extend',
+          13: 'The number of tails is the LIS length',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'tails[k] = smallest tail of an increasing subsequence of length k+1',
+          3: 'size = how many tails are in use = current LIS length',
+          4: 'Process each number in order',
+          5: 'Binary search bounds over the used tails',
+          6: 'Standard binary search loop',
+          7: 'Middle of the search range',
+          8: 'Tail too small: search the right half',
+          9: 'Otherwise search the left half',
+          11: 'Place num at its position (replace or extend)',
+          12: 'Placed past the end: the LIS just got longer',
+          14: 'size is the LIS length',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

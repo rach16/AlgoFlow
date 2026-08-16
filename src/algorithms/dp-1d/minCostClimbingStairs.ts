@@ -68,6 +68,66 @@ function runMinCostClimbingStairs(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMinCostClimbingStairsReverse(input: unknown): AlgorithmStep[] {
+  const cost = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = cost.length;
+
+  // Work on a copy so we can show the array mutating in place
+  const work: number[] = [...cost];
+  const dpLabels = Array.from({ length: n }, (_, i) => `${i}`);
+
+  steps.push({
+    state: { nums: [...cost], dp: [...work], dpLabels, result: null },
+    highlights: [],
+    message: `Reverse in-place DP: walk BACKWARD from the top, folding future costs into each step. cost[i] becomes "total cost to reach the top starting from step ${'i'}"`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums: [...cost], dp: [...work], dpLabels, dpHighlights: [n - 2, n - 1], result: null },
+    highlights: [n - 2, n - 1],
+    message: `The last two steps need no lookahead: from step ${n - 2} or ${n - 1} you can jump straight to the top, paying only your own cost`,
+    codeLine: 2,
+  });
+
+  for (let i = n - 3; i >= 0; i--) {
+    const fromNext = work[i + 1];
+    const fromSkip = work[i + 2];
+
+    steps.push({
+      state: { nums: [...cost], dp: [...work], dpLabels, dpHighlights: [i + 1, i + 2], dpSecondary: [i], result: null },
+      highlights: [i],
+      pointers: { i },
+      message: `Step ${i}: after paying ${cost[i]}, jump 1 (total ${fromNext}) or jump 2 (total ${fromSkip})? Take the cheaper: min(${fromNext}, ${fromSkip}) = ${Math.min(fromNext, fromSkip)}`,
+      codeLine: 3,
+      action: 'compare',
+    });
+
+    work[i] += Math.min(fromNext, fromSkip);
+
+    steps.push({
+      state: { nums: [...cost], dp: [...work], dpLabels, dpHighlights: [i], result: null },
+      highlights: [i],
+      pointers: { i },
+      message: `cost[${i}] updated in place: ${cost[i]} + ${Math.min(fromNext, fromSkip)} = ${work[i]} — the full price of starting at step ${i}`,
+      codeLine: 3,
+      action: 'insert',
+    });
+  }
+
+  const result = Math.min(work[0], work[1]);
+  steps.push({
+    state: { nums: [...cost], dp: [...work], dpLabels, dpHighlights: [work[0] <= work[1] ? 0 : 1], result },
+    highlights: [work[0] <= work[1] ? 0 : 1],
+    message: `We may start at step 0 or 1: min(${work[0]}, ${work[1]}) = ${result}. Minimum cost to reach the top: ${result}`,
+    codeLine: 4,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const minCostClimbingStairs: Algorithm = {
   id: 'min-cost-climbing-stairs',
   name: 'Min Cost Climbing Stairs',
@@ -114,6 +174,56 @@ export const minCostClimbingStairs: Algorithm = {
   },
   defaultInput: [10, 15, 20],
   run: runMinCostClimbingStairs,
+  optimalApproachName: 'Bottom-Up DP',
+  approaches: [
+    {
+      id: 'reverse-in-place',
+      name: 'In-Place Reverse DP',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of building a separate dp array forward, walk backward from the top and fold min(next, skip) into the cost array itself — no extra memory at all.',
+      code: {
+        python: `def minCostClimbingStairs(cost):
+    for i in range(len(cost) - 3, -1, -1):
+        cost[i] += min(cost[i + 1], cost[i + 2])
+    return min(cost[0], cost[1])`,
+        javascript: `function minCostClimbingStairs(cost) {
+    for (let i = cost.length - 3; i >= 0; i--) {
+        cost[i] += Math.min(cost[i + 1], cost[i + 2]);
+    }
+    return Math.min(cost[0], cost[1]);
+}`,
+        java: `public int minCostClimbingStairs(int[] cost) {
+    for (int i = cost.length - 3; i >= 0; i--) {
+        cost[i] += Math.min(cost[i + 1], cost[i + 2]);
+    }
+    return Math.min(cost[0], cost[1]);
+}`,
+      },
+      run: runMinCostClimbingStairsReverse,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking cost array',
+          2: 'Walk backward from the third-to-last step (the last two already reach the top directly)',
+          3: 'Fold the cheaper onward path into this step: cost[i] becomes the total cost from step i to the top',
+          4: 'Start at step 0 or step 1 — return the cheaper total',
+        },
+        javascript: {
+          1: 'Define function taking cost array',
+          2: 'Walk backward from the third-to-last step (the last two already reach the top directly)',
+          3: 'Fold the cheaper onward path into this step: cost[i] becomes the total cost from step i to the top',
+          5: 'Start at step 0 or step 1 — return the cheaper total',
+        },
+        java: {
+          1: 'Define method taking cost array',
+          2: 'Walk backward from the third-to-last step (the last two already reach the top directly)',
+          3: 'Fold the cheaper onward path into this step: cost[i] becomes the total cost from step i to the top',
+          5: 'Start at step 0 or step 1 — return the cheaper total',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking cost array',

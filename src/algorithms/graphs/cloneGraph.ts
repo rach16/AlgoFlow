@@ -134,6 +134,137 @@ function runCloneGraph(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCloneGraphBFS(input: unknown): AlgorithmStep[] {
+  const adjList = input as number[][];
+  const steps: AlgorithmStep[] = [];
+  const n = adjList.length;
+
+  function buildGraphState(
+    clonedSoFar: Map<number, number[]>,
+    currentHighlights: number[] = [],
+    secondaryHighlights: number[] = [],
+    visitedEdges: [number, number][] = []
+  ) {
+    const nodes = [];
+    for (let i = 0; i < n; i++) {
+      nodes.push({ id: i + 1, label: `${i + 1}` });
+    }
+    const edges: { from: number; to: number }[] = [];
+    const seen = new Set<string>();
+    for (let i = 0; i < n; i++) {
+      for (const neighbor of adjList[i]) {
+        const key = `${Math.min(i + 1, neighbor)}-${Math.max(i + 1, neighbor)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          edges.push({ from: i + 1, to: neighbor });
+        }
+      }
+    }
+    return {
+      graph: { nodes, edges },
+      graphHighlights: currentHighlights,
+      graphSecondary: secondaryHighlights,
+      graphVisitedEdges: visitedEdges,
+      graphDirected: false,
+      hashMap: Object.fromEntries(
+        Array.from(clonedSoFar.entries()).map(([k, v]) => [`Node ${k}`, `[${v.join(',')}]`])
+      ),
+    };
+  }
+
+  const cloned = new Map<number, number[]>();
+  const visitedEdges: [number, number][] = [];
+
+  steps.push({
+    state: {
+      ...buildGraphState(cloned),
+      result: 'Cloning in progress...',
+    },
+    highlights: [],
+    message: `BFS clone: instead of recursing, we clone level by level using a queue. The oldToNew map still prevents cloning any node twice.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const queue: number[] = [1];
+  cloned.set(1, []);
+
+  steps.push({
+    state: {
+      ...buildGraphState(cloned, [1]),
+      queue: [...queue],
+      result: 'Cloning in progress...',
+    },
+    highlights: [],
+    message: `Clone the starting node 1 immediately, then seed the queue with it. BFS will discover the rest of the graph in waves.`,
+    codeLine: 5,
+    action: 'push',
+  } as AlgorithmStep);
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+
+    steps.push({
+      state: {
+        ...buildGraphState(cloned, [node], [], visitedEdges),
+        queue: [...queue],
+        result: 'Cloning in progress...',
+      },
+      highlights: [],
+      message: `Dequeue node ${node}. Its neighbors [${adjList[node - 1].join(', ')}] must each get a clone and a wire to node ${node}'s clone.`,
+      codeLine: 7,
+      action: 'pop',
+    } as AlgorithmStep);
+
+    for (const neighbor of adjList[node - 1]) {
+      if (!cloned.has(neighbor)) {
+        cloned.set(neighbor, []);
+        queue.push(neighbor);
+
+        steps.push({
+          state: {
+            ...buildGraphState(cloned, [node], [neighbor], visitedEdges),
+            queue: [...queue],
+            result: 'Cloning in progress...',
+          },
+          highlights: [],
+          message: `First time seeing node ${neighbor}: create its clone and enqueue it so its own neighbors get processed later.`,
+          codeLine: 10,
+          action: 'push',
+        } as AlgorithmStep);
+      }
+
+      cloned.get(node)!.push(neighbor);
+      visitedEdges.push([node, neighbor]);
+
+      steps.push({
+        state: {
+          ...buildGraphState(cloned, [node], [neighbor], visitedEdges),
+          queue: [...queue],
+          result: 'Cloning in progress...',
+        },
+        highlights: [],
+        message: `Wire clone(${node}) -> clone(${neighbor}). Every edge is copied exactly when its source node is dequeued.`,
+        codeLine: 12,
+        action: 'visit',
+      } as AlgorithmStep);
+    }
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(cloned, [], [], visitedEdges),
+      queue: [],
+      result: `Clone complete! ${n} nodes cloned.`,
+    },
+    highlights: [],
+    message: `Queue empty — all ${n} nodes cloned and wired. Return the clone of the starting node.`,
+    codeLine: 13,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const cloneGraph: Algorithm = {
   id: 'clone-graph',
   name: 'Clone Graph',
@@ -198,6 +329,116 @@ private Node dfs(Node node, Map<Node, Node> oldToNew) {
   },
   defaultInput: [[2, 4], [1, 3], [2, 4], [1, 3]],
   run: runCloneGraph,
+  optimalApproachName: 'DFS + Hash Map',
+  approaches: [
+    {
+      id: 'bfs-hash-map',
+      name: 'BFS + Hash Map',
+      timeComplexity: 'O(V+E)',
+      spaceComplexity: 'O(V)',
+      description:
+        'Clones the graph iteratively level by level with a queue instead of recursing — same oldToNew map, but no risk of stack overflow on deep graphs.',
+      code: {
+        python: `def cloneGraph(node):
+    if not node:
+        return None
+    oldToNew = {node: Node(node.val)}
+    queue = deque([node])
+    while queue:
+        cur = queue.popleft()
+        for nei in cur.neighbors:
+            if nei not in oldToNew:
+                oldToNew[nei] = Node(nei.val)
+                queue.append(nei)
+            oldToNew[cur].neighbors.append(oldToNew[nei])
+    return oldToNew[node]`,
+        javascript: `function cloneGraph(node) {
+    if (!node) return null;
+    const oldToNew = new Map();
+    oldToNew.set(node, new Node(node.val));
+    const queue = [node];
+    while (queue.length > 0) {
+        const cur = queue.shift();
+        for (const nei of cur.neighbors) {
+            if (!oldToNew.has(nei)) {
+                oldToNew.set(nei, new Node(nei.val));
+                queue.push(nei);
+            }
+            oldToNew.get(cur).neighbors.push(oldToNew.get(nei));
+        }
+    }
+    return oldToNew.get(node);
+}`,
+        java: `public Node cloneGraph(Node node) {
+    if (node == null) return null;
+    Map<Node, Node> oldToNew = new HashMap<>();
+    oldToNew.put(node, new Node(node.val));
+    Queue<Node> queue = new LinkedList<>();
+    queue.add(node);
+    while (!queue.isEmpty()) {
+        Node cur = queue.poll();
+        for (Node nei : cur.neighbors) {
+            if (!oldToNew.containsKey(nei)) {
+                oldToNew.put(nei, new Node(nei.val));
+                queue.add(nei);
+            }
+            oldToNew.get(cur).neighbors.add(oldToNew.get(nei));
+        }
+    }
+    return oldToNew.get(node);
+}`,
+      },
+      run: runCloneGraphBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking a graph node',
+          2: 'Handle null input',
+          3: 'Return None for empty graph',
+          4: 'Clone the start node and map original -> clone',
+          5: 'Seed the BFS queue with the start node',
+          6: 'Process nodes until the queue is empty',
+          7: 'Dequeue the next node to process',
+          8: 'Walk each neighbor of the current node',
+          9: 'Neighbor not cloned yet?',
+          10: 'Create its clone in the map',
+          11: 'Enqueue it so its neighbors get processed later',
+          12: 'Wire current clone to the neighbor clone',
+          13: 'Return the clone of the start node',
+        },
+        javascript: {
+          1: 'Define function taking a graph node',
+          2: 'Return null for empty graph',
+          3: 'Map original nodes to their clones',
+          4: 'Clone the start node up front',
+          5: 'Seed the BFS queue with the start node',
+          6: 'Process nodes until the queue is empty',
+          7: 'Dequeue the next node to process',
+          8: 'Walk each neighbor of the current node',
+          9: 'Neighbor not cloned yet?',
+          10: 'Create its clone in the map',
+          11: 'Enqueue it so its neighbors get processed later',
+          13: 'Wire current clone to the neighbor clone',
+          16: 'Return the clone of the start node',
+        },
+        java: {
+          1: 'Define method taking a graph node',
+          2: 'Return null for empty graph',
+          3: 'Map original nodes to their clones',
+          4: 'Clone the start node up front',
+          5: 'Create the BFS queue',
+          6: 'Seed the queue with the start node',
+          7: 'Process nodes until the queue is empty',
+          8: 'Dequeue the next node to process',
+          9: 'Walk each neighbor of the current node',
+          10: 'Neighbor not cloned yet?',
+          11: 'Create its clone in the map',
+          12: 'Enqueue it so its neighbors get processed later',
+          14: 'Wire current clone to the neighbor clone',
+          17: 'Return the clone of the start node',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking a graph node',

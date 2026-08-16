@@ -137,6 +137,121 @@ function runPacificAtlanticWaterFlow(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runPacificAtlanticBFS(input: unknown): AlgorithmStep[] {
+  const heights = input as number[][];
+  const steps: AlgorithmStep[] = [];
+  const rows = heights.length;
+  const cols = heights[0].length;
+  const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  steps.push({
+    state: {
+      matrix: heights.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'BFS frontier expands from each ocean',
+    },
+    highlights: [],
+    message: 'Same reverse thinking as the DFS solution, but iterative: grow a BFS frontier ring-by-ring from each ocean border, only stepping onto cells of equal or greater height.',
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  function bfs(starts: [number, number][], oceanName: string, seedLine: number): [number, number][] {
+    const visited: boolean[][] = Array.from({ length: rows }, () => Array(cols).fill(false));
+    const reached: [number, number][] = [];
+    let frontier: [number, number][] = [];
+
+    for (const [r, c] of starts) {
+      if (!visited[r][c]) {
+        visited[r][c] = true;
+        frontier.push([r, c]);
+        reached.push([r, c]);
+      }
+    }
+
+    steps.push({
+      state: {
+        matrix: heights.map(row => [...row]),
+        matrixHighlights: reached.map(h => [...h]),
+        matrixSecondary: [],
+        queue: frontier.map(([r, c]) => `(${r},${c})`),
+        result: `${oceanName}: ${frontier.length} border cells seeded`,
+      },
+      highlights: [],
+      message: `${oceanName}: seed the queue with all ${frontier.length} coastal cells — water on the coast trivially reaches the ocean.`,
+      codeLine: seedLine,
+      action: 'push',
+    } as AlgorithmStep);
+
+    let ring = 0;
+    while (frontier.length > 0) {
+      const next: [number, number][] = [];
+      for (const [r, c] of frontier) {
+        for (const [dr, dc] of directions) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+          if (visited[nr][nc]) continue;
+          if (heights[nr][nc] < heights[r][c]) continue;
+          visited[nr][nc] = true;
+          next.push([nr, nc]);
+          reached.push([nr, nc]);
+        }
+      }
+      ring++;
+      if (next.length > 0) {
+        steps.push({
+          state: {
+            matrix: heights.map(row => [...row]),
+            matrixHighlights: reached.map(h => [...h]),
+            matrixSecondary: next.map(h => [...h]),
+            queue: next.map(([r, c]) => `(${r},${c})`),
+            result: `${oceanName} ring ${ring}: +${next.length} cell(s)`,
+          },
+          highlights: [],
+          message: `${oceanName} ring ${ring}: the frontier climbs uphill to ${next.length} new cell(s). Each is at least as high as a reached neighbor, so its water can drain to the ${oceanName}.`,
+          codeLine: 16,
+          action: 'visit',
+        } as AlgorithmStep);
+      }
+      frontier = next;
+    }
+    return reached;
+  }
+
+  const pacificStarts: [number, number][] = [];
+  for (let c = 0; c < cols; c++) pacificStarts.push([0, c]);
+  for (let r = 0; r < rows; r++) pacificStarts.push([r, 0]);
+  const pacificReached = bfs(pacificStarts, 'Pacific', 19);
+
+  const atlanticStarts: [number, number][] = [];
+  for (let c = 0; c < cols; c++) atlanticStarts.push([rows - 1, c]);
+  for (let r = 0; r < rows; r++) atlanticStarts.push([r, cols - 1]);
+  const atlanticReached = bfs(atlanticStarts, 'Atlantic', 21);
+
+  const pacificSet = new Set(pacificReached.map(([r, c]) => `${r},${c}`));
+  const result: [number, number][] = [];
+  for (const [r, c] of atlanticReached) {
+    if (pacificSet.has(`${r},${c}`)) result.push([r, c]);
+  }
+  result.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+
+  steps.push({
+    state: {
+      matrix: heights.map(row => [...row]),
+      matrixHighlights: result.map(h => [...h]),
+      matrixSecondary: [],
+      result: result.map(([r, c]) => `[${r},${c}]`),
+    },
+    highlights: [],
+    message: `Intersect the two reachable sets: ${result.length} cell(s) drain to BOTH oceans: ${result.map(([r, c]) => `(${r},${c})`).join(', ')}`,
+    codeLine: 24,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const pacificAtlanticWaterFlow: Algorithm = {
   id: 'pacific-atlantic-water-flow',
   name: 'Pacific Atlantic Water Flow',
@@ -252,6 +367,218 @@ private void dfs(int[][] heights, int r, int c, boolean[][] visit, int prevHeigh
     [5, 1, 1, 2, 4],
   ],
   run: runPacificAtlanticWaterFlow,
+  optimalApproachName: 'DFS from Ocean Borders',
+  approaches: [
+    {
+      id: 'bfs-from-oceans',
+      name: 'BFS from Oceans',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Same reverse traversal from the ocean borders, but with an iterative BFS frontier instead of recursive DFS — no recursion-depth risk, and reachability spreads outward in visible rings.',
+      code: {
+        python: `def pacificAtlantic(heights):
+    rows, cols = len(heights), len(heights[0])
+    pac, atl = set(), set()
+    dirs = [(1,0),(-1,0),(0,1),(0,-1)]
+
+    def bfs(starts, visit):
+        queue = deque(starts)
+        visit.update(starts)
+        while queue:
+            r, c = queue.popleft()
+            for dr, dc in dirs:
+                nr, nc = r + dr, c + dc
+                if (0 <= nr < rows and 0 <= nc < cols and
+                    (nr, nc) not in visit and
+                    heights[nr][nc] >= heights[r][c]):
+                    visit.add((nr, nc))
+                    queue.append((nr, nc))
+
+    bfs([(0, c) for c in range(cols)] +
+        [(r, 0) for r in range(rows)], pac)
+    bfs([(rows-1, c) for c in range(cols)] +
+        [(r, cols-1) for r in range(rows)], atl)
+
+    return list(pac & atl)`,
+        javascript: `function pacificAtlantic(heights) {
+    const rows = heights.length, cols = heights[0].length;
+    const pac = new Set(), atl = new Set();
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+
+    function bfs(starts, visit) {
+        const queue = [...starts];
+        starts.forEach(([r, c]) => visit.add(\`\${r},\${c}\`));
+        while (queue.length) {
+            const [r, c] = queue.shift();
+            for (const [dr, dc] of dirs) {
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+                    !visit.has(\`\${nr},\${nc}\`) &&
+                    heights[nr][nc] >= heights[r][c]) {
+                    visit.add(\`\${nr},\${nc}\`);
+                    queue.push([nr, nc]);
+                }
+            }
+        }
+    }
+
+    const pacStarts = [], atlStarts = [];
+    for (let c = 0; c < cols; c++) {
+        pacStarts.push([0, c]);
+        atlStarts.push([rows - 1, c]);
+    }
+    for (let r = 0; r < rows; r++) {
+        pacStarts.push([r, 0]);
+        atlStarts.push([r, cols - 1]);
+    }
+    bfs(pacStarts, pac);
+    bfs(atlStarts, atl);
+
+    const result = [];
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+            if (pac.has(\`\${r},\${c}\`) && atl.has(\`\${r},\${c}\`))
+                result.push([r, c]);
+    return result;
+}`,
+        java: `public List<List<Integer>> pacificAtlantic(int[][] heights) {
+    int rows = heights.length, cols = heights[0].length;
+    boolean[][] pac = new boolean[rows][cols];
+    boolean[][] atl = new boolean[rows][cols];
+    Queue<int[]> pacQueue = new LinkedList<>();
+    Queue<int[]> atlQueue = new LinkedList<>();
+
+    for (int c = 0; c < cols; c++) {
+        pacQueue.offer(new int[]{0, c}); pac[0][c] = true;
+        atlQueue.offer(new int[]{rows - 1, c}); atl[rows - 1][c] = true;
+    }
+    for (int r = 0; r < rows; r++) {
+        pacQueue.offer(new int[]{r, 0}); pac[r][0] = true;
+        atlQueue.offer(new int[]{r, cols - 1}); atl[r][cols - 1] = true;
+    }
+
+    bfs(heights, pacQueue, pac);
+    bfs(heights, atlQueue, atl);
+
+    List<List<Integer>> result = new ArrayList<>();
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            if (pac[r][c] && atl[r][c])
+                result.add(Arrays.asList(r, c));
+    return result;
+}
+
+private void bfs(int[][] heights, Queue<int[]> queue, boolean[][] visit) {
+    int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+    while (!queue.isEmpty()) {
+        int[] cell = queue.poll();
+        for (int[] d : dirs) {
+            int nr = cell[0] + d[0], nc = cell[1] + d[1];
+            if (nr >= 0 && nr < heights.length && nc >= 0 && nc < heights[0].length
+                    && !visit[nr][nc]
+                    && heights[nr][nc] >= heights[cell[0]][cell[1]]) {
+                visit[nr][nc] = true;
+                queue.offer(new int[]{nr, nc});
+            }
+        }
+    }
+}`,
+      },
+      run: runPacificAtlanticBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking height matrix',
+          2: 'Get matrix dimensions',
+          3: 'Sets of cells that can reach each ocean',
+          4: 'Four directional offsets',
+          6: 'BFS helper taking start cells and a visited set',
+          7: 'Queue starts with every border cell at once',
+          8: 'All starts are trivially reachable — mark visited',
+          9: 'Expand the frontier until it stops growing',
+          10: 'Dequeue the next reachable cell',
+          11: 'Try each of the four directions',
+          12: 'Compute neighbor coordinates',
+          13: 'Neighbor must be inside the grid',
+          14: 'Skip cells already known reachable',
+          15: 'Only climb: neighbor must be same height or higher',
+          16: 'Mark neighbor as able to drain to this ocean',
+          17: 'Enqueue it so BFS continues from there',
+          19: 'Pacific BFS: seed with the top row...',
+          20: '...plus the left column border cells',
+          21: 'Atlantic BFS: seed with the bottom row...',
+          22: '...plus the right column border cells',
+          24: 'Answer = intersection of the two reachable sets',
+        },
+        javascript: {
+          1: 'Define function taking height matrix',
+          2: 'Get matrix dimensions',
+          3: 'Sets of cells that can reach each ocean',
+          4: 'Four directional offsets',
+          6: 'BFS helper taking start cells and a visited set',
+          7: 'Copy start cells into the queue',
+          8: 'All starts are trivially reachable — mark visited',
+          9: 'Expand the frontier until the queue empties',
+          10: 'Dequeue the next reachable cell',
+          11: 'Try each of the four directions',
+          12: 'Compute neighbor coordinates',
+          13: 'Neighbor must be inside the grid',
+          14: 'Skip cells already known reachable',
+          15: 'Only climb: neighbor must be same height or higher',
+          16: 'Mark neighbor as able to drain to this ocean',
+          17: 'Enqueue it so BFS continues from there',
+          23: 'Build both oceans’ border start lists',
+          24: 'Walk every column index',
+          25: 'Pacific touches the top row',
+          26: 'Atlantic touches the bottom row',
+          28: 'Walk every row index',
+          29: 'Pacific touches the left column',
+          30: 'Atlantic touches the right column',
+          32: 'Run BFS outward from the Pacific coast',
+          33: 'Run BFS outward from the Atlantic coast',
+          35: 'Collect cells reachable from both oceans',
+          36: 'Iterate through each row',
+          37: 'Iterate through each column',
+          38: 'Is this cell in both reachable sets?',
+          39: 'Add coordinate to the answer',
+          40: 'Return all dual-drainage cells',
+        },
+        java: {
+          1: 'Define method returning list of coordinates',
+          2: 'Get matrix dimensions',
+          3: 'Boolean grid for Pacific reachability',
+          4: 'Boolean grid for Atlantic reachability',
+          5: 'BFS queue seeded with Pacific coast cells',
+          6: 'BFS queue seeded with Atlantic coast cells',
+          8: 'Walk every column index',
+          9: 'Top row: seed Pacific queue and mark reached',
+          10: 'Bottom row: seed Atlantic queue and mark reached',
+          12: 'Walk every row index',
+          13: 'Left column: seed Pacific queue and mark reached',
+          14: 'Right column: seed Atlantic queue and mark reached',
+          17: 'Run BFS outward from the Pacific coast',
+          18: 'Run BFS outward from the Atlantic coast',
+          20: 'Collect cells reachable from both oceans',
+          21: 'Iterate through each row',
+          22: 'Iterate through each column',
+          23: 'Is this cell in both reachable sets?',
+          24: 'Add coordinate pair to the answer',
+          25: 'Return all dual-drainage cells',
+          28: 'BFS helper expanding one ocean’s frontier',
+          29: 'Four directional offsets',
+          30: 'Expand until the queue empties',
+          31: 'Dequeue the next reachable cell',
+          32: 'Try each of the four directions',
+          33: 'Compute neighbor coordinates',
+          34: 'Neighbor must be inside the grid',
+          35: 'Skip cells already known reachable',
+          36: 'Only climb: neighbor must be same height or higher',
+          37: 'Mark neighbor as able to drain to this ocean',
+          38: 'Enqueue it so BFS continues from there',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking height matrix',

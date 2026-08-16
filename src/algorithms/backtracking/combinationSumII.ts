@@ -121,6 +121,94 @@ function runCombinationSumII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCombinationSumIIIterative(input: unknown): AlgorithmStep[] {
+  const { candidates, target } = input as { candidates: number[]; target: number };
+  const steps: AlgorithmStep[] = [];
+  const nums = [...candidates].sort((a, b) => a - b);
+  const result: number[][] = [];
+
+  interface Frame {
+    start: number;
+    combo: number[];
+    remaining: number;
+  }
+  const stack: Frame[] = [{ start: 0, combo: [], remaining: target }];
+  const STEP_BUDGET = 70;
+  let suppressed = 0;
+
+  steps.push({
+    state: { nums: [...nums], stack: [], hashMap: { target, frames: 1 }, result: [] },
+    highlights: [],
+    message: `No recursion: an explicit stack of frames (start, combo, remaining) replaces the call stack. Seed with (0, [], ${target})`,
+    codeLine: 5,
+  });
+
+  while (stack.length > 0) {
+    const { start, combo, remaining } = stack.pop()!;
+
+    if (remaining === 0) {
+      result.push(combo);
+      steps.push({
+        state: {
+          nums: [...nums],
+          stack: [...combo],
+          hashMap: { target, remaining: 0, frames: stack.length },
+          result: result.map((r) => `[${r.join(',')}]`),
+        },
+        highlights: combo.map((val) => nums.indexOf(val)),
+        message: `Pop frame with remaining 0: [${combo.join(', ')}] sums to ${target} (total: ${result.length})`,
+        codeLine: 10,
+        action: 'found',
+      });
+      continue;
+    }
+
+    const children: Frame[] = [];
+    const pushedValues: number[] = [];
+    for (let i = start; i < nums.length; i++) {
+      if (i > start && nums[i] === nums[i - 1]) continue; // skip duplicates at same level
+      if (nums[i] > remaining) break; // prune: sorted, rest are larger
+      children.push({ start: i + 1, combo: [...combo, nums[i]], remaining: remaining - nums[i] });
+      pushedValues.push(nums[i]);
+    }
+    stack.push(...children);
+
+    if (steps.length < STEP_BUDGET) {
+      steps.push({
+        state: {
+          nums: [...nums],
+          stack: [...combo],
+          hashMap: { target, remaining, frames: stack.length },
+          result: result.map((r) => `[${r.join(',')}]`),
+        },
+        highlights: pushedValues.map((val) => nums.indexOf(val)),
+        message: children.length > 0
+          ? `Pop frame [${combo.join(', ')}] (remaining ${remaining}): push ${children.length} child frame${children.length !== 1 ? 's' : ''} extending with ${pushedValues.join(', ')} — duplicates skipped, over-target pruned`
+          : `Pop frame [${combo.join(', ')}] (remaining ${remaining}): no candidate fits, dead end — frame simply discarded`,
+        codeLine: children.length > 0 ? 17 : 12,
+        action: 'pop',
+      });
+    } else {
+      suppressed++;
+    }
+  }
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      stack: [],
+      hashMap: { target },
+      result: result.map((r) => `[${r.join(',')}]`),
+    },
+    highlights: [],
+    message: `Done! Stack empty — found ${result.length} unique combination${result.length !== 1 ? 's' : ''}${suppressed > 0 ? ` (${suppressed} similar frame expansions not shown)` : ''}. Same tree as recursion, managed by hand`,
+    codeLine: 20,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const combinationSumII: Algorithm = {
   id: 'combination-sum-ii',
   name: 'Combination Sum II',
@@ -204,6 +292,151 @@ private static void backtrack(int start, List<Integer> current, int remaining, i
   },
   defaultInput: { candidates: [10, 1, 2, 7, 6, 1, 5], target: 8 },
   run: runCombinationSumII,
+  optimalApproachName: 'Backtracking + Skip Duplicates',
+  approaches: [
+    {
+      id: 'iterative-explicit-stack',
+      name: 'Iterative (Explicit Stack)',
+      timeComplexity: 'O(2ⁿ)',
+      spaceComplexity: 'O(2ⁿ)',
+      description:
+        'Explores the exact same pruned decision tree as the recursive solution, but manages frames (start, combo, remaining) on an explicit stack instead of the call stack — no recursion, no shared mutable path to undo.',
+      code: {
+        python: `def combinationSum2(candidates, target):
+    candidates.sort()
+    result = []
+    # Each frame: (start, combo, remaining)
+    stack = [(0, [], target)]
+
+    while stack:
+        start, combo, remaining = stack.pop()
+        if remaining == 0:
+            result.append(combo)
+            continue
+        for i in range(start, len(candidates)):
+            if i > start and candidates[i] == candidates[i - 1]:
+                continue
+            if candidates[i] > remaining:
+                break
+            stack.append((i + 1, combo + [candidates[i]],
+                          remaining - candidates[i]))
+
+    return result`,
+        javascript: `function combinationSum2(candidates, target) {
+    candidates.sort((a, b) => a - b);
+    const result = [];
+    // Each frame: [start, combo, remaining]
+    const stack = [[0, [], target]];
+
+    while (stack.length) {
+        const [start, combo, remaining] = stack.pop();
+        if (remaining === 0) {
+            result.push(combo);
+            continue;
+        }
+        for (let i = start; i < candidates.length; i++) {
+            if (i > start && candidates[i] === candidates[i - 1]) continue;
+            if (candidates[i] > remaining) break;
+            stack.push([i + 1, [...combo, candidates[i]],
+                        remaining - candidates[i]]);
+        }
+    }
+
+    return result;
+}`,
+        java: `public static List<List<Integer>> combinationSum2(int[] candidates, int target) {
+    Arrays.sort(candidates);
+    List<List<Integer>> result = new ArrayList<>();
+    // Each frame: {start, combo, remaining}
+    Deque<Object[]> stack = new ArrayDeque<>();
+    stack.push(new Object[]{0, new ArrayList<Integer>(), target});
+
+    while (!stack.isEmpty()) {
+        Object[] frame = stack.pop();
+        int start = (int) frame[0];
+        List<Integer> combo = (List<Integer>) frame[1];
+        int remaining = (int) frame[2];
+        if (remaining == 0) {
+            result.add(combo);
+            continue;
+        }
+        for (int i = start; i < candidates.length; i++) {
+            if (i > start && candidates[i] == candidates[i - 1]) continue;
+            if (candidates[i] > remaining) break;
+            List<Integer> next = new ArrayList<>(combo);
+            next.add(candidates[i]);
+            stack.push(new Object[]{i + 1, next, remaining - candidates[i]});
+        }
+    }
+    return result;
+}`,
+      },
+      run: runCombinationSumIIIterative,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking candidates and target',
+          2: 'Sort to group duplicates and enable pruning',
+          3: 'Initialize list of valid combinations',
+          4: 'A frame captures everything a recursive call would know',
+          5: 'Seed: start at index 0, empty combo, full target remaining',
+          7: 'Keep exploring while frames remain',
+          8: 'Pop the most recently pushed frame (LIFO = depth-first)',
+          9: 'Remaining hit exactly 0 — this combo is an answer',
+          10: 'Frames own their combo lists, so no copy needed',
+          11: 'Nothing to expand below a completed combo',
+          12: 'Expand: try each candidate from start onward',
+          13: 'Skip duplicate values at the same tree level',
+          14: 'Avoids generating the same combination twice',
+          15: 'Sorted array: if this is too big, the rest are too',
+          16: 'Prune the entire remainder of this level',
+          17: 'Push a child frame: next index, extended combo ...',
+          18: '... and the reduced remaining target',
+          20: 'Stack drained — every branch was explored',
+        },
+        javascript: {
+          1: 'Define function taking candidates and target',
+          2: 'Sort to group duplicates and enable pruning',
+          3: 'Initialize list of valid combinations',
+          4: 'A frame captures everything a recursive call would know',
+          5: 'Seed: start at index 0, empty combo, full target remaining',
+          7: 'Keep exploring while frames remain',
+          8: 'Pop the most recently pushed frame (LIFO = depth-first)',
+          9: 'Remaining hit exactly 0 — this combo is an answer',
+          10: 'Frames own their combo arrays, so no copy needed',
+          11: 'Nothing to expand below a completed combo',
+          13: 'Expand: try each candidate from start onward',
+          14: 'Skip duplicate values at the same tree level',
+          15: 'Sorted array: if this is too big, the rest are too — prune',
+          16: 'Push a child frame: next index, extended combo ...',
+          17: '... and the reduced remaining target',
+          21: 'Stack drained — every branch was explored',
+        },
+        java: {
+          1: 'Define method taking candidates and target',
+          2: 'Sort to group duplicates and enable pruning',
+          3: 'Initialize list of valid combinations',
+          4: 'A frame captures everything a recursive call would know',
+          5: 'Explicit stack replaces the call stack',
+          6: 'Seed: start at index 0, empty combo, full target remaining',
+          8: 'Keep exploring while frames remain',
+          9: 'Pop the most recently pushed frame (LIFO = depth-first)',
+          10: 'Unpack the start index',
+          11: 'Unpack the combo built so far',
+          12: 'Unpack the remaining target',
+          13: 'Remaining hit exactly 0 — this combo is an answer',
+          14: 'Frames own their combo lists, so no copy needed',
+          15: 'Nothing to expand below a completed combo',
+          17: 'Expand: try each candidate from start onward',
+          18: 'Skip duplicate values at the same tree level',
+          19: 'Sorted array: if this is too big, the rest are too — prune',
+          20: 'Copy the combo for the child frame',
+          21: 'Extend it with the chosen candidate',
+          22: 'Push child frame with next index and reduced remaining',
+          25: 'Stack drained — every branch was explored',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking candidates and target',

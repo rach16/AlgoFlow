@@ -151,6 +151,139 @@ function runNQueens(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runNQueensBitmask(input: unknown): AlgorithmStep[] {
+  const n = input as number;
+  const steps: AlgorithmStep[] = [];
+  const result: string[][] = [];
+  const fullMask = (1 << n) - 1;
+
+  const board: string[][] = Array.from({ length: n }, () => new Array(n).fill('.'));
+
+  function getQueenPositions(): [number, number][] {
+    const positions: [number, number][] = [];
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (board[r][c] === 'Q') positions.push([r, c]);
+      }
+    }
+    return positions;
+  }
+
+  function boardToMatrix(): string[][] {
+    return board.map((row) => [...row]);
+  }
+
+  function toBits(mask: number): string {
+    return (mask & fullMask).toString(2).padStart(n, '0');
+  }
+
+  steps.push({
+    state: {
+      matrix: boardToMatrix(),
+      matrixHighlights: [] as [number, number][],
+      hashMap: { n, solutions: 0 },
+    },
+    highlights: [],
+    message: `Bitmask N-Queens: three integers replace the hash sets — one bit per column, per ↗ diagonal, per ↘ diagonal. Conflict checks become single AND operations`,
+    codeLine: 1,
+  });
+
+  function backtrack(row: number, cols: number, diag1: number, diag2: number) {
+    if (row === n) {
+      result.push(board.map((r) => r.join('')));
+
+      steps.push({
+        state: {
+          matrix: boardToMatrix(),
+          matrixHighlights: getQueenPositions(),
+          hashMap: { n, solutions: result.length },
+        },
+        highlights: [],
+        message: `Found solution #${result.length}! All ${n} queens placed with pure bit arithmetic`,
+        codeLine: 7,
+        action: 'found',
+      });
+      return;
+    }
+
+    const free = ~(cols | diag1 | diag2) & fullMask;
+    const freeCount = toBits(free).split('').filter((b) => b === '1').length;
+
+    steps.push({
+      state: {
+        matrix: boardToMatrix(),
+        matrixHighlights: getQueenPositions(),
+        hashMap: {
+          n,
+          solutions: result.length,
+          row,
+          cols: toBits(cols),
+          free: toBits(free),
+        },
+      },
+      highlights: [],
+      message: freeCount > 0
+        ? `Row ${row}: free = ~(cols | diag1 | diag2) = ${toBits(free)} — ${freeCount} safe column${freeCount !== 1 ? 's' : ''} found in one bitwise op (1 = safe)`
+        : `Row ${row}: free = ${toBits(free)} — no safe columns, dead end. Backtrack`,
+      codeLine: 10,
+      action: 'visit',
+    });
+
+    let free2 = free;
+    while (free2) {
+      const bit = free2 & -free2;
+      free2 -= bit;
+      const col = 31 - Math.clz32(bit);
+
+      board[row][col] = 'Q';
+
+      steps.push({
+        state: {
+          matrix: boardToMatrix(),
+          matrixHighlights: getQueenPositions(),
+          hashMap: { n, solutions: result.length, placed: `Q at [${row},${col}]`, bit: toBits(bit) },
+        },
+        highlights: [],
+        message: `Extract lowest free bit ${toBits(bit)} (col ${col}) and place a queen. Diagonal masks shift as they pass to the next row`,
+        codeLine: 15,
+        action: 'push',
+      });
+
+      backtrack(row + 1, cols | bit, ((diag1 | bit) << 1) & fullMask, (diag2 | bit) >> 1);
+
+      board[row][col] = '.';
+
+      steps.push({
+        state: {
+          matrix: boardToMatrix(),
+          matrixHighlights: getQueenPositions(),
+          hashMap: { n, solutions: result.length, removed: `Q from [${row},${col}]` },
+        },
+        highlights: [],
+        message: `Backtrack: remove queen from [${row}, ${col}] — masks were passed by value, so nothing to un-set`,
+        codeLine: 18,
+        action: 'pop',
+      });
+    }
+  }
+
+  backtrack(0, 0, 0, 0);
+
+  steps.push({
+    state: {
+      matrix: boardToMatrix(),
+      matrixHighlights: [] as [number, number][],
+      hashMap: { n, totalSolutions: result.length },
+    },
+    highlights: [],
+    message: `Done! Found ${result.length} solution${result.length !== 1 ? 's' : ''} — same search tree as the set version, but each conflict check is O(1) bit math with no hashing`,
+    codeLine: 21,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const nQueens: Algorithm = {
   id: 'n-queens',
   name: 'N-Queens',
@@ -277,6 +410,161 @@ private static void backtrack(int row, char[][] board, Set<Integer> cols,
   },
   defaultInput: 4,
   run: runNQueens,
+  optimalApproachName: 'Backtracking with Hash Sets',
+  approaches: [
+    {
+      id: 'bitmask',
+      name: 'Bitmask Backtracking',
+      timeComplexity: 'O(n!)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Replaces the three hash sets with three integers whose bits mark attacked columns and diagonals — a single bitwise op finds all safe columns of a row at once, and shifting the diagonal masks per row keeps them aligned.',
+      code: {
+        python: `def solveNQueens(n):
+    result = []
+    board = [["."] * n for _ in range(n)]
+
+    def backtrack(row, cols, diag1, diag2):
+        if row == n:
+            result.append(["".join(r) for r in board])
+            return
+        # free = columns not attacked in this row
+        free = ~(cols | diag1 | diag2) & ((1 << n) - 1)
+        while free:
+            bit = free & -free      # lowest free column
+            free -= bit
+            col = bit.bit_length() - 1
+            board[row][col] = "Q"
+            backtrack(row + 1, cols | bit,
+                      (diag1 | bit) << 1, (diag2 | bit) >> 1)
+            board[row][col] = "."
+
+    backtrack(0, 0, 0, 0)
+    return result`,
+        javascript: `function solveNQueens(n) {
+    const result = [];
+    const board = Array.from({length: n}, () => new Array(n).fill("."));
+
+    function backtrack(row, cols, diag1, diag2) {
+        if (row === n) {
+            result.push(board.map(r => r.join("")));
+            return;
+        }
+        // free = columns not attacked in this row
+        let free = ~(cols | diag1 | diag2) & ((1 << n) - 1);
+        while (free) {
+            const bit = free & -free; // lowest free column
+            free -= bit;
+            const col = 31 - Math.clz32(bit);
+            board[row][col] = "Q";
+            backtrack(row + 1, cols | bit,
+                ((diag1 | bit) << 1) & ((1 << n) - 1), (diag2 | bit) >> 1);
+            board[row][col] = ".";
+        }
+    }
+
+    backtrack(0, 0, 0, 0);
+    return result;
+}`,
+        java: `public static List<List<String>> solveNQueens(int n) {
+    List<List<String>> result = new ArrayList<>();
+    char[][] board = new char[n][n];
+    for (char[] row : board) Arrays.fill(row, '.');
+    backtrack(0, 0, 0, 0, n, board, result);
+    return result;
+}
+
+private static void backtrack(int row, int cols, int diag1, int diag2,
+                              int n, char[][] board, List<List<String>> result) {
+    if (row == n) {
+        List<String> solution = new ArrayList<>();
+        for (char[] r : board) solution.add(new String(r));
+        result.add(solution);
+        return;
+    }
+    int free = ~(cols | diag1 | diag2) & ((1 << n) - 1);
+    while (free != 0) {
+        int bit = free & -free;      // lowest free column
+        free -= bit;
+        int col = Integer.numberOfTrailingZeros(bit);
+        board[row][col] = 'Q';
+        backtrack(row + 1, cols | bit, (diag1 | bit) << 1,
+                  (diag2 | bit) >> 1, n, board, result);
+        board[row][col] = '.';
+    }
+}`,
+      },
+      run: runNQueensBitmask,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking board size n',
+          2: 'Initialize list to store solutions',
+          3: 'Create n x n board filled with "."',
+          5: 'Masks are parameters — passed by value, so backtracking is automatic',
+          6: 'Base case: all rows filled, found solution',
+          7: 'Convert board rows to strings, save',
+          8: 'Return after saving solution',
+          9: 'A set bit in free means that column is safe',
+          10: 'One OR + NOT finds every safe column of this row at once',
+          11: 'Loop while safe columns remain',
+          12: 'bit = free & -free isolates the lowest set bit',
+          13: 'Consume that bit from the free mask',
+          14: 'Convert the single bit to a column index',
+          15: 'Place queen on the board (for output only)',
+          16: 'Recurse: occupy the column bit ...',
+          17: '... shift ↘ diagonal left and ↗ diagonal right so they track the next row',
+          18: 'Remove queen — the masks need no cleanup',
+          20: 'Start with row 0 and all-empty masks',
+          21: 'Return all valid board configurations',
+        },
+        javascript: {
+          1: 'Define function taking board size n',
+          2: 'Initialize array to store solutions',
+          3: 'Create n x n board filled with "."',
+          5: 'Masks are parameters — passed by value, so backtracking is automatic',
+          6: 'Base case: all rows filled, found solution',
+          7: 'Convert board rows to strings, save',
+          8: 'Return after saving solution',
+          10: 'A set bit in free means that column is safe',
+          11: 'One OR + NOT finds every safe column of this row at once',
+          12: 'Loop while safe columns remain',
+          13: 'bit = free & -free isolates the lowest set bit',
+          14: 'Consume that bit from the free mask',
+          15: 'Convert the single bit to a column index via count-leading-zeros',
+          16: 'Place queen on the board (for output only)',
+          17: 'Recurse: occupy the column bit ...',
+          18: '... shift diagonals so they track the next row (masked to n bits)',
+          19: 'Remove queen — the masks need no cleanup',
+          23: 'Start with row 0 and all-empty masks',
+          24: 'Return all valid board configurations',
+        },
+        java: {
+          1: 'Define method returning list of solutions',
+          2: 'Initialize result list',
+          3: 'Create n x n board',
+          4: 'Fill the board with "." characters',
+          5: 'Start with row 0 and all-empty masks',
+          6: 'Return all valid configurations',
+          9: 'Masks are int parameters — passed by value, so backtracking is automatic',
+          10: 'Remaining helper parameters',
+          11: 'Base case: all rows filled, found solution',
+          12: 'Create list for this solution',
+          13: 'Convert each row to a string',
+          14: 'Add solution to result',
+          15: 'Return after saving',
+          17: 'One OR + NOT finds every safe column of this row at once',
+          18: 'Loop while safe columns remain',
+          19: 'bit = free & -free isolates the lowest set bit',
+          20: 'Consume that bit from the free mask',
+          21: 'Convert the single bit to a column index',
+          22: 'Place queen on the board (for output only)',
+          23: 'Recurse: occupy the column bit ...',
+          24: '... shift diagonals so they track the next row',
+          25: 'Remove queen — the masks need no cleanup',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking board size n',

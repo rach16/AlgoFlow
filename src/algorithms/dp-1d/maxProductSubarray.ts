@@ -87,6 +87,90 @@ function runMaxProductSubarray(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMaxProductPrefixSuffix(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+
+  if (n === 0) {
+    steps.push({ state: { nums: [], result: 0 }, highlights: [], message: 'Empty array. Result: 0', codeLine: 1 });
+    return steps;
+  }
+
+  // dp shows the running prefix product at each index
+  const dp: (number | null)[] = new Array(n).fill(null);
+  const dpLabels = Array.from({ length: n }, (_, i) => `${i}`);
+
+  steps.push({
+    state: { nums: [...nums], dp: [...dp], dpLabels, result: null },
+    highlights: [],
+    message: `Key insight: the best subarray always touches the start or end of a zero-free stretch — an unpaired negative can only hurt one side. So scan running products from BOTH directions`,
+    codeLine: 1,
+  });
+
+  let result = nums[0];
+  let prefix = 0;
+  let suffix = 0;
+
+  steps.push({
+    state: { nums: [...nums], dp: [...dp], dpLabels, prefix, suffix, result },
+    highlights: [0],
+    message: `Initialize result = nums[0] = ${result}; prefix and suffix products start at 0 (0 means "reset to 1 before multiplying")`,
+    codeLine: 4,
+    action: 'insert',
+  });
+
+  for (let i = 0; i < n; i++) {
+    const prevPrefix = prefix;
+    const prevSuffix = suffix;
+    prefix = (prefix === 0 ? 1 : prefix) * nums[i];
+    suffix = (suffix === 0 ? 1 : suffix) * nums[n - 1 - i];
+    dp[i] = prefix;
+
+    steps.push({
+      state: { nums: [...nums], dp: [...dp], dpLabels, dpHighlights: [i], prefix, suffix, result },
+      highlights: [i],
+      secondary: [n - 1 - i],
+      pointers: { i, j: n - 1 - i },
+      message: `Forward: prefix ${prevPrefix === 0 ? '(reset)' : prevPrefix} × ${nums[i]} = ${prefix}. Backward: suffix ${prevSuffix === 0 ? '(reset)' : prevSuffix} × ${nums[n - 1 - i]} = ${suffix}`,
+      codeLine: 6,
+      action: 'compare',
+    });
+
+    const best = Math.max(prefix, suffix);
+    if (best > result) {
+      result = best;
+      steps.push({
+        state: { nums: [...nums], dp: [...dp], dpLabels, dpHighlights: [i], prefix, suffix, result },
+        highlights: [i],
+        secondary: [n - 1 - i],
+        message: `New best: result = max(prefix ${prefix}, suffix ${suffix}) = ${result}`,
+        codeLine: 8,
+        action: 'found',
+      });
+    } else {
+      steps.push({
+        state: { nums: [...nums], dp: [...dp], dpLabels, dpHighlights: [i], prefix, suffix, result },
+        highlights: [i],
+        secondary: [n - 1 - i],
+        message: `max(prefix ${prefix}, suffix ${suffix}) = ${best} does not beat result = ${result}`,
+        codeLine: 8,
+        action: 'insert',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], dp: [...dp], dpLabels, result },
+    highlights: [],
+    message: `Maximum product subarray: ${result} — every zero-free stretch was scanned from both ends, so no candidate was missed`,
+    codeLine: 9,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const maxProductSubarray: Algorithm = {
   id: 'max-product-subarray',
   name: 'Maximum Product Subarray',
@@ -133,6 +217,86 @@ export const maxProductSubarray: Algorithm = {
   },
   defaultInput: [2, 3, -2, 4],
   run: runMaxProductSubarray,
+  optimalApproachName: 'Min/Max Tracking',
+  approaches: [
+    {
+      id: 'prefix-suffix-scan',
+      name: 'Prefix & Suffix Products',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of tracking min and max at every step, scan running products from both ends (resetting at zeros) — the best subarray always touches one end of a zero-free stretch.',
+      code: {
+        python: `def maxProduct(nums):
+    n = len(nums)
+    result = nums[0]
+    prefix, suffix = 0, 0
+    for i in range(n):
+        prefix = (prefix or 1) * nums[i]
+        suffix = (suffix or 1) * nums[n - 1 - i]
+        result = max(result, prefix, suffix)
+    return result`,
+        javascript: `function maxProduct(nums) {
+    const n = nums.length;
+    let result = nums[0];
+    let prefix = 0, suffix = 0;
+    for (let i = 0; i < n; i++) {
+        prefix = (prefix || 1) * nums[i];
+        suffix = (suffix || 1) * nums[n - 1 - i];
+        result = Math.max(result, Math.max(prefix, suffix));
+    }
+    return result;
+}`,
+        java: `public int maxProduct(int[] nums) {
+    int n = nums.length;
+    int result = nums[0];
+    int prefix = 0, suffix = 0;
+    for (int i = 0; i < n; i++) {
+        prefix = (prefix == 0 ? 1 : prefix) * nums[i];
+        suffix = (suffix == 0 ? 1 : suffix) * nums[n - 1 - i];
+        result = Math.max(result, Math.max(prefix, suffix));
+    }
+    return result;
+}`,
+      },
+      run: runMaxProductPrefixSuffix,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Length of the array',
+          3: 'Best product seen so far',
+          4: 'Running products from the left and from the right',
+          5: 'One pass drives both scans simultaneously',
+          6: 'Multiply prefix by the next left element (a zero resets the run to 1)',
+          7: 'Multiply suffix by the next right element (mirrored index)',
+          8: 'Best subarray touches an end of some zero-free stretch — check both runs',
+          9: 'Return the maximum product found',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Length of the array',
+          3: 'Best product seen so far',
+          4: 'Running products from the left and from the right',
+          5: 'One pass drives both scans simultaneously',
+          6: 'Multiply prefix by the next left element (a zero resets the run to 1)',
+          7: 'Multiply suffix by the next right element (mirrored index)',
+          8: 'Best subarray touches an end of some zero-free stretch — check both runs',
+          10: 'Return the maximum product found',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'Length of the array',
+          3: 'Best product seen so far',
+          4: 'Running products from the left and from the right',
+          5: 'One pass drives both scans simultaneously',
+          6: 'Multiply prefix by the next left element (a zero resets the run to 1)',
+          7: 'Multiply suffix by the next right element (mirrored index)',
+          8: 'Best subarray touches an end of some zero-free stretch — check both runs',
+          10: 'Return the maximum product found',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

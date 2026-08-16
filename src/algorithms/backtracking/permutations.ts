@@ -101,6 +101,66 @@ function runPermutations(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runPermutationsInsertion(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  let perms: number[][] = [[]];
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: ['[]'] },
+    highlights: [],
+    message: 'Start with one empty permutation — each number will be inserted into every gap of every existing permutation',
+    codeLine: 2,
+  });
+
+  for (let idx = 0; idx < nums.length; idx++) {
+    const num = nums[idx];
+
+    steps.push({
+      state: { nums: [...nums], stack: [num], result: perms.map((p) => `[${p.join(',')}]`) },
+      highlights: [idx],
+      message: `Insert ${num} into every position of each of the ${perms.length} permutation${perms.length !== 1 ? 's' : ''} (${perms.length} × ${idx + 1} gaps = ${perms.length * (idx + 1)} new)`,
+      codeLine: 4,
+      action: 'visit',
+    });
+
+    const newPerms: number[][] = [];
+    for (const perm of perms) {
+      const grown: number[][] = [];
+      for (let i = 0; i <= perm.length; i++) {
+        grown.push([...perm.slice(0, i), num, ...perm.slice(i)]);
+      }
+      newPerms.push(...grown);
+
+      steps.push({
+        state: { nums: [...nums], stack: [...perm, num], result: newPerms.map((p) => `[${p.join(',')}]`) },
+        highlights: [idx],
+        message: `[${perm.join(',')}] has ${perm.length + 1} gap${perm.length !== 0 ? 's' : ''} → ${grown.map((g) => `[${g.join(',')}]`).join(', ')}`,
+        codeLine: 8,
+        action: 'insert',
+      });
+    }
+    perms = newPerms;
+
+    steps.push({
+      state: { nums: [...nums], stack: [], result: perms.map((p) => `[${p.join(',')}]`) },
+      highlights: [idx],
+      message: `Round done: ${perms.length} permutation${perms.length !== 1 ? 's' : ''} of the first ${idx + 1} number${idx !== 0 ? 's' : ''}`,
+      codeLine: 9,
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: perms.map((p) => `[${p.join(',')}]`) },
+    highlights: [],
+    message: `Done! ${perms.length} permutations built by insertion (1 × 2 × ... × ${nums.length} = ${nums.length}!) — no recursion or used array needed`,
+    codeLine: 11,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const permutations: Algorithm = {
   id: 'permutations',
   name: 'Permutations',
@@ -180,6 +240,101 @@ private static void backtrack(List<List<Integer>> result, List<Integer> current,
   },
   defaultInput: [1, 2, 3],
   run: runPermutations,
+  optimalApproachName: 'Backtracking (Used Array)',
+  approaches: [
+    {
+      id: 'iterative-insertion',
+      name: 'Iterative Insertion',
+      timeComplexity: 'O(n·n!)',
+      spaceComplexity: 'O(n·n!)',
+      description:
+        'Rather than a recursive choose/unchoose tree, grow permutations level by level: insert each new number into every possible position of every permutation built so far.',
+      code: {
+        python: `def permute(nums):
+    perms = [[]]
+
+    for num in nums:
+        new_perms = []
+        for perm in perms:
+            for i in range(len(perm) + 1):
+                new_perms.append(perm[:i] + [num] + perm[i:])
+        perms = new_perms
+
+    return perms`,
+        javascript: `function permute(nums) {
+    let perms = [[]];
+
+    for (const num of nums) {
+        const newPerms = [];
+        for (const perm of perms) {
+            for (let i = 0; i <= perm.length; i++) {
+                newPerms.push([...perm.slice(0, i), num, ...perm.slice(i)]);
+            }
+        }
+        perms = newPerms;
+    }
+
+    return perms;
+}`,
+        java: `public static List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> perms = new ArrayList<>();
+    perms.add(new ArrayList<>());
+
+    for (int num : nums) {
+        List<List<Integer>> newPerms = new ArrayList<>();
+        for (List<Integer> perm : perms) {
+            for (int i = 0; i <= perm.size(); i++) {
+                List<Integer> copy = new ArrayList<>(perm);
+                copy.add(i, num);
+                newPerms.add(copy);
+            }
+        }
+        perms = newPerms;
+    }
+    return perms;
+}`,
+      },
+      run: runPermutationsInsertion,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Start with a single empty permutation',
+          4: 'Add one number per round',
+          5: 'Collect the next, larger generation of permutations',
+          6: 'Take each permutation built so far',
+          7: 'A permutation of length k has k+1 insertion gaps',
+          8: 'Insert num into gap i: prefix + num + suffix',
+          9: 'Replace the old generation with the grown one',
+          11: 'After all rounds: n! full-length permutations',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Start with a single empty permutation',
+          4: 'Add one number per round',
+          5: 'Collect the next, larger generation of permutations',
+          6: 'Take each permutation built so far',
+          7: 'A permutation of length k has k+1 insertion gaps',
+          8: 'Insert num into gap i: prefix + num + suffix',
+          11: 'Replace the old generation with the grown one',
+          14: 'After all rounds: n! full-length permutations',
+        },
+        java: {
+          1: 'Define method returning list of permutations',
+          2: 'Initialize the working list',
+          3: 'Start with a single empty permutation',
+          5: 'Add one number per round',
+          6: 'Collect the next, larger generation of permutations',
+          7: 'Take each permutation built so far',
+          8: 'A permutation of length k has k+1 insertion gaps',
+          9: 'Copy the permutation before mutating',
+          10: 'Insert num at position i',
+          11: 'Keep the grown permutation',
+          14: 'Replace the old generation with the grown one',
+          16: 'After all rounds: n! full-length permutations',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

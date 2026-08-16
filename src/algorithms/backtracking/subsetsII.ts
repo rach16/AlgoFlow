@@ -99,6 +99,62 @@ function runSubsetsII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSubsetsIIIterative(input: unknown): AlgorithmStep[] {
+  const rawNums = input as number[];
+  const nums = [...rawNums].sort((a, b) => a - b);
+  const steps: AlgorithmStep[] = [];
+  const result: number[][] = [[]];
+  let prevSize = 0;
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: ['[]'] },
+    highlights: [],
+    message: `Sort to [${nums.join(', ')}] and start from [[]] — a duplicate may only extend subsets created in the previous round`,
+    codeLine: 2,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    const isDup = i > 0 && nums[i] === nums[i - 1];
+    const begin = isDup ? prevSize : 0;
+    prevSize = result.length;
+
+    steps.push({
+      state: { nums: [...nums], stack: [nums[i]], result: result.map((r) => `[${r.join(',')}]`) },
+      highlights: [i],
+      secondary: isDup ? [i - 1] : [],
+      message: isDup
+        ? `nums[${i}] = ${nums[i]} repeats nums[${i - 1}] — extend only the ${prevSize - begin} subsets added last round, or we would rebuild duplicates`
+        : `nums[${i}] = ${nums[i]} is a new value — extend all ${prevSize} existing subsets`,
+      codeLine: 8,
+      action: 'visit',
+    });
+
+    const added: number[][] = [];
+    for (let j = begin; j < prevSize; j++) {
+      added.push([...result[j], nums[i]]);
+    }
+    result.push(...added);
+
+    steps.push({
+      state: { nums: [...nums], stack: [nums[i]], result: result.map((r) => `[${r.join(',')}]`) },
+      highlights: [i],
+      message: `New subsets: ${added.map((r) => `[${r.join(',')}]`).join(', ')} (total: ${result.length})`,
+      codeLine: 11,
+      action: 'insert',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: result.map((r) => `[${r.join(',')}]`) },
+    highlights: [],
+    message: `Done! ${result.length} unique subsets — duplicate values never re-extended old subsets, so no repeats appear`,
+    codeLine: 13,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const subsetsII: Algorithm = {
   id: 'subsets-ii',
   name: 'Subsets II',
@@ -167,6 +223,109 @@ private static void backtrack(int start, List<Integer> current, int[] nums, List
   },
   defaultInput: [1, 2, 2],
   run: runSubsetsII,
+  optimalApproachName: 'Backtracking + Skip Duplicates',
+  approaches: [
+    {
+      id: 'iterative-cascading-dedup',
+      name: 'Iterative (Cascading)',
+      timeComplexity: 'O(n·2ⁿ)',
+      spaceComplexity: 'O(2ⁿ)',
+      description:
+        'Builds the power set iteratively like Subsets I, but when the current value repeats the previous one it extends only the subsets created in the last round, which prevents duplicate subsets without recursion.',
+      code: {
+        python: `def subsetsWithDup(nums):
+    nums.sort()
+    result = [[]]
+    prev_size = 0
+
+    for i in range(len(nums)):
+        # Duplicates only extend last round's new subsets
+        begin = prev_size if i > 0 and nums[i] == nums[i - 1] else 0
+        prev_size = len(result)
+        for j in range(begin, prev_size):
+            result.append(result[j] + [nums[i]])
+
+    return result`,
+        javascript: `function subsetsWithDup(nums) {
+    nums.sort((a, b) => a - b);
+    const result = [[]];
+    let prevSize = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        // Duplicates only extend last round's new subsets
+        const begin = i > 0 && nums[i] === nums[i - 1] ? prevSize : 0;
+        prevSize = result.length;
+        for (let j = begin; j < prevSize; j++) {
+            result.push([...result[j], nums[i]]);
+        }
+    }
+
+    return result;
+}`,
+        java: `public static List<List<Integer>> subsetsWithDup(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> result = new ArrayList<>();
+    result.add(new ArrayList<>());
+    int prevSize = 0;
+
+    for (int i = 0; i < nums.length; i++) {
+        int begin = (i > 0 && nums[i] == nums[i - 1]) ? prevSize : 0;
+        prevSize = result.size();
+        for (int j = begin; j < prevSize; j++) {
+            List<Integer> subset = new ArrayList<>(result.get(j));
+            subset.add(nums[i]);
+            result.add(subset);
+        }
+    }
+    return result;
+}`,
+      },
+      run: runSubsetsIIIterative,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Sort so equal values sit next to each other',
+          3: 'Seed the result with the single empty subset',
+          4: 'Remember how big the list was before the previous round',
+          6: 'Process one number at a time',
+          7: 'Key idea: a repeated value must not re-extend old subsets',
+          8: 'Duplicate → start from last round’s new subsets; new value → start from 0',
+          9: 'Snapshot the current size before adding this round’s subsets',
+          10: 'Walk only the allowed range of existing subsets',
+          11: 'Append nums[i] to a copy of each allowed subset',
+          13: 'Return all unique subsets',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Sort so equal values sit next to each other',
+          3: 'Seed the result with the single empty subset',
+          4: 'Remember how big the list was before the previous round',
+          6: 'Process one number at a time',
+          7: 'Key idea: a repeated value must not re-extend old subsets',
+          8: 'Duplicate → start from last round’s new subsets; new value → start from 0',
+          9: 'Snapshot the current size before adding this round’s subsets',
+          10: 'Walk only the allowed range of existing subsets',
+          11: 'Append nums[i] to a copy of each allowed subset',
+          15: 'Return all unique subsets',
+        },
+        java: {
+          1: 'Define method returning list of subsets',
+          2: 'Sort so equal values sit next to each other',
+          3: 'Initialize result list',
+          4: 'Seed the result with the single empty subset',
+          5: 'Remember how big the list was before the previous round',
+          7: 'Process one number at a time',
+          8: 'Duplicate → start from last round’s new subsets; new value → start from 0',
+          9: 'Snapshot the current size before adding this round’s subsets',
+          10: 'Walk only the allowed range of existing subsets',
+          11: 'Copy an allowed existing subset',
+          12: 'Append the current number to the copy',
+          13: 'Add the extended copy to the result',
+          16: 'Return all unique subsets',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

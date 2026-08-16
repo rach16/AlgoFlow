@@ -141,6 +141,144 @@ function runNetworkDelayTime(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runNetworkDelayBellmanFord(input: unknown): AlgorithmStep[] {
+  const { times, n, k } = input as NetworkDelayInput;
+  const steps: AlgorithmStep[] = [];
+
+  const nodes = Array.from({ length: n }, (_, i) => `${i + 1}`);
+  const edges = times.map(([u, v, w]) => ({ from: `${u}`, to: `${v}`, label: `${w}` }));
+  const graph = { nodes, edges };
+
+  const dist: Record<number, number> = {};
+  for (let i = 1; i <= n; i++) dist[i] = Infinity;
+  dist[k] = 0;
+
+  const fmtDist = () =>
+    `Distances: {${nodes.map(nd => `${nd}: ${dist[parseInt(nd)] === Infinity ? 'inf' : dist[parseInt(nd)]}`).join(', ')}}`;
+
+  steps.push({
+    state: {
+      graph,
+      graphDirected: true,
+      graphHighlights: [`${k}`],
+      graphVisitedEdges: [],
+      result: 'Initializing Bellman-Ford...',
+    },
+    highlights: [],
+    message: `Bellman-Ford: no priority queue — just relax every edge up to ${n - 1} times. Shortest paths use at most ${n - 1} edges.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  steps.push({
+    state: {
+      graph,
+      graphDirected: true,
+      graphHighlights: [`${k}`],
+      graphVisitedEdges: [],
+      result: fmtDist(),
+    },
+    highlights: [],
+    message: `Set dist[${k}] = 0 (the source), all other nodes = infinity.`,
+    codeLine: 3,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  const visitedEdges: { from: string; to: string }[] = [];
+
+  for (let round = 1; round <= n - 1; round++) {
+    let updated = false;
+
+    steps.push({
+      state: {
+        graph,
+        graphDirected: true,
+        graphHighlights: [`${k}`],
+        graphVisitedEdges: visitedEdges.map(e => ({ ...e })),
+        result: `Round ${round}/${n - 1}: ${fmtDist()}`,
+      },
+      highlights: [],
+      message: `Round ${round} of ${n - 1}: sweep over all ${times.length} edges and relax any that shorten a path.`,
+      codeLine: 5,
+    } as AlgorithmStep);
+
+    for (const [u, v, w] of times) {
+      if (dist[u] === Infinity) continue;
+      const newDist = dist[u] + w;
+
+      steps.push({
+        state: {
+          graph,
+          graphDirected: true,
+          graphHighlights: [`${u}`, `${v}`],
+          graphVisitedEdges: visitedEdges.map(e => ({ ...e })),
+          result: fmtDist(),
+        },
+        highlights: [],
+        message: `Edge ${u} -> ${v} (weight ${w}): dist[${u}] + ${w} = ${newDist} vs dist[${v}] = ${dist[v] === Infinity ? 'inf' : dist[v]}.`,
+        codeLine: 8,
+        action: 'compare',
+      } as AlgorithmStep);
+
+      if (newDist < dist[v]) {
+        dist[v] = newDist;
+        updated = true;
+        if (!visitedEdges.some(e => e.from === `${u}` && e.to === `${v}`)) {
+          visitedEdges.push({ from: `${u}`, to: `${v}` });
+        }
+
+        steps.push({
+          state: {
+            graph,
+            graphDirected: true,
+            graphHighlights: [`${v}`],
+            graphVisitedEdges: visitedEdges.map(e => ({ ...e })),
+            result: fmtDist(),
+          },
+          highlights: [],
+          message: `Relax! dist[${v}] improves to ${newDist}.`,
+          codeLine: 9,
+          action: 'insert',
+        } as AlgorithmStep);
+      }
+    }
+
+    if (!updated) {
+      steps.push({
+        state: {
+          graph,
+          graphDirected: true,
+          graphHighlights: [],
+          graphVisitedEdges: visitedEdges.map(e => ({ ...e })),
+          result: fmtDist(),
+        },
+        highlights: [],
+        message: `Round ${round} changed nothing — distances have converged, so we can stop early.`,
+        codeLine: 12,
+      } as AlgorithmStep);
+      break;
+    }
+  }
+
+  const maxDist = Math.max(...Object.values(dist));
+  const answer = maxDist === Infinity ? -1 : maxDist;
+
+  steps.push({
+    state: {
+      graph,
+      graphDirected: true,
+      graphHighlights: nodes.filter(nd => dist[parseInt(nd)] !== Infinity),
+      graphVisitedEdges: visitedEdges.map(e => ({ ...e })),
+      result: `Network delay time: ${answer}`,
+    },
+    highlights: [],
+    message: `Done! The slowest node determines the delay: answer = ${answer}${answer === -1 ? ' (some node unreachable)' : ''}.`,
+    codeLine: 15,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const networkDelayTime: Algorithm = {
   id: 'network-delay-time',
   name: 'Network Delay Time',
@@ -235,6 +373,131 @@ export const networkDelayTime: Algorithm = {
   },
   defaultInput: { times: [[2, 1, 1], [2, 3, 1], [3, 4, 1]], n: 4, k: 2 },
   run: runNetworkDelayTime,
+  optimalApproachName: "Dijkstra's Algorithm",
+  approaches: [
+    {
+      id: 'bellman-ford',
+      name: 'Bellman-Ford',
+      timeComplexity: 'O(V·E)',
+      spaceComplexity: 'O(V)',
+      description:
+        'Skips the priority queue entirely: relax every edge up to V-1 times, since a shortest path never needs more than V-1 edges — simpler than Dijkstra and it even tolerates negative weights.',
+      code: {
+        python: `def networkDelayTime(times, n, k):
+    dist = {i: float('inf') for i in range(1, n + 1)}
+    dist[k] = 0
+
+    for _ in range(n - 1):
+        updated = False
+        for u, v, w in times:
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated:
+            break
+
+    mx = max(dist.values())
+    return mx if mx < float('inf') else -1`,
+        javascript: `function networkDelayTime(times, n, k) {
+    const dist = {};
+    for (let i = 1; i <= n; i++) dist[i] = Infinity;
+    dist[k] = 0;
+
+    for (let round = 0; round < n - 1; round++) {
+        let updated = false;
+        for (const [u, v, w] of times) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                updated = true;
+            }
+        }
+        if (!updated) break;
+    }
+
+    const mx = Math.max(...Object.values(dist));
+    return mx === Infinity ? -1 : mx;
+}`,
+        java: `public int networkDelayTime(int[][] times, int n, int k) {
+    int INF = Integer.MAX_VALUE;
+    int[] dist = new int[n + 1];
+    Arrays.fill(dist, INF);
+    dist[k] = 0;
+
+    for (int round = 0; round < n - 1; round++) {
+        boolean updated = false;
+        for (int[] t : times) {
+            int u = t[0], v = t[1], w = t[2];
+            if (dist[u] != INF && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                updated = true;
+            }
+        }
+        if (!updated) break;
+    }
+
+    int mx = 0;
+    for (int i = 1; i <= n; i++) {
+        if (dist[i] == INF) return -1;
+        mx = Math.max(mx, dist[i]);
+    }
+    return mx;
+}`,
+      },
+      run: runNetworkDelayBellmanFord,
+      lineExplanations: {
+        python: {
+          1: 'Define function with edges, node count, source',
+          2: 'Init all distances to infinity',
+          3: 'Source node has zero distance',
+          5: 'A shortest path uses at most n-1 edges',
+          6: 'Track whether this round changed anything',
+          7: 'Sweep over every edge (no ordering needed)',
+          8: 'Would going through u shorten the path to v?',
+          9: 'Relax: record the shorter distance',
+          10: 'Mark that this round made progress',
+          11: 'No edge improved — distances converged',
+          12: 'Stop early, later rounds cannot help',
+          14: 'The answer is the farthest node',
+          15: 'Return max distance, or -1 if unreachable',
+        },
+        javascript: {
+          1: 'Define function with edges, node count, source',
+          2: 'Distance map for all nodes',
+          3: 'Init all distances to Infinity',
+          4: 'Source node has zero distance',
+          6: 'A shortest path uses at most n-1 edges',
+          7: 'Track whether this round changed anything',
+          8: 'Sweep over every edge (no ordering needed)',
+          9: 'Would going through u shorten the path to v?',
+          10: 'Relax: record the shorter distance',
+          11: 'Mark that this round made progress',
+          14: 'No edge improved — stop early',
+          17: 'The answer is the farthest node',
+          18: 'Return max distance, or -1 if unreachable',
+        },
+        java: {
+          1: 'Define method with edges, node count, source',
+          2: 'Constant for unreachable distance',
+          3: 'Distance array (1-indexed nodes)',
+          4: 'Init all distances to infinity',
+          5: 'Source node has zero distance',
+          7: 'A shortest path uses at most n-1 edges',
+          8: 'Track whether this round changed anything',
+          9: 'Sweep over every edge (no ordering needed)',
+          10: 'Unpack edge: from, to, weight',
+          11: 'Would going through u shorten the path to v?',
+          12: 'Relax: record the shorter distance',
+          13: 'Mark that this round made progress',
+          16: 'No edge improved — stop early',
+          19: 'Track the maximum distance',
+          20: 'Check every node',
+          21: 'Any unreachable node means answer is -1',
+          22: 'The answer is the farthest node',
+          24: 'Return the network delay time',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with edges, node count, source',

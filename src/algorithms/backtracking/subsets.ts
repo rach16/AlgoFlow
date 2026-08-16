@@ -81,6 +81,52 @@ function runSubsets(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSubsetsIterative(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  let result: number[][] = [[]];
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: ['[]'] },
+    highlights: [],
+    message: 'Start with just the empty subset [[]] — each number will double the list',
+    codeLine: 2,
+  });
+
+  for (let idx = 0; idx < nums.length; idx++) {
+    const num = nums[idx];
+
+    steps.push({
+      state: { nums: [...nums], stack: [num], result: result.map((r) => `[${r.join(',')}]`) },
+      highlights: [idx],
+      message: `Take nums[${idx}] = ${num}: every existing subset either keeps it out (stays as-is) or takes it in (gets a copy with ${num} appended)`,
+      codeLine: 4,
+      action: 'visit',
+    });
+
+    const added = result.map((curr) => [...curr, num]);
+    result = [...result, ...added];
+
+    steps.push({
+      state: { nums: [...nums], stack: [num], result: result.map((r) => `[${r.join(',')}]`) },
+      highlights: [idx],
+      message: `New subsets: ${added.map((r) => `[${r.join(',')}]`).join(', ')} — list doubles from ${result.length - added.length} to ${result.length}`,
+      codeLine: 5,
+      action: 'insert',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], stack: [], result: result.map((r) => `[${r.join(',')}]`) },
+    highlights: [],
+    message: `Done! ${nums.length} doublings give 2^${nums.length} = ${result.length} subsets — same power set, no recursion needed`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const subsets: Algorithm = {
   id: 'subsets',
   name: 'Subsets',
@@ -139,6 +185,78 @@ private static void backtrack(int start, List<Integer> current, int[] nums, List
   },
   defaultInput: [1, 2, 3],
   run: runSubsets,
+  optimalApproachName: 'Backtracking (DFS)',
+  approaches: [
+    {
+      id: 'iterative-cascading',
+      name: 'Iterative (Cascading)',
+      timeComplexity: 'O(n·2ⁿ)',
+      spaceComplexity: 'O(2ⁿ)',
+      description:
+        'Instead of a recursive include/exclude tree, start from [[]] and let each number double the list by appending itself to a copy of every existing subset.',
+      code: {
+        python: `def subsets(nums):
+    result = [[]]
+
+    for num in nums:
+        result += [curr + [num] for curr in result]
+
+    return result`,
+        javascript: `function subsets(nums) {
+    let result = [[]];
+
+    for (const num of nums) {
+        result = result.concat(result.map(curr => [...curr, num]));
+    }
+
+    return result;
+}`,
+        java: `public static List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    result.add(new ArrayList<>());
+
+    for (int num : nums) {
+        int size = result.size();
+        for (int i = 0; i < size; i++) {
+            List<Integer> subset = new ArrayList<>(result.get(i));
+            subset.add(num);
+            result.add(subset);
+        }
+    }
+    return result;
+}`,
+      },
+      run: runSubsetsIterative,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Seed the result with the single empty subset',
+          4: 'Process one number at a time',
+          5: 'Append num to a copy of every existing subset, doubling the list',
+          7: 'After n doublings the list holds all 2^n subsets',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Seed the result with the single empty subset',
+          4: 'Process one number at a time',
+          5: 'Append num to a copy of every existing subset, doubling the list',
+          8: 'After n doublings the list holds all 2^n subsets',
+        },
+        java: {
+          1: 'Define method returning list of subsets',
+          2: 'Initialize result list',
+          3: 'Seed the result with the single empty subset',
+          5: 'Process one number at a time',
+          6: 'Freeze the current size — only extend subsets that already existed',
+          7: 'Walk the existing subsets',
+          8: 'Copy an existing subset',
+          9: 'Append the current number to the copy',
+          10: 'Add the extended copy, doubling the list',
+          13: 'After n doublings the list holds all 2^n subsets',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

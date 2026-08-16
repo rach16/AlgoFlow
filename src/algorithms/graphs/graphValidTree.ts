@@ -165,6 +165,128 @@ function runGraphValidTree(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runGraphValidTreeDFS(input: unknown): AlgorithmStep[] {
+  const { n, edges } = input as { n: number; edges: number[][] };
+  const steps: AlgorithmStep[] = [];
+
+  function buildGraphState(
+    highlights: number[] = [],
+    secondary: number[] = [],
+    visitedEdges: [number, number][] = []
+  ) {
+    const nodes = [];
+    for (let i = 0; i < n; i++) {
+      nodes.push({ id: i, label: `${i}` });
+    }
+    const graphEdges: { from: number; to: number }[] = edges.map(([a, b]) => ({ from: a, to: b }));
+    return {
+      graph: { nodes, edges: graphEdges },
+      graphHighlights: highlights,
+      graphSecondary: secondary,
+      graphVisitedEdges: visitedEdges,
+      graphDirected: false,
+    };
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      result: 'Checking if graph is a valid tree...',
+    },
+    highlights: [],
+    message: `DFS approach: a graph with exactly n-1 edges is a tree if and only if it is connected. So check the edge count, then check reachability from node 0.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  if (edges.length !== n - 1) {
+    steps.push({
+      state: {
+        ...buildGraphState(),
+        result: 'false - Not a valid tree',
+      },
+      highlights: [],
+      message: `A tree with ${n} nodes needs exactly ${n - 1} edges, but found ${edges.length}. ${edges.length > n - 1 ? 'Too many edges force a cycle.' : 'Too few edges leave the graph disconnected.'} Return false.`,
+      codeLine: 3,
+      action: 'found',
+    } as AlgorithmStep);
+    return steps;
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      result: `Edge count: ${edges.length} = ${n} - 1. Correct!`,
+    },
+    highlights: [],
+    message: `Edge count passes (${edges.length} = ${n} - 1). With that guaranteed, "connected" and "acyclic" are equivalent — one DFS from node 0 settles both.`,
+    codeLine: 2,
+  } as AlgorithmStep);
+
+  // Build adjacency list
+  const adj: number[][] = Array.from({ length: n }, () => []);
+  for (const [a, b] of edges) {
+    adj[a].push(b);
+    adj[b].push(a);
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      hashMap: Object.fromEntries(adj.map((neighbors, i) => [`Node ${i}`, `[${neighbors.join(', ')}]`])),
+      result: 'Adjacency list built',
+    },
+    highlights: [],
+    message: `Build the adjacency list, adding each undirected edge in both directions.`,
+    codeLine: 5,
+  } as AlgorithmStep);
+
+  const visited = new Array(n).fill(false);
+  const visitedEdges: [number, number][] = [];
+  const reached: number[] = [];
+
+  function dfs(node: number) {
+    visited[node] = true;
+    reached.push(node);
+
+    steps.push({
+      state: {
+        ...buildGraphState([...reached], [], visitedEdges),
+        result: `Reached ${reached.length}/${n} nodes`,
+      },
+      highlights: [],
+      message: `DFS reaches node ${node} (${reached.length}/${n} nodes so far). Neighbors: [${adj[node].join(', ')}]`,
+      codeLine: 13,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    for (const nei of adj[node]) {
+      if (!visited[nei]) {
+        visitedEdges.push([node, nei]);
+        dfs(nei);
+      }
+    }
+  }
+
+  dfs(0);
+
+  const isTree = reached.length === n;
+
+  steps.push({
+    state: {
+      ...buildGraphState(isTree ? [] : [...reached]),
+      result: isTree ? 'true - Valid tree!' : 'false - Not a valid tree',
+    },
+    highlights: [],
+    message: isTree
+      ? `Done! DFS from node 0 reached all ${n} nodes with ${n - 1} edges — connected and acyclic. Valid tree.`
+      : `Done! DFS reached only ${reached.length}/${n} nodes — the graph is disconnected (so the ${n - 1} edges must form a cycle somewhere else). Not a tree.`,
+    codeLine: 19,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const graphValidTree: Algorithm = {
   id: 'graph-valid-tree',
   name: 'Graph Valid Tree',
@@ -277,6 +399,136 @@ private boolean union(int a, int b, int[] parent, int[] rank) {
   },
   defaultInput: { n: 5, edges: [[0, 1], [0, 2], [0, 3], [1, 4]] },
   run: runGraphValidTree,
+  optimalApproachName: 'Union-Find',
+  approaches: [
+    {
+      id: 'dfs-connectivity',
+      name: 'DFS Connectivity',
+      timeComplexity: 'O(V+E)',
+      spaceComplexity: 'O(V+E)',
+      description:
+        'Uses the counting insight instead of Union-Find: with exactly n-1 edges, the graph is a tree if and only if one DFS from node 0 reaches every node.',
+      code: {
+        python: `def validTree(n, edges):
+    if len(edges) != n - 1:
+        return False
+
+    adj = {i: [] for i in range(n)}
+    for a, b in edges:
+        adj[a].append(b)
+        adj[b].append(a)
+
+    visited = set()
+
+    def dfs(node):
+        visited.add(node)
+        for nei in adj[node]:
+            if nei not in visited:
+                dfs(nei)
+
+    dfs(0)
+    return len(visited) == n`,
+        javascript: `function validTree(n, edges) {
+    if (edges.length !== n - 1) return false;
+
+    const adj = Array.from({length: n}, () => []);
+    for (const [a, b] of edges) {
+        adj[a].push(b);
+        adj[b].push(a);
+    }
+
+    const visited = new Set();
+    function dfs(node) {
+        visited.add(node);
+        for (const nei of adj[node]) {
+            if (!visited.has(nei)) dfs(nei);
+        }
+    }
+
+    dfs(0);
+    return visited.size === n;
+}`,
+        java: `public boolean validTree(int n, int[][] edges) {
+    if (edges.length != n - 1) return false;
+
+    List<List<Integer>> adj = new ArrayList<>();
+    for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+    for (int[] e : edges) {
+        adj.get(e[0]).add(e[1]);
+        adj.get(e[1]).add(e[0]);
+    }
+
+    boolean[] visited = new boolean[n];
+    dfs(0, adj, visited);
+
+    for (boolean v : visited) {
+        if (!v) return false;
+    }
+    return true;
+}
+
+private void dfs(int node, List<List<Integer>> adj, boolean[] visited) {
+    visited[node] = true;
+    for (int nei : adj.get(node)) {
+        if (!visited[nei]) dfs(nei, adj, visited);
+    }
+}`,
+      },
+      run: runGraphValidTreeDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function with node count and edges',
+          2: 'A tree must have exactly n-1 edges',
+          3: 'Wrong edge count — cannot be a tree',
+          5: 'Create an empty adjacency list per node',
+          6: 'Process each undirected edge',
+          7: 'Record b as a neighbor of a',
+          8: 'Record a as a neighbor of b',
+          10: 'Track which nodes DFS reaches',
+          12: 'Define DFS flood-fill helper',
+          13: 'Mark the current node as reached',
+          14: 'Walk each neighbor',
+          15: 'Only recurse into unreached neighbors',
+          16: 'DFS spreads through the whole component',
+          18: 'Explore everything reachable from node 0',
+          19: 'Tree iff all n nodes were reached',
+        },
+        javascript: {
+          1: 'Define function with node count and edges',
+          2: 'A tree must have exactly n-1 edges',
+          4: 'Create an empty adjacency list per node',
+          5: 'Process each undirected edge',
+          6: 'Record b as a neighbor of a',
+          7: 'Record a as a neighbor of b',
+          10: 'Track which nodes DFS reaches',
+          11: 'Define DFS flood-fill helper',
+          12: 'Mark the current node as reached',
+          13: 'Walk each neighbor',
+          14: 'Only recurse into unreached neighbors',
+          18: 'Explore everything reachable from node 0',
+          19: 'Tree iff all n nodes were reached',
+        },
+        java: {
+          1: 'Define method returning boolean',
+          2: 'A tree must have exactly n-1 edges',
+          4: 'Create adjacency list container',
+          5: 'Add an empty neighbor list per node',
+          6: 'Process each undirected edge',
+          7: 'Record e[1] as a neighbor of e[0]',
+          8: 'Record e[0] as a neighbor of e[1]',
+          11: 'Track which nodes DFS reaches',
+          12: 'Explore everything reachable from node 0',
+          14: 'Check every node was reached',
+          15: 'Unreached node means disconnected — not a tree',
+          17: 'All nodes reached with n-1 edges: valid tree',
+          20: 'Define DFS flood-fill helper',
+          21: 'Mark the current node as reached',
+          22: 'Walk each neighbor',
+          23: 'Only recurse into unreached neighbors',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with node count and edges',

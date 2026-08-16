@@ -163,6 +163,162 @@ function runCourseSchedule(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCourseScheduleKahns(input: unknown): AlgorithmStep[] {
+  const { numCourses, prerequisites } = input as { numCourses: number; prerequisites: number[][] };
+  const steps: AlgorithmStep[] = [];
+
+  // Build adjacency list (prereq -> course) and indegrees
+  const adj: number[][] = Array.from({ length: numCourses }, () => []);
+  const indegree = new Array(numCourses).fill(0);
+  for (const [course, prereq] of prerequisites) {
+    adj[prereq].push(course);
+    indegree[course]++;
+  }
+
+  function buildGraphState(
+    highlights: number[] = [],
+    secondary: number[] = [],
+    visitedEdges: [number, number][] = []
+  ) {
+    const nodes = [];
+    for (let i = 0; i < numCourses; i++) {
+      nodes.push({ id: i, label: `${i}` });
+    }
+    const edges: { from: number; to: number }[] = [];
+    for (const [course, prereq] of prerequisites) {
+      edges.push({ from: prereq, to: course });
+    }
+    return {
+      graph: { nodes, edges },
+      graphHighlights: highlights,
+      graphSecondary: secondary,
+      graphVisitedEdges: visitedEdges,
+      graphDirected: true,
+    };
+  }
+
+  function indegreeMap() {
+    return Object.fromEntries(
+      Array.from({ length: numCourses }, (_, i) => [`Course ${i}`, `indegree=${indegree[i]}`])
+    );
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      result: 'Checking if all courses can be finished...',
+    },
+    highlights: [],
+    message: `Kahn's algorithm: count incoming prerequisite edges (indegree) per course. Courses with indegree 0 can be taken now — if we can "take" all ${numCourses}, there is no cycle.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      hashMap: indegreeMap(),
+      result: 'Indegrees computed',
+    },
+    highlights: [],
+    message: `Indegrees: [${indegree.join(', ')}]. A course's indegree = how many prerequisites it still waits on.`,
+    codeLine: 6,
+  } as AlgorithmStep);
+
+  const queue: number[] = [];
+  for (let i = 0; i < numCourses; i++) {
+    if (indegree[i] === 0) queue.push(i);
+  }
+
+  steps.push({
+    state: {
+      ...buildGraphState([...queue]),
+      hashMap: indegreeMap(),
+      queue: [...queue],
+      result: 'Queue seeded',
+    },
+    highlights: [],
+    message: queue.length > 0
+      ? `Seed the queue with courses that have no prerequisites: [${queue.join(', ')}].`
+      : `No course has indegree 0 — every course waits on another, which already implies a cycle.`,
+    codeLine: 8,
+    action: 'push',
+  } as AlgorithmStep);
+
+  const visitedEdges: [number, number][] = [];
+  let finished = 0;
+
+  while (queue.length > 0) {
+    const course = queue.shift()!;
+    finished++;
+
+    steps.push({
+      state: {
+        ...buildGraphState([course], [], visitedEdges),
+        hashMap: indegreeMap(),
+        queue: [...queue],
+        result: `Finished: ${finished}/${numCourses}`,
+      },
+      highlights: [],
+      message: `Take course ${course} (all its prerequisites are done). Finished ${finished}/${numCourses}.`,
+      codeLine: 11,
+      action: 'pop',
+    } as AlgorithmStep);
+
+    for (const next of adj[course]) {
+      indegree[next]--;
+      visitedEdges.push([course, next]);
+
+      if (indegree[next] === 0) {
+        queue.push(next);
+
+        steps.push({
+          state: {
+            ...buildGraphState([course], [next], visitedEdges),
+            hashMap: indegreeMap(),
+            queue: [...queue],
+            result: `Finished: ${finished}/${numCourses}`,
+          },
+          highlights: [],
+          message: `Course ${next} loses its last pending prerequisite (indegree hits 0) — enqueue it.`,
+          codeLine: 16,
+          action: 'push',
+        } as AlgorithmStep);
+      } else {
+        steps.push({
+          state: {
+            ...buildGraphState([course], [next], visitedEdges),
+            hashMap: indegreeMap(),
+            queue: [...queue],
+            result: `Finished: ${finished}/${numCourses}`,
+          },
+          highlights: [],
+          message: `Course ${next} now waits on ${indegree[next]} prerequisite(s) — not ready yet.`,
+          codeLine: 14,
+          action: 'compare',
+        } as AlgorithmStep);
+      }
+    }
+  }
+
+  const canFinish = finished === numCourses;
+
+  steps.push({
+    state: {
+      ...buildGraphState(),
+      hashMap: indegreeMap(),
+      result: canFinish ? 'true - Can finish all courses!' : 'false - Cannot finish (cycle exists)',
+    },
+    highlights: [],
+    message: canFinish
+      ? `Done! All ${numCourses} courses were taken, so the prerequisite graph has no cycle. Return true.`
+      : `Done! Only ${finished}/${numCourses} courses could be taken — the rest are stuck in a cycle where each waits on another. Return false.`,
+    codeLine: 17,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const courseSchedule: Algorithm = {
   id: 'course-schedule',
   name: 'Course Schedule',
@@ -252,6 +408,144 @@ private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited) {
   },
   defaultInput: { numCourses: 4, prerequisites: [[1, 0], [2, 1], [3, 2]] },
   run: runCourseSchedule,
+  optimalApproachName: 'DFS Cycle Detection',
+  approaches: [
+    {
+      id: 'kahns-bfs-indegree',
+      name: "Kahn's BFS (Indegree)",
+      timeComplexity: 'O(V+E)',
+      spaceComplexity: 'O(V+E)',
+      description:
+        "Instead of hunting for cycles with DFS coloring, Kahn's algorithm repeatedly 'takes' courses whose indegree is 0 — if a cycle exists, its courses never reach indegree 0 and the finished count falls short.",
+      code: {
+        python: `def canFinish(numCourses, prerequisites):
+    adj = {i: [] for i in range(numCourses)}
+    indegree = [0] * numCourses
+    for crs, pre in prerequisites:
+        adj[pre].append(crs)
+        indegree[crs] += 1
+
+    queue = deque(i for i in range(numCourses) if indegree[i] == 0)
+    finished = 0
+    while queue:
+        crs = queue.popleft()
+        finished += 1
+        for nei in adj[crs]:
+            indegree[nei] -= 1
+            if indegree[nei] == 0:
+                queue.append(nei)
+    return finished == numCourses`,
+        javascript: `function canFinish(numCourses, prerequisites) {
+    const adj = Array.from({length: numCourses}, () => []);
+    const indegree = new Array(numCourses).fill(0);
+    for (const [crs, pre] of prerequisites) {
+        adj[pre].push(crs);
+        indegree[crs]++;
+    }
+
+    const queue = [];
+    for (let i = 0; i < numCourses; i++)
+        if (indegree[i] === 0) queue.push(i);
+
+    let finished = 0;
+    while (queue.length > 0) {
+        const crs = queue.shift();
+        finished++;
+        for (const nei of adj[crs]) {
+            indegree[nei]--;
+            if (indegree[nei] === 0) queue.push(nei);
+        }
+    }
+    return finished === numCourses;
+}`,
+        java: `public boolean canFinish(int numCourses, int[][] prerequisites) {
+    List<List<Integer>> adj = new ArrayList<>();
+    for (int i = 0; i < numCourses; i++) adj.add(new ArrayList<>());
+    int[] indegree = new int[numCourses];
+    for (int[] pre : prerequisites) {
+        adj.get(pre[1]).add(pre[0]);
+        indegree[pre[0]]++;
+    }
+
+    Queue<Integer> queue = new LinkedList<>();
+    for (int i = 0; i < numCourses; i++) {
+        if (indegree[i] == 0) queue.add(i);
+    }
+
+    int finished = 0;
+    while (!queue.isEmpty()) {
+        int crs = queue.poll();
+        finished++;
+        for (int nei : adj.get(crs)) {
+            indegree[nei]--;
+            if (indegree[nei] == 0) queue.add(nei);
+        }
+    }
+    return finished == numCourses;
+}`,
+      },
+      run: runCourseScheduleKahns,
+      lineExplanations: {
+        python: {
+          1: 'Define function with course count and prereqs',
+          2: 'Adjacency list: prereq -> courses it unlocks',
+          3: 'Indegree = pending prerequisites per course',
+          4: 'Process each prerequisite pair',
+          5: 'Prereq unlocks this course when done',
+          6: 'One more prerequisite pending for this course',
+          8: 'Start with all courses that need no prereqs',
+          9: 'Count how many courses we manage to take',
+          10: 'Process while some course is ready',
+          11: 'Take the next ready course',
+          12: 'One more course finished',
+          13: 'Update every course this one unlocks',
+          14: 'It waits on one fewer prerequisite now',
+          15: 'All its prerequisites done?',
+          16: 'It becomes ready — enqueue it',
+          17: 'No cycle iff every course got taken',
+        },
+        javascript: {
+          1: 'Define function with course count and prereqs',
+          2: 'Adjacency list: prereq -> courses it unlocks',
+          3: 'Indegree = pending prerequisites per course',
+          4: 'Process each prerequisite pair',
+          5: 'Prereq unlocks this course when done',
+          6: 'One more prerequisite pending for this course',
+          9: 'Queue of courses ready to take',
+          10: 'Scan all courses',
+          11: 'Seed with courses that need no prereqs',
+          13: 'Count how many courses we manage to take',
+          14: 'Process while some course is ready',
+          15: 'Take the next ready course',
+          16: 'One more course finished',
+          17: 'Update every course this one unlocks',
+          18: 'It waits on one fewer prerequisite now',
+          19: 'If all prereqs done, it becomes ready',
+          22: 'No cycle iff every course got taken',
+        },
+        java: {
+          1: 'Define method returning boolean for feasibility',
+          2: 'Adjacency list: prereq -> courses it unlocks',
+          3: 'Add an empty list per course',
+          4: 'Indegree = pending prerequisites per course',
+          5: 'Process each prerequisite pair',
+          6: 'Prereq unlocks this course when done',
+          7: 'One more prerequisite pending for this course',
+          10: 'Queue of courses ready to take',
+          11: 'Scan all courses',
+          12: 'Seed with courses that need no prereqs',
+          15: 'Count how many courses we manage to take',
+          16: 'Process while some course is ready',
+          17: 'Take the next ready course',
+          18: 'One more course finished',
+          19: 'Update every course this one unlocks',
+          20: 'It waits on one fewer prerequisite now',
+          21: 'If all prereqs done, it becomes ready',
+          24: 'No cycle iff every course got taken',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with course count and prereqs',

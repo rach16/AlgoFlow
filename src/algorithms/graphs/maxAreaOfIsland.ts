@@ -101,6 +101,111 @@ function runMaxAreaOfIsland(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMaxAreaOfIslandBFS(input: unknown): AlgorithmStep[] {
+  const grid = (input as number[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const visited: boolean[][] = Array.from({ length: rows }, () => Array(cols).fill(false));
+  let maxArea = 0;
+
+  steps.push({
+    state: {
+      matrix: grid.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: `Max area: 0`,
+    },
+    highlights: [],
+    message: 'BFS approach: measure each island with a queue, expanding outward in rings from the first land cell instead of diving deep like DFS.',
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const directions: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] === 1 && !visited[r][c]) {
+        steps.push({
+          state: {
+            matrix: grid.map(row => [...row]),
+            matrixHighlights: [],
+            matrixSecondary: [[r, c]],
+            result: `Max area: ${maxArea}`,
+          },
+          highlights: [],
+          message: `Found unvisited land at (${r}, ${c}). Seed the BFS queue and measure this island ring by ring.`,
+          codeLine: 8,
+          action: 'found',
+        } as AlgorithmStep);
+
+        const queue: [number, number][] = [[r, c]];
+        visited[r][c] = true;
+        const islandCells: [number, number][] = [];
+        let area = 0;
+
+        while (queue.length > 0) {
+          const [row, col] = queue.shift()!;
+          area++;
+          islandCells.push([row, col]);
+
+          steps.push({
+            state: {
+              matrix: grid.map(rw => [...rw]),
+              matrixHighlights: islandCells.map(h => [...h]),
+              matrixSecondary: queue.map(q => [...q]),
+              result: `Max area: ${maxArea}`,
+            },
+            highlights: [],
+            message: `Dequeue (${row}, ${col}) — area is now ${area}. Frontier holds ${queue.length} cell(s) waiting.`,
+            codeLine: 13,
+            action: 'pop',
+          } as AlgorithmStep);
+
+          for (const [dr, dc] of directions) {
+            const nr = row + dr;
+            const nc = col + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] === 1 && !visited[nr][nc]) {
+              visited[nr][nc] = true;
+              queue.push([nr, nc]);
+            }
+          }
+        }
+
+        maxArea = Math.max(maxArea, area);
+
+        steps.push({
+          state: {
+            matrix: grid.map(rw => [...rw]),
+            matrixHighlights: islandCells.map(h => [...h]),
+            matrixSecondary: [],
+            result: `Max area: ${maxArea}`,
+          },
+          highlights: [],
+          message: `Queue drained — island area = ${area}. Max area so far = ${maxArea}.`,
+          codeLine: 21,
+          action: 'compare',
+        } as AlgorithmStep);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: grid.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: `Max area: ${maxArea}`,
+    },
+    highlights: [],
+    message: `Done! Maximum area of island = ${maxArea}`,
+    codeLine: 22,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const maxAreaOfIsland: Algorithm = {
   id: 'max-area-of-island',
   name: 'Max Area of Island',
@@ -196,6 +301,175 @@ private int dfs(int[][] grid, int r, int c, boolean[][] visited) {
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
   ],
   run: runMaxAreaOfIsland,
+  optimalApproachName: 'DFS Flood Fill',
+  approaches: [
+    {
+      id: 'bfs-flood-fill',
+      name: 'BFS Flood Fill',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Measures each island with an explicit queue that expands outward ring by ring, avoiding the deep recursion of DFS (no stack-overflow risk on huge islands).',
+      code: {
+        python: `def maxAreaOfIsland(grid):
+    rows, cols = len(grid), len(grid[0])
+    visited = set()
+    max_area = 0
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1 and (r, c) not in visited:
+                queue = deque([(r, c)])
+                visited.add((r, c))
+                area = 0
+                while queue:
+                    row, col = queue.popleft()
+                    area += 1
+                    for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+                        nr, nc = row + dr, col + dc
+                        if (0 <= nr < rows and 0 <= nc < cols and
+                                grid[nr][nc] == 1 and (nr, nc) not in visited):
+                            visited.add((nr, nc))
+                            queue.append((nr, nc))
+                max_area = max(max_area, area)
+    return max_area`,
+        javascript: `function maxAreaOfIsland(grid) {
+    const rows = grid.length, cols = grid[0].length;
+    const visited = new Set();
+    let maxArea = 0;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1 && !visited.has(\`\${r},\${c}\`)) {
+                const queue = [[r, c]];
+                visited.add(\`\${r},\${c}\`);
+                let area = 0;
+                while (queue.length > 0) {
+                    const [row, col] = queue.shift();
+                    area++;
+                    for (const [dr, dc] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                        const nr = row + dr, nc = col + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+                                grid[nr][nc] === 1 && !visited.has(\`\${nr},\${nc}\`)) {
+                            visited.add(\`\${nr},\${nc}\`);
+                            queue.push([nr, nc]);
+                        }
+                    }
+                }
+                maxArea = Math.max(maxArea, area);
+            }
+        }
+    }
+    return maxArea;
+}`,
+        java: `public int maxAreaOfIsland(int[][] grid) {
+    int rows = grid.length, cols = grid[0].length;
+    boolean[][] visited = new boolean[rows][cols];
+    int maxArea = 0;
+    int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 1 && !visited[r][c]) {
+                Queue<int[]> queue = new LinkedList<>();
+                queue.add(new int[]{r, c});
+                visited[r][c] = true;
+                int area = 0;
+                while (!queue.isEmpty()) {
+                    int[] cell = queue.poll();
+                    area++;
+                    for (int[] d : dirs) {
+                        int nr = cell[0] + d[0], nc = cell[1] + d[1];
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
+                                && grid[nr][nc] == 1 && !visited[nr][nc]) {
+                            visited[nr][nc] = true;
+                            queue.add(new int[]{nr, nc});
+                        }
+                    }
+                }
+                maxArea = Math.max(maxArea, area);
+            }
+        }
+    }
+    return maxArea;
+}`,
+      },
+      run: runMaxAreaOfIslandBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking integer grid',
+          2: 'Get grid dimensions',
+          3: 'Track visited cells using a set',
+          4: 'Best island area seen so far',
+          6: 'Iterate through each row',
+          7: 'Iterate through each column',
+          8: 'Unvisited land cell starts a new island',
+          9: 'Seed the BFS queue with this cell',
+          10: 'Mark it visited when enqueued, not dequeued',
+          11: 'This island has area 0 so far',
+          12: 'Expand until the frontier is empty',
+          13: 'Take the next cell off the queue',
+          14: 'Count it toward the island area',
+          15: 'Try all four neighbor directions',
+          16: 'Compute the neighbor coordinates',
+          17: 'Neighbor must be in bounds...',
+          18: '...and unvisited land',
+          19: 'Mark visited immediately to avoid double-adds',
+          20: 'Add it to the expanding frontier',
+          21: 'Island measured — update the maximum',
+          22: 'Return the largest island area found',
+        },
+        javascript: {
+          1: 'Define function taking integer grid',
+          2: 'Get grid dimensions',
+          3: 'Track visited cells with a Set',
+          4: 'Best island area seen so far',
+          6: 'Iterate through each row',
+          7: 'Iterate through each column',
+          8: 'Unvisited land cell starts a new island',
+          9: 'Seed the BFS queue with this cell',
+          10: 'Mark it visited when enqueued, not dequeued',
+          11: 'This island has area 0 so far',
+          12: 'Expand until the frontier is empty',
+          13: 'Take the next cell off the queue',
+          14: 'Count it toward the island area',
+          15: 'Try all four neighbor directions',
+          16: 'Compute the neighbor coordinates',
+          17: 'Neighbor must be in bounds...',
+          18: '...and unvisited land',
+          19: 'Mark visited immediately to avoid double-adds',
+          20: 'Add it to the expanding frontier',
+          24: 'Island measured — update the maximum',
+          28: 'Return the largest island area found',
+        },
+        java: {
+          1: 'Define method taking integer grid',
+          2: 'Get grid dimensions',
+          3: 'Create visited boolean grid',
+          4: 'Best island area seen so far',
+          5: 'The four neighbor directions',
+          7: 'Iterate through each row',
+          8: 'Iterate through each column',
+          9: 'Unvisited land cell starts a new island',
+          10: 'Create the BFS queue',
+          11: 'Seed it with this cell',
+          12: 'Mark it visited when enqueued, not dequeued',
+          13: 'This island has area 0 so far',
+          14: 'Expand until the frontier is empty',
+          15: 'Take the next cell off the queue',
+          16: 'Count it toward the island area',
+          17: 'Try all four neighbor directions',
+          18: 'Compute the neighbor coordinates',
+          19: 'Neighbor must be in bounds...',
+          20: '...and unvisited land',
+          21: 'Mark visited immediately to avoid double-adds',
+          22: 'Add it to the expanding frontier',
+          26: 'Island measured — update the maximum',
+          30: 'Return the largest island area found',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking integer grid',

@@ -151,6 +151,155 @@ function runSurroundedRegions(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSurroundedRegionsBFS(input: unknown): AlgorithmStep[] {
+  const board = (input as string[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const rows = board.length;
+  const cols = board[0].length;
+  const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  steps.push({
+    state: {
+      matrix: board.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'Capture surrounded regions (BFS)',
+    },
+    highlights: [],
+    message: 'Same border-first insight, but iterative: put every border "O" in a queue and let BFS spread the "safe" marking inward — no recursion stack to overflow on huge boards.',
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  // Phase 1: seed queue with all border O's
+  const queue: [number, number][] = [];
+  const safeHighlights: [number, number][] = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if ((r === 0 || r === rows - 1 || c === 0 || c === cols - 1) && board[r][c] === 'O') {
+        board[r][c] = 'T';
+        queue.push([r, c]);
+        safeHighlights.push([r, c]);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: board.map(row => [...row]),
+      matrixHighlights: safeHighlights.map(h => [...h]),
+      matrixSecondary: [],
+      queue: queue.map(([r, c]) => `(${r},${c})`),
+      result: `Seeded ${queue.length} border "O" cell(s)`,
+    },
+    highlights: [],
+    message: `Scan the border: ${queue.length} "O" cell(s) touch the edge. Mark them "T" (safe) and enqueue them as BFS sources.`,
+    codeLine: 9,
+    action: 'push',
+  } as AlgorithmStep);
+
+  // BFS inward from the border
+  while (queue.length > 0) {
+    const [r, c] = queue.shift()!;
+
+    steps.push({
+      state: {
+        matrix: board.map(row => [...row]),
+        matrixHighlights: [[r, c]],
+        matrixSecondary: safeHighlights.map(h => [...h]),
+        queue: queue.map(([r2, c2]) => `(${r2},${c2})`),
+        result: `Processing safe cell (${r}, ${c})`,
+      },
+      highlights: [],
+      message: `Dequeue safe cell (${r}, ${c}). Any adjacent "O" is also connected to the border, so it is safe too.`,
+      codeLine: 14,
+      action: 'pop',
+    } as AlgorithmStep);
+
+    for (const [dr, dc] of directions) {
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+      if (board[nr][nc] !== 'O') continue;
+
+      board[nr][nc] = 'T';
+      queue.push([nr, nc]);
+      safeHighlights.push([nr, nc]);
+
+      steps.push({
+        state: {
+          matrix: board.map(row => [...row]),
+          matrixHighlights: [[nr, nc]],
+          matrixSecondary: safeHighlights.map(h => [...h]),
+          queue: queue.map(([r2, c2]) => `(${r2},${c2})`),
+          result: `Safe cells: ${safeHighlights.length}`,
+        },
+        highlights: [],
+        message: `Neighbor (${nr}, ${nc}) is "O" — reachable from the border via (${r}, ${c}). Mark "T" and enqueue.`,
+        codeLine: 19,
+        action: 'visit',
+      } as AlgorithmStep);
+    }
+  }
+
+  // Phase 2: capture surrounded O's and restore safe T's
+  const capturedCells: [number, number][] = [];
+  const restoredCells: [number, number][] = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (board[r][c] === 'O') {
+        board[r][c] = 'X';
+        capturedCells.push([r, c]);
+
+        steps.push({
+          state: {
+            matrix: board.map(row => [...row]),
+            matrixHighlights: capturedCells.map(h => [...h]),
+            matrixSecondary: [],
+            result: `Captured ${capturedCells.length} cell(s)`,
+          },
+          highlights: [],
+          message: `(${r}, ${c}) is still "O" — BFS never reached it, so it is fully surrounded. Capture -> "X".`,
+          codeLine: 25,
+          action: 'swap',
+        } as AlgorithmStep);
+      } else if (board[r][c] === 'T') {
+        board[r][c] = 'O';
+        restoredCells.push([r, c]);
+
+        steps.push({
+          state: {
+            matrix: board.map(row => [...row]),
+            matrixHighlights: [],
+            matrixSecondary: restoredCells.map(h => [...h]),
+            result: `Restored ${restoredCells.length} safe cell(s)`,
+          },
+          highlights: [],
+          message: `(${r}, ${c}) was marked "T" (border-connected). Restore -> "O".`,
+          codeLine: 27,
+          action: 'swap',
+        } as AlgorithmStep);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: board.map(row => [...row]),
+      matrixHighlights: capturedCells.map(h => [...h]),
+      matrixSecondary: restoredCells.map(h => [...h]),
+      result: `Captured: ${capturedCells.length}, Safe: ${restoredCells.length}`,
+    },
+    highlights: [],
+    message: `Done! BFS captured ${capturedCells.length} surrounded cell(s) and preserved ${restoredCells.length} border-connected cell(s) — identical result to DFS, found level by level.`,
+    codeLine: 27,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const surroundedRegions: Algorithm = {
   id: 'surrounded-regions',
   name: 'Surrounded Regions',
@@ -262,6 +411,191 @@ private void dfs(char[][] board, int r, int c) {
     ['X', 'O', 'X', 'X'],
   ],
   run: runSurroundedRegions,
+  optimalApproachName: 'Border DFS',
+  approaches: [
+    {
+      id: 'border-bfs',
+      name: 'Border BFS',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Marks the same border-connected regions with an explicit queue instead of recursion — the safe zone grows level by level, and there is no risk of stack overflow on large boards.',
+      code: {
+        python: `def solve(board):
+    rows, cols = len(board), len(board[0])
+    queue = deque()
+
+    for r in range(rows):
+        for c in range(cols):
+            if (board[r][c] == "O" and
+                (r in [0, rows-1] or c in [0, cols-1])):
+                queue.append((r, c))
+                board[r][c] = "T"
+
+    dirs = [(1,0),(-1,0),(0,1),(0,-1)]
+    while queue:
+        r, c = queue.popleft()
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if (0 <= nr < rows and 0 <= nc < cols
+                    and board[nr][nc] == "O"):
+                board[nr][nc] = "T"
+                queue.append((nr, nc))
+
+    for r in range(rows):
+        for c in range(cols):
+            if board[r][c] == "O":
+                board[r][c] = "X"
+            elif board[r][c] == "T":
+                board[r][c] = "O"`,
+        javascript: `function solve(board) {
+    const rows = board.length, cols = board[0].length;
+    const queue = [];
+
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+            if (board[r][c] === "O" &&
+                (r === 0 || r === rows-1 ||
+                 c === 0 || c === cols-1)) {
+                queue.push([r, c]);
+                board[r][c] = "T";
+            }
+
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    while (queue.length) {
+        const [r, c] = queue.shift();
+        for (const [dr, dc] of dirs) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 &&
+                nc < cols && board[nr][nc] === "O") {
+                board[nr][nc] = "T";
+                queue.push([nr, nc]);
+            }
+        }
+    }
+
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++) {
+            if (board[r][c] === "O") board[r][c] = "X";
+            else if (board[r][c] === "T") board[r][c] = "O";
+        }
+}`,
+        java: `public void solve(char[][] board) {
+    int rows = board.length, cols = board[0].length;
+    Queue<int[]> queue = new LinkedList<>();
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (board[r][c] == 'O' && (r == 0 || r == rows - 1 || c == 0 || c == cols - 1)) {
+                queue.offer(new int[]{r, c});
+                board[r][c] = 'T';
+            }
+        }
+    }
+
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    while (!queue.isEmpty()) {
+        int[] cell = queue.poll();
+        for (int[] d : dirs) {
+            int nr = cell[0] + d[0], nc = cell[1] + d[1];
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] == 'O') {
+                board[nr][nc] = 'T';
+                queue.offer(new int[]{nr, nc});
+            }
+        }
+    }
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (board[r][c] == 'O') {
+                board[r][c] = 'X';
+            } else if (board[r][c] == 'T') {
+                board[r][c] = 'O';
+            }
+        }
+    }
+}`,
+      },
+      run: runSurroundedRegionsBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking the board in-place',
+          2: 'Get board dimensions',
+          3: 'Queue of safe cells to expand from',
+          5: 'Scan every row...',
+          6: '...and every column',
+          7: 'Looking for "O" cells...',
+          8: '...that sit on the border',
+          9: 'Enqueue border "O" as a BFS source',
+          10: 'Mark it "T" immediately so it is not re-added',
+          12: 'Four directional offsets',
+          13: 'Expand the safe zone until the queue empties',
+          14: 'Dequeue the next known-safe cell',
+          15: 'Look at all four neighbors',
+          16: 'Compute neighbor coordinates',
+          17: 'Neighbor must be inside the board',
+          18: 'Only untouched "O" cells spread the marking',
+          19: 'Neighbor is border-connected too — mark "T"',
+          20: 'Enqueue it so BFS keeps spreading inward',
+          22: 'Second pass: resolve every cell',
+          23: 'Iterate through each column',
+          24: 'Still "O" means BFS never reached it',
+          25: 'Surrounded — capture by flipping to "X"',
+          26: '"T" means border-connected',
+          27: 'Restore safe cell back to "O"',
+        },
+        javascript: {
+          1: 'Define function taking the board in-place',
+          2: 'Get board dimensions',
+          3: 'Queue of safe cells to expand from',
+          5: 'Scan every row...',
+          6: '...and every column',
+          7: 'Looking for "O" cells...',
+          8: '...on the top/bottom border...',
+          9: '...or the left/right border',
+          10: 'Enqueue border "O" as a BFS source',
+          11: 'Mark it "T" immediately so it is not re-added',
+          14: 'Four directional offsets',
+          15: 'Expand the safe zone until the queue empties',
+          16: 'Dequeue the next known-safe cell',
+          17: 'Look at all four neighbors',
+          18: 'Compute neighbor coordinates',
+          19: 'Neighbor must be inside the board...',
+          20: '...and an untouched "O"',
+          21: 'Neighbor is border-connected too — mark "T"',
+          22: 'Enqueue it so BFS keeps spreading inward',
+          27: 'Second pass: resolve every cell',
+          28: 'Iterate through each column',
+          29: 'Still "O" = surrounded: capture to "X"',
+          30: '"T" = border-connected: restore to "O"',
+        },
+        java: {
+          1: 'Define method taking char board in-place',
+          2: 'Get board dimensions',
+          3: 'Queue of safe cells to expand from',
+          5: 'Scan every row...',
+          6: '...and every column',
+          7: 'Border "O" found — it can never be captured',
+          8: 'Enqueue it as a BFS source',
+          9: 'Mark it "T" immediately so it is not re-added',
+          14: 'Four directional offsets',
+          15: 'Expand the safe zone until the queue empties',
+          16: 'Dequeue the next known-safe cell',
+          17: 'Look at all four neighbors',
+          18: 'Compute neighbor coordinates',
+          19: 'In-bounds "O" neighbor is border-connected too',
+          20: 'Mark it "T"',
+          21: 'Enqueue it so BFS keeps spreading inward',
+          26: 'Second pass: resolve every cell',
+          27: 'Iterate through each column',
+          28: 'Still "O" means BFS never reached it',
+          29: 'Surrounded — capture by flipping to "X"',
+          30: '"T" means border-connected',
+          31: 'Restore safe cell back to "O"',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking the board in-place',
