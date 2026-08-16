@@ -118,6 +118,91 @@ function runKClosestPoints(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runKClosestPointsSort(input: unknown): AlgorithmStep[] {
+  const { points, k } = input as KClosestInput;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      hashMap: {},
+      nums: [],
+    },
+    highlights: [],
+    message: `Find the ${k} closest point(s) to origin from ${points.length} points — by simply sorting ALL points by distance.`,
+    codeLine: 1,
+  });
+
+  const dists = points.map((p) => ({
+    point: p,
+    dist: p[0] * p[0] + p[1] * p[1],
+  }));
+
+  const distMap: Record<string, number> = {};
+  for (const d of dists) {
+    distMap[`(${d.point[0]},${d.point[1]})`] = d.dist;
+  }
+
+  steps.push({
+    state: {
+      hashMap: distMap,
+      nums: dists.map((d) => d.dist),
+    },
+    highlights: [],
+    message: `Compute squared distances (no sqrt needed — order is preserved): ${dists.map((d) => `(${d.point[0]},${d.point[1]})=${d.dist}`).join(', ')}`,
+    codeLine: 2,
+    action: 'visit',
+  });
+
+  dists.sort((a, b) => a.dist - b.dist);
+
+  steps.push({
+    state: {
+      hashMap: Object.fromEntries(
+        dists.map((d) => [`(${d.point[0]},${d.point[1]})`, d.dist])
+      ),
+      nums: dists.map((d) => d.dist),
+    },
+    highlights: [],
+    message: `Sort all points by distance ascending: [${dists.map((d) => d.dist).join(', ')}]. Closest points move to the front.`,
+    codeLine: 3,
+    action: 'swap',
+  });
+
+  for (let i = 0; i < k; i++) {
+    steps.push({
+      state: {
+        hashMap: Object.fromEntries(
+          dists.map((d) => [`(${d.point[0]},${d.point[1]})`, d.dist])
+        ),
+        nums: dists.map((d) => d.dist),
+      },
+      highlights: [i],
+      secondary: Array.from({ length: i }, (_, j) => j),
+      message: `Take dists[${i}]: point (${dists[i].point[0]},${dists[i].point[1]}) with distance ${dists[i].dist}`,
+      codeLine: 4,
+      action: 'visit',
+    });
+  }
+
+  const result = dists.slice(0, k).map((d) => d.point);
+
+  steps.push({
+    state: {
+      hashMap: Object.fromEntries(
+        dists.slice(0, k).map((d) => [`(${d.point[0]},${d.point[1]})`, d.dist])
+      ),
+      nums: dists.slice(0, k).map((d) => d.dist),
+      result,
+    },
+    highlights: Array.from({ length: k }, (_, i) => i),
+    message: `Result: first ${k} of the sorted list = [${result.map((p) => `[${p.join(',')}]`).join(', ')}]. Simpler than a heap, but sorts all n points.`,
+    codeLine: 4,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const kClosestPoints: Algorithm = {
   id: 'k-closest-points',
   name: 'K Closest Points to Origin',
@@ -173,6 +258,55 @@ def kClosest(points, k):
   },
   defaultInput: { points: [[1, 3], [-2, 2]], k: 1 },
   run: runKClosestPoints,
+  optimalApproachName: 'Min-Heap of Distances',
+  approaches: [
+    {
+      id: 'sort-by-distance',
+      name: 'Sort by Distance',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Sort every point by squared distance and take the first k — a two-liner that beats the heap for readability, but sorts all n points instead of maintaining just k.',
+      code: {
+        python: `def kClosest(points, k):
+    dists = [(x * x + y * y, [x, y]) for x, y in points]
+    dists.sort()
+    return [p for _, p in dists[:k]]`,
+        javascript: `function kClosest(points, k) {
+    const sorted = [...points].sort(
+        (a, b) => (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1])
+    );
+    return sorted.slice(0, k);
+}`,
+        java: `public static int[][] kClosest(int[][] points, int k) {
+    Arrays.sort(points, (a, b) ->
+        (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1]));
+    return Arrays.copyOf(points, k);
+}`,
+      },
+      run: runKClosestPointsSort,
+      lineExplanations: {
+        python: {
+          1: 'Define function with points and k',
+          2: 'Pair each point with its squared distance (sqrt unnecessary — order is the same)',
+          3: 'Sort by distance ascending — closest points first',
+          4: 'Return the points from the first k pairs',
+        },
+        javascript: {
+          1: 'Define function with points and k',
+          2: 'Copy the array and sort it',
+          3: 'Compare by squared Euclidean distance',
+          5: 'First k of the sorted array are the k closest',
+        },
+        java: {
+          1: 'Define method with points and k',
+          2: 'Sort points in place with a comparator',
+          3: 'Compare by squared Euclidean distance',
+          4: 'First k of the sorted array are the k closest',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Import heapq for priority queue operations',

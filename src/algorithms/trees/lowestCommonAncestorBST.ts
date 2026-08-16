@@ -81,6 +81,79 @@ function runLowestCommonAncestorBST(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLCARecursive(input: unknown): AlgorithmStep[] {
+  const { root, p, q } = input as LCAInput;
+  const steps: AlgorithmStep[] = [];
+
+  const pIdx = root.indexOf(p);
+  const qIdx = root.indexOf(q);
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+
+  steps.push({
+    state: { tree: toTreeNodes(root), p, q },
+    highlights: [],
+    treeHighlights: [pIdx, qIdx].filter(x => x >= 0),
+    message: `Recursive descent: each call looks at one node and delegates to the correct subtree — the call stack replaces the iterative loop`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  function lca(i: number, depth: number): number | null {
+    if (i >= root.length || root[i] === null) return null;
+    const val = root[i]!;
+
+    steps.push({
+      state: { tree: toTreeNodes(root), p, q, current: val, depth },
+      highlights: [],
+      treeHighlights: [i],
+      treeSecondary: [pIdx, qIdx].filter(x => x >= 0),
+      message: `Recursive call (depth ${depth}) at node ${val}: where do p=${p} and q=${q} live relative to it?`,
+      codeLine: 2,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    if (p < val && q < val) {
+      steps.push({
+        state: { tree: toTreeNodes(root), p, q, current: val, depth },
+        highlights: [],
+        treeHighlights: [i],
+        message: `Both ${p} and ${q} < ${val} — the whole answer lives in the LEFT subtree, recurse left`,
+        codeLine: 3,
+        action: 'compare',
+      } as AlgorithmStep);
+      return lca(getLeft(i), depth + 1);
+    }
+
+    if (p > val && q > val) {
+      steps.push({
+        state: { tree: toTreeNodes(root), p, q, current: val, depth },
+        highlights: [],
+        treeHighlights: [i],
+        message: `Both ${p} and ${q} > ${val} — the whole answer lives in the RIGHT subtree, recurse right`,
+        codeLine: 5,
+        action: 'compare',
+      } as AlgorithmStep);
+      return lca(getRight(i), depth + 1);
+    }
+
+    steps.push({
+      state: { tree: toTreeNodes(root), p, q, result: val },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Split point! p=${p} and q=${q} fall on different sides of ${val} (or one equals it) — node ${val} is the LCA. The recursion unwinds, passing it back up`,
+      codeLine: 6,
+      action: 'found',
+    } as AlgorithmStep);
+
+    return val;
+  }
+
+  lca(0, 0);
+
+  return steps;
+}
+
 export const lowestCommonAncestorBST: Algorithm = {
   id: 'lowest-common-ancestor-bst',
   name: 'Lowest Common Ancestor of a BST',
@@ -130,6 +203,70 @@ export const lowestCommonAncestorBST: Algorithm = {
   },
   defaultInput: { root: [6, 2, 8, 0, 4, 7, 9, null, null, 3, 5], p: 2, q: 8 },
   run: runLowestCommonAncestorBST,
+  optimalApproachName: 'Iterative Walk',
+  approaches: [
+    {
+      id: 'recursive-descent',
+      name: 'Recursive Descent',
+      timeComplexity: 'O(h)',
+      spaceComplexity: 'O(h)',
+      description:
+        'The same BST split-point logic expressed as recursion — elegant one-liner branches, but each descent adds a call-stack frame (O(h) space) where the iterative walk stays O(1).',
+      code: {
+        python: `def lowestCommonAncestor(root, p, q):
+    if p.val < root.val and q.val < root.val:
+        return lowestCommonAncestor(root.left, p, q)
+    if p.val > root.val and q.val > root.val:
+        return lowestCommonAncestor(root.right, p, q)
+    return root`,
+        javascript: `function lowestCommonAncestor(root, p, q) {
+    if (p.val < root.val && q.val < root.val) {
+        return lowestCommonAncestor(root.left, p, q);
+    }
+    if (p.val > root.val && q.val > root.val) {
+        return lowestCommonAncestor(root.right, p, q);
+    }
+    return root;
+}`,
+        java: `public static TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (p.val < root.val && q.val < root.val) {
+        return lowestCommonAncestor(root.left, p, q);
+    }
+    if (p.val > root.val && q.val > root.val) {
+        return lowestCommonAncestor(root.right, p, q);
+    }
+    return root;
+}`,
+      },
+      run: runLCARecursive,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking root, p, and q nodes',
+          2: 'Both targets smaller than current node?',
+          3: 'LCA must be in the left subtree — recurse left',
+          4: 'Both targets larger than current node?',
+          5: 'LCA must be in the right subtree — recurse right',
+          6: 'p and q split here (or one equals this node) — this is the LCA',
+        },
+        javascript: {
+          1: 'Define function taking root, p, and q nodes',
+          2: 'Both targets smaller than current node?',
+          3: 'LCA must be in the left subtree — recurse left',
+          5: 'Both targets larger than current node?',
+          6: 'LCA must be in the right subtree — recurse right',
+          8: 'p and q split here (or one equals this node) — this is the LCA',
+        },
+        java: {
+          1: 'Define function taking root, p, and q nodes',
+          2: 'Both targets smaller than current node?',
+          3: 'LCA must be in the left subtree — recurse left',
+          5: 'Both targets larger than current node?',
+          6: 'LCA must be in the right subtree — recurse right',
+          8: 'p and q split here (or one equals this node) — this is the LCA',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking root, p, and q nodes',

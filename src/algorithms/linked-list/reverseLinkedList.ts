@@ -113,6 +113,131 @@ function runReverseLinkedList(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runReverseLinkedListRecursive(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const linkedList = nums.map((val) => ({ val, id: nodeId++ }));
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message:
+      'Recursive idea: dive to the last node first, then reverse each link while the call stack unwinds back to the head.',
+    codeLine: 1,
+  });
+
+  if (linkedList.length === 0) {
+    steps.push({
+      state: {
+        linkedList: [],
+        linkedListHighlights: [],
+        linkedListSecondary: [],
+        linkedListPointers: {},
+      },
+      highlights: [],
+      message: 'Empty list — the base case returns immediately.',
+      codeLine: 3,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  // Descent: recurse until the last node
+  for (let i = 0; i < linkedList.length; i++) {
+    const isLast = i === linkedList.length - 1;
+    if (!isLast) {
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [i],
+          linkedListSecondary: [i + 1],
+          linkedListPointers: { head: i },
+        },
+        highlights: [i],
+        pointers: { head: i },
+        message: `Call reverseList(node ${linkedList[i].val}). It has a next node, so recurse deeper on node ${linkedList[i + 1].val} — nothing is reversed until we hit the tail.`,
+        codeLine: 4,
+        action: 'visit',
+      });
+    } else {
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [i],
+          linkedListSecondary: [],
+          linkedListPointers: { 'new head': i },
+        },
+        highlights: [i],
+        pointers: { head: i },
+        message: `Base case: node ${linkedList[i].val} has no next. It becomes the new head, and every recursive call will return it unchanged.`,
+        codeLine: 3,
+        action: 'found',
+      });
+    }
+  }
+
+  // Unwind: reverse links as the stack pops
+  let reversed: { val: number | string; id: number }[] = [
+    { ...linkedList[linkedList.length - 1] },
+  ];
+
+  for (let i = linkedList.length - 2; i >= 0; i--) {
+    steps.push({
+      state: {
+        linkedList: linkedList.slice(0, i + 1).map((n) => ({ ...n })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [],
+        linkedListPointers: { head: i },
+        result: reversed.map((n) => ({ ...n })),
+      },
+      highlights: [i],
+      pointers: { head: i },
+      message: `Unwind to node ${linkedList[i].val}: head.next.next = head makes node ${linkedList[i + 1].val} point back at node ${linkedList[i].val}.`,
+      codeLine: 5,
+      action: 'swap',
+    });
+
+    reversed = [...reversed, { ...linkedList[i] }];
+
+    steps.push({
+      state: {
+        linkedList: linkedList.slice(0, i).map((n) => ({ ...n })),
+        linkedListHighlights: [],
+        linkedListSecondary: [],
+        linkedListPointers: {},
+        result: reversed.map((n) => ({ ...n })),
+      },
+      highlights: [],
+      message: `head.next = None severs the old forward link — node ${linkedList[i].val} is now the tail of the reversed portion [${reversed.map((n) => n.val).join(' -> ')}].`,
+      codeLine: 6,
+      action: 'delete',
+    });
+  }
+
+  steps.push({
+    state: {
+      linkedList: reversed.map((n) => ({ ...n })),
+      linkedListHighlights: reversed.map((_, i) => i),
+      linkedListSecondary: [],
+      linkedListPointers: { head: 0 },
+      result: reversed.map((n) => ({ ...n })),
+    },
+    highlights: reversed.map((_, i) => i),
+    message: `Recursion fully unwound! New head = ${reversed[0].val}. Result: [${reversed.map((n) => n.val).join(' -> ')}]`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const reverseLinkedList: Algorithm = {
   id: 'reverse-linked-list',
   name: 'Reverse Linked List',
@@ -159,6 +284,74 @@ export const reverseLinkedList: Algorithm = {
   },
   defaultInput: [1, 2, 3, 4, 5],
   run: runReverseLinkedList,
+  optimalApproachName: 'Iterative Pointer Reversal',
+  approaches: [
+    {
+      id: 'recursive',
+      name: 'Recursion',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Recurse to the tail first, then flip each link as the call stack unwinds — elegant, but the n stacked calls cost O(n) space versus the iterative O(1).',
+      code: {
+        python: `def reverseList(head):
+    if not head or not head.next:
+        return head
+    new_head = reverseList(head.next)
+    head.next.next = head
+    head.next = None
+    return new_head`,
+        javascript: `function reverseList(head) {
+    if (!head || !head.next) {
+        return head;
+    }
+    const newHead = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+}`,
+        java: `public static ListNode reverseList(ListNode head) {
+    if (head == null || head.next == null) {
+        return head;
+    }
+    ListNode newHead = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+}`,
+      },
+      run: runReverseLinkedListRecursive,
+      lineExplanations: {
+        python: {
+          1: 'Define recursive function taking head of linked list',
+          2: 'Base case: empty list or single node',
+          3: 'A single node is already reversed — return it as new head',
+          4: 'Recurse on the rest; new_head bubbles up unchanged from the tail',
+          5: 'The node after head now points back at head (link reversed)',
+          6: 'Cut the old forward link so the list has no cycle',
+          7: 'Return the tail node — it is the head of the reversed list',
+        },
+        javascript: {
+          1: 'Define recursive function taking head of linked list',
+          2: 'Base case: empty list or single node',
+          3: 'A single node is already reversed — return it as new head',
+          5: 'Recurse on the rest; newHead bubbles up unchanged from the tail',
+          6: 'The node after head now points back at head (link reversed)',
+          7: 'Cut the old forward link so the list has no cycle',
+          8: 'Return the tail node — it is the head of the reversed list',
+        },
+        java: {
+          1: 'Define recursive method taking head of linked list',
+          2: 'Base case: empty list or single node',
+          3: 'A single node is already reversed — return it as new head',
+          5: 'Recurse on the rest; newHead bubbles up unchanged from the tail',
+          6: 'The node after head now points back at head (link reversed)',
+          7: 'Cut the old forward link so the list has no cycle',
+          8: 'Return the tail node — it is the head of the reversed list',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking head of linked list',

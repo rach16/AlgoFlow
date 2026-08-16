@@ -196,6 +196,120 @@ function runKthLargestStream(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runKthLargestStreamSortedList(input: unknown): AlgorithmStep[] {
+  const { k, nums, adds } = input as KthLargestInput;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      hashMap: { k: k, windowSize: 0 },
+    },
+    highlights: [],
+    message: `Initialize with k=${k}. Instead of a heap, keep a SORTED window of the k largest values — the kth largest always sits at the front.`,
+    codeLine: 4,
+  });
+
+  const sortedAll = [...nums].sort((a, b) => a - b);
+  const window = sortedAll.slice(-k);
+
+  steps.push({
+    state: {
+      nums: [...sortedAll],
+      hashMap: { k: k, sorted: sortedAll.join(', ') },
+    },
+    highlights: sortedAll.map((_, i) => i).filter((i) => i >= sortedAll.length - k),
+    message: `Sort initial numbers ascending: [${sortedAll.join(', ')}]. Keep only the last ${k} (the largest): [${window.join(', ')}]`,
+    codeLine: 6,
+    action: 'visit',
+  });
+
+  steps.push({
+    state: {
+      nums: [...window],
+      hashMap: { k: k, windowSize: window.length, kthLargest: window[0] },
+      result: window[0],
+    },
+    highlights: [0],
+    message: `Window = [${window.join(', ')}]. Front element ${window[0]} is the ${k}th largest so far.`,
+    codeLine: 6,
+    action: 'found',
+  });
+
+  for (const val of adds) {
+    steps.push({
+      state: {
+        nums: [...window],
+        hashMap: { k: k, adding: val },
+      },
+      highlights: [],
+      message: `add(${val}): binary-search for where ${val} belongs in the sorted window`,
+      codeLine: 8,
+      action: 'visit',
+    });
+
+    // Binary insertion (bisect.insort)
+    let lo = 0;
+    let hi = window.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (window[mid] < val) lo = mid + 1;
+      else hi = mid;
+    }
+    window.splice(lo, 0, val);
+
+    steps.push({
+      state: {
+        nums: [...window],
+        hashMap: { k: k, inserted: val, position: lo },
+      },
+      highlights: [lo],
+      message: `Insert ${val} at index ${lo} — the window stays sorted without any re-sorting. Window: [${window.join(', ')}]`,
+      codeLine: 9,
+      action: 'insert',
+    });
+
+    if (window.length > k) {
+      const removed = window.shift()!;
+      steps.push({
+        state: {
+          nums: [...window],
+          hashMap: { k: k, removed: removed },
+        },
+        highlights: [0],
+        message: `Window size ${window.length + 1} > k=${k}: drop the smallest (${removed}). Window: [${window.join(', ')}]`,
+        codeLine: 11,
+        action: 'delete',
+      });
+    }
+
+    steps.push({
+      state: {
+        nums: [...window],
+        hashMap: { k: k, kthLargest: window[0] },
+        result: window[0],
+      },
+      highlights: [0],
+      message: `add(${val}) returns ${window[0]} — the front of the sorted window is always the ${k}th largest`,
+      codeLine: 12,
+      action: 'found',
+    });
+  }
+
+  steps.push({
+    state: {
+      nums: [...window],
+      hashMap: { k: k, finalKthLargest: window[0] },
+      result: window[0],
+    },
+    highlights: [0],
+    message: `All operations complete. Final ${k}th largest = ${window[0]}. Each insert cost O(k) shifting vs O(log k) for the heap.`,
+    codeLine: 12,
+  });
+
+  return steps;
+}
+
 export const kthLargestStream: Algorithm = {
   id: 'kth-largest-stream',
   name: 'Kth Largest Element in a Stream',
@@ -267,6 +381,116 @@ class KthLargest:
   },
   defaultInput: { k: 3, nums: [4, 5, 8, 2], adds: [3, 5, 10, 9, 4] },
   run: runKthLargestStream,
+  optimalApproachName: 'Min-Heap of Size K',
+  approaches: [
+    {
+      id: 'sorted-window',
+      name: 'Sorted Window',
+      timeComplexity: 'O(n log n + m·k)',
+      spaceComplexity: 'O(k)',
+      description:
+        'Keep the k largest values in a plain sorted list and binary-insert each new value — simpler than a heap, but each insert costs O(k) shifting instead of O(log k).',
+      code: {
+        python: `import bisect
+
+class KthLargest:
+    def __init__(self, k, nums):
+        self.k = k
+        self.window = sorted(nums)[-k:]
+
+    def add(self, val):
+        bisect.insort(self.window, val)
+        if len(self.window) > self.k:
+            self.window.pop(0)
+        return self.window[0]`,
+        javascript: `class KthLargest {
+    constructor(k, nums) {
+        this.k = k;
+        this.window = [...nums].sort((a, b) => a - b).slice(-k);
+    }
+
+    add(val) {
+        let lo = 0, hi = this.window.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (this.window[mid] < val) lo = mid + 1;
+            else hi = mid;
+        }
+        this.window.splice(lo, 0, val);
+        if (this.window.length > this.k) this.window.shift();
+        return this.window[0];
+    }
+}`,
+        java: `class KthLargest {
+    private List<Integer> window = new ArrayList<>();
+    private int k;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        int[] sorted = nums.clone();
+        Arrays.sort(sorted);
+        for (int i = Math.max(0, sorted.length - k); i < sorted.length; i++)
+            window.add(sorted[i]);
+    }
+
+    public int add(int val) {
+        int pos = Collections.binarySearch(window, val);
+        if (pos < 0) pos = -pos - 1;
+        window.add(pos, val);
+        if (window.size() > k) window.remove(0);
+        return window.get(0);
+    }
+}`,
+      },
+      run: runKthLargestStreamSortedList,
+      lineExplanations: {
+        python: {
+          1: 'Import bisect for binary-search insertion',
+          3: 'Define the KthLargest class',
+          4: 'Constructor takes k and initial numbers',
+          5: 'Store k for later use',
+          6: 'Sort ascending, keep only the last k (largest) values',
+          8: 'Define add method for new stream values',
+          9: 'Binary-insert val, keeping the window sorted',
+          10: 'If window grew past k elements',
+          11: 'Drop the smallest (front) value',
+          12: 'Front of the sorted window is the kth largest',
+        },
+        javascript: {
+          1: 'Define the KthLargest class',
+          2: 'Constructor takes k and initial numbers',
+          3: 'Store k for later use',
+          4: 'Sort ascending, keep only the last k (largest) values',
+          7: 'Define add method for new stream values',
+          8: 'Binary search bounds for insertion point',
+          9: 'Halve the search range each iteration',
+          10: 'Midpoint of the current range',
+          11: 'Value belongs right of mid — search upper half',
+          12: 'Otherwise search lower half',
+          14: 'Insert val at the found index — window stays sorted',
+          15: 'If window grew past k, drop the smallest (front)',
+          16: 'Front of the sorted window is the kth largest',
+        },
+        java: {
+          1: 'Define the KthLargest class',
+          2: 'Sorted list holding the k largest values',
+          3: 'Store k for size limit',
+          5: 'Constructor takes k and initial numbers',
+          6: 'Store k for later use',
+          7: 'Copy nums so we can sort safely',
+          8: 'Sort ascending',
+          9: 'Walk the last k (largest) sorted values',
+          10: 'Add each to the window list',
+          13: 'Define add method for new stream values',
+          14: 'Binary search for the insertion point',
+          15: 'Negative result encodes the insertion index',
+          16: 'Insert val at that index — list stays sorted',
+          17: 'If window grew past k, drop the smallest (front)',
+          18: 'Front of the sorted window is the kth largest',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Import heapq for min-heap operations',

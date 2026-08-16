@@ -80,6 +80,85 @@ function runBalancedBinaryTree(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runBalancedTopDown(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+  function isNull(i: number): boolean { return i >= arr.length || arr[i] === null; }
+
+  // Plain height helper — recomputed from scratch at every node (the inefficiency to observe)
+  function height(i: number): number {
+    if (isNull(i)) return 0;
+    return 1 + Math.max(height(getLeft(i)), height(getRight(i)));
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), balanced: true },
+    highlights: [],
+    message: 'Top-down check: at EVERY node, recompute both subtree heights from scratch, then recurse into the children',
+    codeLine: 1,
+  });
+
+  let balanced = true;
+
+  function check(i: number): boolean {
+    if (isNull(i)) return true;
+
+    const leftHeight = height(getLeft(i));
+    const rightHeight = height(getRight(i));
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), balanced, leftHeight, rightHeight },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Node ${arr[i]}: measure both subtrees from scratch — left=${leftHeight}, right=${rightHeight}. Deep nodes get re-measured by every ancestor, which is why this is O(n²).`,
+      codeLine: 9,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    const diff = Math.abs(leftHeight - rightHeight);
+    if (diff > 1) {
+      balanced = false;
+      steps.push({
+        state: { tree: toTreeNodes(arr), balanced: false },
+        highlights: [],
+        treeHighlights: [i],
+        message: `Node ${arr[i]}: |left(${leftHeight}) - right(${rightHeight})| = ${diff} > 1 — NOT balanced, stop here`,
+        codeLine: 12,
+        action: 'compare',
+      } as AlgorithmStep);
+      return false;
+    }
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), balanced: true },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Node ${arr[i]}: |${leftHeight} - ${rightHeight}| = ${diff} ≤ 1 here — but that alone isn't enough: BOTH subtrees must pass the same check recursively`,
+      codeLine: 13,
+      action: 'compare',
+    } as AlgorithmStep);
+
+    return check(getLeft(i)) && check(getRight(i));
+  }
+
+  const result = check(0);
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), result, balanced: result },
+    highlights: [],
+    message: result
+      ? 'Every node passed the height check — the tree IS balanced. (The bottom-up version reaches the same answer in a single O(n) pass by returning heights upward.)'
+      : 'A node failed the height check — the tree is NOT height-balanced.',
+    codeLine: 13,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const balancedBinaryTree: Algorithm = {
   id: 'balanced-binary-tree',
   name: 'Balanced Binary Tree',
@@ -133,6 +212,95 @@ private static int dfs(TreeNode node) {
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runBalancedBinaryTree,
+  optimalApproachName: 'Bottom-Up DFS',
+  approaches: [
+    {
+      id: 'top-down-recursion',
+      name: 'Top-Down Recursion',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(h)',
+      description:
+        'The naive editorial solution: at every node recompute both subtree heights with a separate helper, instead of returning heights upward in one bottom-up pass.',
+      code: {
+        python: `def isBalanced(root):
+    def height(node):
+        if not node:
+            return 0
+        return 1 + max(height(node.left), height(node.right))
+
+    if not root:
+        return True
+    left = height(root.left)
+    right = height(root.right)
+    if abs(left - right) > 1:
+        return False
+    return isBalanced(root.left) and isBalanced(root.right)`,
+        javascript: `function isBalanced(root) {
+    function height(node) {
+        if (!node) return 0;
+        return 1 + Math.max(height(node.left), height(node.right));
+    }
+
+    if (!root) return true;
+    const left = height(root.left);
+    const right = height(root.right);
+    if (Math.abs(left - right) > 1) return false;
+    return isBalanced(root.left) && isBalanced(root.right);
+}`,
+        java: `public static boolean isBalanced(TreeNode root) {
+    if (root == null) return true;
+    int left = height(root.left);
+    int right = height(root.right);
+    if (Math.abs(left - right) > 1) return false;
+    return isBalanced(root.left) && isBalanced(root.right);
+}
+
+private static int height(TreeNode node) {
+    if (node == null) return 0;
+    return 1 + Math.max(height(node.left), height(node.right));
+}`,
+      },
+      run: runBalancedTopDown,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root node',
+          2: 'Helper that measures the height of a subtree',
+          3: 'Base case: null node has height 0',
+          4: 'Return 0 for null node',
+          5: 'Height is 1 plus the taller child subtree',
+          7: 'An empty tree is trivially balanced',
+          8: 'Return True for null root',
+          9: 'Recompute left subtree height from scratch',
+          10: 'Recompute right subtree height from scratch',
+          11: 'Heights differ by more than 1?',
+          12: 'This node is unbalanced — whole tree fails',
+          13: 'This node is fine — both subtrees must also be balanced (repeats work: O(n²))',
+        },
+        javascript: {
+          1: 'Define function taking tree root node',
+          2: 'Helper that measures the height of a subtree',
+          3: 'Base case: null node has height 0',
+          4: 'Height is 1 plus the taller child subtree',
+          7: 'An empty tree is trivially balanced',
+          8: 'Recompute left subtree height from scratch',
+          9: 'Recompute right subtree height from scratch',
+          10: 'If heights differ by more than 1, tree fails',
+          11: 'This node is fine — both subtrees must also be balanced (repeats work: O(n²))',
+        },
+        java: {
+          1: 'Define method taking tree root node',
+          2: 'An empty tree is trivially balanced',
+          3: 'Recompute left subtree height from scratch',
+          4: 'Recompute right subtree height from scratch',
+          5: 'If heights differ by more than 1, tree fails',
+          6: 'This node is fine — both subtrees must also be balanced (repeats work: O(n²))',
+          9: 'Helper that measures the height of a subtree',
+          10: 'Base case: null node has height 0',
+          11: 'Height is 1 plus the taller child subtree',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root node',

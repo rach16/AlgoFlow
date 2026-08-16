@@ -84,6 +84,126 @@ function runCountGoodNodes(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCountGoodNodesBFS(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+  let goodCount = 0;
+  const goodNodes: number[] = [];
+
+  function getVal(i: number): number | null {
+    if (i >= arr.length) return null;
+    return arr[i];
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), goodCount: 0, goodNodes: [], queue: [] },
+    highlights: [],
+    message: 'BFS version: instead of recursion, carry each node\'s path-maximum through the queue as (node, maxSoFar) pairs',
+    codeLine: 1,
+  });
+
+  if (getVal(0) === null) {
+    steps.push({
+      state: { tree: toTreeNodes(arr), goodCount: 0, result: 0 },
+      highlights: [],
+      message: 'Empty tree — 0 good nodes',
+      codeLine: 3,
+    });
+    return steps;
+  }
+
+  const queue: [number, number][] = [[0, arr[0] as number]];
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), goodCount: 0, goodNodes: [], queue: queue.map(([i]) => arr[i]) },
+    highlights: [],
+    treeHighlights: [0],
+    message: `Seed the queue with (root=${arr[0]}, maxSoFar=${arr[0]}) — the root is always good since nothing sits above it`,
+    codeLine: 5,
+    action: 'push',
+  } as AlgorithmStep);
+
+  while (queue.length > 0) {
+    const [i, maxSoFar] = queue.shift()!;
+    const val = getVal(i)!;
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), goodCount, goodNodes: [...goodNodes], maxSoFar, queue: queue.map(([j]) => arr[j]) },
+      highlights: [],
+      treeHighlights: [i],
+      treeSecondary: [...goodNodes],
+      message: `Dequeue node ${val} along with the max on its root path so far: ${maxSoFar}`,
+      codeLine: 7,
+      action: 'pop',
+    } as AlgorithmStep);
+
+    if (val >= maxSoFar) {
+      goodCount++;
+      goodNodes.push(i);
+
+      steps.push({
+        state: { tree: toTreeNodes(arr), goodCount, goodNodes: [...goodNodes], maxSoFar, queue: queue.map(([j]) => arr[j]) },
+        highlights: [],
+        treeHighlights: [i],
+        treeSecondary: goodNodes.filter(x => x !== i),
+        message: `Node ${val} >= ${maxSoFar}: it's a GOOD node! Total good: ${goodCount}`,
+        codeLine: 9,
+        action: 'found',
+      } as AlgorithmStep);
+    } else {
+      steps.push({
+        state: { tree: toTreeNodes(arr), goodCount, goodNodes: [...goodNodes], maxSoFar, queue: queue.map(([j]) => arr[j]) },
+        highlights: [],
+        treeHighlights: [i],
+        message: `Node ${val} < ${maxSoFar}: NOT good — a bigger value sits on its path from the root`,
+        codeLine: 8,
+        action: 'compare',
+      } as AlgorithmStep);
+    }
+
+    const newMax = Math.max(maxSoFar, val);
+    const left = 2 * i + 1;
+    const right = 2 * i + 2;
+
+    if (getVal(left) !== null) {
+      queue.push([left, newMax]);
+      steps.push({
+        state: { tree: toTreeNodes(arr), goodCount, goodNodes: [...goodNodes], queue: queue.map(([j]) => arr[j]) },
+        highlights: [],
+        treeHighlights: [left],
+        treeSecondary: [...goodNodes],
+        message: `Enqueue left child ${arr[left]} with its path max ${newMax}`,
+        codeLine: 12,
+        action: 'push',
+      } as AlgorithmStep);
+    }
+
+    if (getVal(right) !== null) {
+      queue.push([right, newMax]);
+      steps.push({
+        state: { tree: toTreeNodes(arr), goodCount, goodNodes: [...goodNodes], queue: queue.map(([j]) => arr[j]) },
+        highlights: [],
+        treeHighlights: [right],
+        treeSecondary: [...goodNodes],
+        message: `Enqueue right child ${arr[right]} with its path max ${newMax}`,
+        codeLine: 14,
+        action: 'push',
+      } as AlgorithmStep);
+    }
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), goodCount, goodNodes, result: goodCount },
+    highlights: [],
+    treeHighlights: goodNodes,
+    message: `Queue empty — every node was compared against its own path max. Total good nodes: ${goodCount}`,
+    codeLine: 15,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const countGoodNodes: Algorithm = {
   id: 'count-good-nodes',
   name: 'Count Good Nodes in Binary Tree',
@@ -134,6 +254,114 @@ private static int dfs(TreeNode node, int maxVal) {
   },
   defaultInput: [3, 1, 4, 3, null, 1, 5],
   run: runCountGoodNodes,
+  optimalApproachName: 'Recursive DFS',
+  approaches: [
+    {
+      id: 'iterative-bfs',
+      name: 'Iterative BFS',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Same counting logic, but level by level with an explicit queue that carries each node\'s path-maximum — no recursion, at the cost of O(n) queue space instead of O(h) stack space.',
+      code: {
+        python: `def goodNodes(root):
+    if not root:
+        return 0
+    count = 0
+    queue = deque([(root, root.val)])
+    while queue:
+        node, maxVal = queue.popleft()
+        if node.val >= maxVal:
+            count += 1
+        newMax = max(maxVal, node.val)
+        if node.left:
+            queue.append((node.left, newMax))
+        if node.right:
+            queue.append((node.right, newMax))
+    return count`,
+        javascript: `function goodNodes(root) {
+    if (!root) return 0;
+    let count = 0;
+    const queue = [[root, root.val]];
+    while (queue.length > 0) {
+        const [node, maxVal] = queue.shift();
+        if (node.val >= maxVal) count++;
+        const newMax = Math.max(maxVal, node.val);
+        if (node.left) queue.push([node.left, newMax]);
+        if (node.right) queue.push([node.right, newMax]);
+    }
+    return count;
+}`,
+        java: `public static int goodNodes(TreeNode root) {
+    if (root == null) return 0;
+    int count = 0;
+    Queue<TreeNode> queue = new LinkedList<>();
+    Queue<Integer> maxes = new LinkedList<>();
+    queue.offer(root);
+    maxes.offer(root.val);
+    while (!queue.isEmpty()) {
+        TreeNode node = queue.poll();
+        int maxVal = maxes.poll();
+        if (node.val >= maxVal) count++;
+        int newMax = Math.max(maxVal, node.val);
+        if (node.left != null) { queue.offer(node.left); maxes.offer(newMax); }
+        if (node.right != null) { queue.offer(node.right); maxes.offer(newMax); }
+    }
+    return count;
+}`,
+      },
+      run: runCountGoodNodesBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree',
+          3: 'Return 0 good nodes for null root',
+          4: 'Init counter of good nodes',
+          5: 'Queue holds (node, max value on its root path) pairs',
+          6: 'Process until queue is empty',
+          7: 'Dequeue a node with the max seen on its path',
+          8: 'Node is good if nothing bigger sits above it',
+          9: 'Count this good node',
+          10: 'Children inherit the updated path max',
+          11: 'If left child exists...',
+          12: 'Enqueue left child with the new max',
+          13: 'If right child exists...',
+          14: 'Enqueue right child with the new max',
+          15: 'Return total good nodes',
+        },
+        javascript: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree returns 0',
+          3: 'Init counter of good nodes',
+          4: 'Queue holds [node, max value on its root path] pairs',
+          5: 'Process until queue is empty',
+          6: 'Dequeue a node with the max seen on its path',
+          7: 'Node is good if nothing bigger sits above it',
+          8: 'Children inherit the updated path max',
+          9: 'Enqueue left child with the new max',
+          10: 'Enqueue right child with the new max',
+          12: 'Return total good nodes',
+        },
+        java: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree returns 0',
+          3: 'Init counter of good nodes',
+          4: 'Queue of nodes to process',
+          5: 'Parallel queue of each node\'s path max',
+          6: 'Seed with the root node',
+          7: 'Root\'s path max is its own value',
+          8: 'Process until queue is empty',
+          9: 'Dequeue the next node',
+          10: 'Dequeue its matching path max',
+          11: 'Node is good if nothing bigger sits above it',
+          12: 'Children inherit the updated path max',
+          13: 'Enqueue left child with the new max',
+          14: 'Enqueue right child with the new max',
+          16: 'Return total good nodes',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root',

@@ -230,6 +230,93 @@ function runImplementTrie(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runImplementTrieHashSets(input: unknown): AlgorithmStep[] {
+  const operations = input as TrieOp[];
+  const steps: AlgorithmStep[] = [];
+
+  const words = new Set<string>();
+  const prefixes = new Set<string>();
+  const opLabels = operations.map((op) => `${op[0]}("${op[1]}")`);
+  const setsView = (): Record<string, string> => ({
+    words: [...words].join(', ') || '(empty)',
+    prefixes: [...prefixes].join(', ') || '(empty)',
+  });
+
+  steps.push({
+    state: { hashMap: setsView(), chars: [...opLabels] },
+    highlights: [],
+    message:
+      'No tree needed! Keep two hash sets: one holding complete words (for search) and one holding every prefix of every word (for startsWith).',
+    codeLine: 3,
+  });
+
+  for (let i = 0; i < operations.length; i++) {
+    const [op, word] = operations[i];
+
+    if (op === 'insert') {
+      words.add(word);
+      steps.push({
+        state: { hashMap: setsView(), chars: [...opLabels] },
+        highlights: [i],
+        pointers: { op: i },
+        message: `insert("${word}"): add the full word to the words set — search("${word}") is now an O(1) average lookup`,
+        codeLine: 7,
+        action: 'insert',
+      });
+
+      for (let j = 1; j <= word.length; j++) {
+        const prefix = word.slice(0, j);
+        const isNew = !prefixes.has(prefix);
+        prefixes.add(prefix);
+        steps.push({
+          state: { hashMap: setsView(), chars: [...opLabels] },
+          highlights: [i],
+          pointers: { op: i },
+          message: isNew
+            ? `insert: record prefix "${prefix}" (${j}/${word.length}) so startsWith("${prefix}") answers in O(1)`
+            : `insert: prefix "${prefix}" is already in the set (shared with an earlier word) — sets deduplicate for free`,
+          codeLine: 9,
+          action: 'insert',
+        });
+      }
+    } else if (op === 'search') {
+      const found = words.has(word);
+      steps.push({
+        state: { hashMap: setsView(), chars: [...opLabels], result: found },
+        highlights: [i],
+        pointers: { op: i },
+        message: found
+          ? `search("${word}"): "${word}" is in the words set — EXISTS. One hash lookup instead of walking ${word.length} trie nodes.`
+          : `search("${word}"): "${word}" is NOT in the words set — it was never inserted as a complete word (being a prefix is not enough)`,
+        codeLine: 12,
+        action: found ? 'found' : 'compare',
+      });
+    } else if (op === 'startsWith') {
+      const found = prefixes.has(word);
+      steps.push({
+        state: { hashMap: setsView(), chars: [...opLabels], result: found },
+        highlights: [i],
+        pointers: { op: i },
+        message: found
+          ? `startsWith("${word}"): "${word}" is in the prefixes set — some inserted word starts with it`
+          : `startsWith("${word}"): "${word}" is NOT in the prefixes set — no inserted word starts with it`,
+        codeLine: 15,
+        action: found ? 'found' : 'compare',
+      });
+    }
+  }
+
+  steps.push({
+    state: { hashMap: setsView(), chars: [...opLabels] },
+    highlights: [],
+    message:
+      'All operations complete. Trade-off vs the trie: O(1) queries, but insert stores L prefixes (O(L²) character work) and shared prefixes are not compressed.',
+    codeLine: 15,
+  });
+
+  return steps;
+}
+
 export const implementTrie: Algorithm = {
   id: 'implement-trie',
   name: 'Implement Trie (Prefix Tree)',
@@ -369,6 +456,126 @@ class Trie {
     ['search', 'app'],
   ],
   run: runImplementTrie,
+  optimalApproachName: 'Trie (Prefix Tree)',
+  approaches: [
+    {
+      id: 'prefix-hash-sets',
+      name: 'Two Hash Sets',
+      timeComplexity: 'O(L²) insert, O(1) lookup',
+      spaceComplexity: 'O(N·L²)',
+      description:
+        'Instead of a character tree, store every complete word in one hash set and every prefix of every word in another — queries become single O(1) set lookups at the cost of heavier inserts and no prefix sharing.',
+      code: {
+        python: `class Trie:
+    def __init__(self):
+        self.words = set()
+        self.prefixes = set()
+
+    def insert(self, word):
+        self.words.add(word)
+        for i in range(1, len(word) + 1):
+            self.prefixes.add(word[:i])
+
+    def search(self, word):
+        return word in self.words
+
+    def startsWith(self, prefix):
+        return prefix in self.prefixes`,
+        javascript: `class Trie {
+    constructor() {
+        this.words = new Set();
+        this.prefixes = new Set();
+    }
+
+    insert(word) {
+        this.words.add(word);
+        for (let i = 1; i <= word.length; i++) {
+            this.prefixes.add(word.slice(0, i));
+        }
+    }
+
+    search(word) {
+        return this.words.has(word);
+    }
+
+    startsWith(prefix) {
+        return this.prefixes.has(prefix);
+    }
+}`,
+        java: `class Trie {
+    private Set<String> words;
+    private Set<String> prefixes;
+
+    public Trie() {
+        words = new HashSet<>();
+        prefixes = new HashSet<>();
+    }
+
+    public void insert(String word) {
+        words.add(word);
+        for (int i = 1; i <= word.length(); i++) {
+            prefixes.add(word.substring(0, i));
+        }
+    }
+
+    public boolean search(String word) {
+        return words.contains(word);
+    }
+
+    public boolean startsWith(String prefix) {
+        return prefixes.contains(prefix);
+    }
+}`,
+      },
+      run: runImplementTrieHashSets,
+      lineExplanations: {
+        python: {
+          1: 'Define Trie class (no TrieNode needed)',
+          2: 'Initialize constructor',
+          3: 'Hash set of complete words — powers search()',
+          4: 'Hash set of every prefix — powers startsWith()',
+          6: 'Define insert method',
+          7: 'Add the full word to the words set',
+          8: 'Loop over every prefix length from 1 to len(word)',
+          9: 'Add each prefix word[:i] to the prefixes set',
+          11: 'Define search method',
+          12: 'Word exists iff it is in the words set — O(1) average',
+          14: 'Define startsWith method',
+          15: 'Prefix exists iff some insert recorded it — O(1) average',
+        },
+        javascript: {
+          1: 'Define Trie class (no TrieNode needed)',
+          2: 'Initialize constructor',
+          3: 'Hash set of complete words — powers search()',
+          4: 'Hash set of every prefix — powers startsWith()',
+          7: 'Define insert method',
+          8: 'Add the full word to the words set',
+          9: 'Loop over every prefix length from 1 to word.length',
+          10: 'Add each prefix slice to the prefixes set',
+          14: 'Define search method',
+          15: 'Word exists iff it is in the words set — O(1) average',
+          18: 'Define startsWith method',
+          19: 'Prefix exists iff some insert recorded it — O(1) average',
+        },
+        java: {
+          1: 'Define Trie class (no TrieNode needed)',
+          2: 'Declare set of complete words — powers search()',
+          3: 'Declare set of every prefix — powers startsWith()',
+          5: 'Initialize constructor',
+          6: 'Create empty HashSet for words',
+          7: 'Create empty HashSet for prefixes',
+          10: 'Define insert method',
+          11: 'Add the full word to the words set',
+          12: 'Loop over every prefix length from 1 to word.length()',
+          13: 'Add each substring(0, i) to the prefixes set',
+          17: 'Define search method',
+          18: 'Word exists iff it is in the words set — O(1) average',
+          21: 'Define startsWith method',
+          22: 'Prefix exists iff some insert recorded it — O(1) average',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define TrieNode class',

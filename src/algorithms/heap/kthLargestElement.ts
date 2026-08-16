@@ -125,6 +125,76 @@ function runKthLargestElement(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runKthLargestElementMinHeap(input: unknown): AlgorithmStep[] {
+  const { nums, k } = input as KthLargestElementInput;
+  const steps: AlgorithmStep[] = [];
+
+  // Min-heap simulated with a sorted ascending array (front = min)
+  const heap: number[] = [];
+  const pushHeap = (val: number) => {
+    let lo = 0;
+    let hi = heap.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (heap[mid] < val) lo = mid + 1;
+      else hi = mid;
+    }
+    heap.splice(lo, 0, val);
+    return lo;
+  };
+
+  steps.push({
+    state: { nums: [...nums], hashMap: { k: k, heapSize: 0 } },
+    highlights: [],
+    message: `Find the ${k}th largest element. Keep a min-heap of size ${k}: after seeing all numbers, its top is the answer.`,
+    codeLine: 4,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    const num = nums[i];
+
+    steps.push({
+      state: { nums: [...nums], hashMap: { k: k, heap: `[${heap.join(', ')}]`, current: num } },
+      highlights: [i],
+      pointers: { i },
+      message: `Visit nums[${i}] = ${num}`,
+      codeLine: 5,
+      action: 'visit',
+    });
+
+    const pos = pushHeap(num);
+
+    steps.push({
+      state: { nums: [...heap], hashMap: { k: k, heapSize: heap.length, pushed: num } },
+      highlights: [pos],
+      message: `Push ${num} into the min-heap. Heap: [${heap.join(', ')}], size=${heap.length}`,
+      codeLine: 6,
+      action: 'push',
+    });
+
+    if (heap.length > k) {
+      const removed = heap.shift()!;
+      steps.push({
+        state: { nums: [...heap], hashMap: { k: k, heapSize: heap.length, removed: removed } },
+        highlights: [0],
+        message: `Heap size ${heap.length + 1} > k=${k}: pop min=${removed}. Only the ${k} largest seen so far survive: [${heap.join(', ')}]`,
+        codeLine: 8,
+        action: 'pop',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...heap], hashMap: { k: k, answer: heap[0] }, result: heap[0] },
+    highlights: [0],
+    message: `Done! The heap holds the ${k} largest elements; its top (minimum) is the ${k}th largest = ${heap[0]}`,
+    codeLine: 9,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const kthLargestElement: Algorithm = {
   id: 'kth-largest-element',
   name: 'Kth Largest Element in an Array',
@@ -204,6 +274,78 @@ private static int quickSelect(int[] nums, int l, int r, int k) {
   },
   defaultInput: { nums: [3, 2, 1, 5, 6, 4], k: 2 },
   run: runKthLargestElement,
+  optimalApproachName: 'QuickSelect',
+  approaches: [
+    {
+      id: 'min-heap-size-k',
+      name: 'Min-Heap of Size K',
+      timeComplexity: 'O(n log k)',
+      spaceComplexity: 'O(k)',
+      description:
+        'Stream every number through a min-heap capped at k elements — a guaranteed O(n log k) with no worst-case blowup, unlike QuickSelect which degrades to O(n²) on bad pivots.',
+      code: {
+        python: `import heapq
+
+def findKthLargest(nums, k):
+    minHeap = []
+    for num in nums:
+        heapq.heappush(minHeap, num)
+        if len(minHeap) > k:
+            heapq.heappop(minHeap)
+    return minHeap[0]`,
+        javascript: `function findKthLargest(nums, k) {
+    const minHeap = new MinPriorityQueue();
+    for (const num of nums) {
+        minHeap.enqueue(num);
+        if (minHeap.size() > k)
+            minHeap.dequeue();
+    }
+    return minHeap.front().element;
+}`,
+        java: `public static int findKthLargest(int[] nums, int k) {
+    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+    for (int num : nums) {
+        minHeap.offer(num);
+        if (minHeap.size() > k) {
+            minHeap.poll();
+        }
+    }
+    return minHeap.peek();
+}`,
+      },
+      run: runKthLargestElementMinHeap,
+      lineExplanations: {
+        python: {
+          1: 'Import heapq for min-heap operations',
+          3: 'Define function with nums array and k',
+          4: 'Start with an empty min-heap',
+          5: 'Stream every number through the heap',
+          6: 'Push the current number',
+          7: 'If heap exceeds size k',
+          8: 'Pop the smallest — only the k largest survive',
+          9: 'Heap top (its minimum) is the kth largest',
+        },
+        javascript: {
+          1: 'Define function with nums array and k',
+          2: 'Create an empty min priority queue',
+          3: 'Stream every number through the heap',
+          4: 'Enqueue the current number',
+          5: 'If heap exceeds size k',
+          6: 'Dequeue the smallest — only the k largest survive',
+          8: 'Heap front (its minimum) is the kth largest',
+        },
+        java: {
+          1: 'Define method with nums array and k',
+          2: 'Create an empty min-heap',
+          3: 'Stream every number through the heap',
+          4: 'Offer the current number',
+          5: 'If heap exceeds size k',
+          6: 'Poll the smallest — only the k largest survive',
+          9: 'Heap peek (its minimum) is the kth largest',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with nums array and k',

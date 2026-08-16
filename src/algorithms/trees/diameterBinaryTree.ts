@@ -66,6 +66,66 @@ function runDiameterBinaryTree(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runDiameterBruteForce(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+  function isNull(i: number): boolean { return i >= arr.length || arr[i] === null; }
+
+  // Height helper recomputed at every node — the source of the O(n²) cost
+  function height(i: number): number {
+    if (isNull(i)) return 0;
+    return 1 + Math.max(height(getLeft(i)), height(getRight(i)));
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), diameter: 0 },
+    highlights: [],
+    message: 'Brute force: for EVERY node, recompute its left and right heights from scratch — the longest path through some node is the diameter',
+    codeLine: 1,
+  });
+
+  let best = 0;
+
+  function solve(i: number): number {
+    if (isNull(i)) return 0;
+
+    const leftHeight = height(getLeft(i));
+    const rightHeight = height(getRight(i));
+    const pathThroughNode = leftHeight + rightHeight;
+    const oldBest = best;
+    best = Math.max(best, pathThroughNode);
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), diameter: best, leftHeight, rightHeight, pathThroughNode },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Node ${arr[i]}: re-measure both subtrees — left height=${leftHeight}, right height=${rightHeight}, path through node=${pathThroughNode}. Best so far: ${oldBest} -> ${best}. (Each height() call re-walks the whole subtree: O(n²) total.)`,
+      codeLine: 9,
+      action: best > oldBest ? 'found' : 'compare',
+    } as AlgorithmStep);
+
+    const leftBest = solve(getLeft(i));
+    const rightBest = solve(getRight(i));
+
+    return Math.max(pathThroughNode, leftBest, rightBest);
+  }
+
+  const result = solve(0);
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), diameter: result, result },
+    highlights: [],
+    message: `Diameter of the binary tree is ${result}. The bottom-up DFS finds the same answer in one pass by returning heights while it updates the diameter.`,
+    codeLine: 12,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const diameterBinaryTree: Algorithm = {
   id: 'diameter-binary-tree',
   name: 'Diameter of Binary Tree',
@@ -124,6 +184,93 @@ private static int dfs(TreeNode node) {
   },
   defaultInput: [1, 2, 3, 4, 5],
   run: runDiameterBinaryTree,
+  optimalApproachName: 'Bottom-Up DFS',
+  approaches: [
+    {
+      id: 'brute-force-heights',
+      name: 'Brute Force Heights',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(h)',
+      description:
+        'The naive editorial solution: at every node recompute both subtree heights with a separate helper, instead of returning heights upward while tracking the diameter in one pass.',
+      code: {
+        python: `def diameterOfBinaryTree(root):
+    def height(node):
+        if not node:
+            return 0
+        return 1 + max(height(node.left), height(node.right))
+
+    if not root:
+        return 0
+    through = height(root.left) + height(root.right)
+    left = diameterOfBinaryTree(root.left)
+    right = diameterOfBinaryTree(root.right)
+    return max(through, left, right)`,
+        javascript: `function diameterOfBinaryTree(root) {
+    function height(node) {
+        if (!node) return 0;
+        return 1 + Math.max(height(node.left), height(node.right));
+    }
+
+    if (!root) return 0;
+    const through = height(root.left) + height(root.right);
+    const left = diameterOfBinaryTree(root.left);
+    const right = diameterOfBinaryTree(root.right);
+    return Math.max(through, left, right);
+}`,
+        java: `public static int diameterOfBinaryTree(TreeNode root) {
+    if (root == null) return 0;
+    int through = height(root.left) + height(root.right);
+    int left = diameterOfBinaryTree(root.left);
+    int right = diameterOfBinaryTree(root.right);
+    return Math.max(through, Math.max(left, right));
+}
+
+private static int height(TreeNode node) {
+    if (node == null) return 0;
+    return 1 + Math.max(height(node.left), height(node.right));
+}`,
+      },
+      run: runDiameterBruteForce,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root node',
+          2: 'Helper that measures the height of a subtree',
+          3: 'Base case: null node has height 0',
+          4: 'Return 0 for null node',
+          5: 'Height is 1 plus the taller child subtree',
+          7: 'Base case: empty tree has diameter 0',
+          8: 'Return 0 for null root',
+          9: 'Longest path THROUGH this node = left height + right height',
+          10: 'Best diameter fully inside the left subtree',
+          11: 'Best diameter fully inside the right subtree',
+          12: 'Answer is the best of the three candidates (heights re-measured everywhere: O(n²))',
+        },
+        javascript: {
+          1: 'Define function taking tree root node',
+          2: 'Helper that measures the height of a subtree',
+          3: 'Base case: null node has height 0',
+          4: 'Height is 1 plus the taller child subtree',
+          7: 'Base case: empty tree has diameter 0',
+          8: 'Longest path THROUGH this node = left height + right height',
+          9: 'Best diameter fully inside the left subtree',
+          10: 'Best diameter fully inside the right subtree',
+          11: 'Answer is the best of the three candidates (heights re-measured everywhere: O(n²))',
+        },
+        java: {
+          1: 'Define method taking tree root node',
+          2: 'Base case: empty tree has diameter 0',
+          3: 'Longest path THROUGH this node = left height + right height',
+          4: 'Best diameter fully inside the left subtree',
+          5: 'Best diameter fully inside the right subtree',
+          6: 'Answer is the best of the three candidates (heights re-measured everywhere: O(n²))',
+          9: 'Helper that measures the height of a subtree',
+          10: 'Base case: null node has height 0',
+          11: 'Height is 1 plus the taller child subtree',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root node',

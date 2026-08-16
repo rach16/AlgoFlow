@@ -213,6 +213,131 @@ function runReorderList(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runReorderListNodeArray(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const linkedList = nums.map((val) => ({ val, id: nodeId++ }));
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message:
+      'Array trick: copy every node into an array so we get O(1) access to both ends, then weave front and back together with two indices.',
+    codeLine: 1,
+  });
+
+  if (linkedList.length <= 2) {
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: linkedList.map((_, i) => i),
+        linkedListSecondary: [],
+        linkedListPointers: {},
+      },
+      highlights: [],
+      message: `List has ${linkedList.length} node(s), no reordering needed.`,
+      codeLine: 15,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  // Pass 1: collect nodes into an array
+  for (let idx = 0; idx < linkedList.length; idx++) {
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: [idx],
+        linkedListSecondary: Array.from({ length: idx }, (_, x) => x),
+        linkedListPointers: { curr: idx },
+      },
+      highlights: [idx],
+      pointers: { curr: idx },
+      message: `Append node ${linkedList[idx].val} to the array (nodes[${idx}]). The array gives us random access the list lacks.`,
+      codeLine: 5,
+      action: 'push',
+    });
+  }
+
+  let i = 0;
+  let j = linkedList.length - 1;
+  const result: { val: number | string; id: number }[] = [{ ...linkedList[0] }];
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [i],
+      linkedListSecondary: [j],
+      linkedListPointers: { i, j },
+      result: result.map((n) => ({ ...n })),
+    },
+    highlights: [i, j],
+    pointers: { i, j },
+    message: `Two indices: i=0 at the front, j=${j} at the back. Weave: front node, back node, next front, next back...`,
+    codeLine: 7,
+    action: 'visit',
+  });
+
+  while (i < j) {
+    result.push({ ...linkedList[j] });
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: [j],
+        linkedListSecondary: [i],
+        linkedListPointers: { i, j },
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: [j],
+      pointers: { i, j },
+      message: `nodes[${i}].next = nodes[${j}]: node ${linkedList[j].val} from the back is spliced in after node ${linkedList[i].val}.`,
+      codeLine: 9,
+      action: 'insert',
+    });
+    i++;
+    if (i === j) break;
+
+    result.push({ ...linkedList[i] });
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [j],
+        linkedListPointers: { i, j },
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: [i],
+      pointers: { i, j },
+      message: `nodes[${j}].next = nodes[${i}]: node ${linkedList[i].val} from the front follows node ${linkedList[j].val}.`,
+      codeLine: 13,
+      action: 'insert',
+    });
+    j--;
+  }
+
+  steps.push({
+    state: {
+      linkedList: result.map((n) => ({ ...n })),
+      linkedListHighlights: result.map((_, idx) => idx),
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: result.map((_, idx) => idx),
+    message: `Terminate the list (nodes[${i}].next = None). Reordered: [${result.map((n) => n.val).join(' -> ')}] — same result, one pass of index math instead of reversing in place.`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const reorderList: Algorithm = {
   id: 'reorder-list',
   name: 'Reorder List',
@@ -309,6 +434,120 @@ export const reorderList: Algorithm = {
   },
   defaultInput: [1, 2, 3, 4],
   run: runReorderList,
+  optimalApproachName: 'Reverse Second Half + Merge',
+  approaches: [
+    {
+      id: 'array-of-nodes',
+      name: 'Array of Nodes',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Dump the nodes into an array for O(1) access to both ends, then weave front and back with two indices — simpler than the in-place reverse+merge but uses O(n) extra space.',
+      code: {
+        python: `def reorderList(head):
+    nodes = []
+    curr = head
+    while curr:
+        nodes.append(curr)
+        curr = curr.next
+    i, j = 0, len(nodes) - 1
+    while i < j:
+        nodes[i].next = nodes[j]
+        i += 1
+        if i == j:
+            break
+        nodes[j].next = nodes[i]
+        j -= 1
+    nodes[i].next = None`,
+        javascript: `function reorderList(head) {
+    const nodes = [];
+    let curr = head;
+    while (curr) {
+        nodes.push(curr);
+        curr = curr.next;
+    }
+    let i = 0, j = nodes.length - 1;
+    while (i < j) {
+        nodes[i].next = nodes[j];
+        i++;
+        if (i === j) break;
+        nodes[j].next = nodes[i];
+        j--;
+    }
+    nodes[i].next = null;
+}`,
+        java: `public static void reorderList(ListNode head) {
+    List<ListNode> nodes = new ArrayList<>();
+    ListNode curr = head;
+    while (curr != null) {
+        nodes.add(curr);
+        curr = curr.next;
+    }
+    int i = 0, j = nodes.size() - 1;
+    while (i < j) {
+        nodes.get(i).next = nodes.get(j);
+        i++;
+        if (i == j) break;
+        nodes.get(j).next = nodes.get(i);
+        j--;
+    }
+    nodes.get(i).next = null;
+}`,
+      },
+      run: runReorderListNodeArray,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking head of linked list',
+          2: 'Array to hold every node for O(1) indexed access',
+          3: 'Start traversal at the head',
+          4: 'Walk the whole list once',
+          5: 'Store each node in the array',
+          6: 'Advance to the next node',
+          7: 'Two indices: i at the front, j at the back',
+          8: 'Weave until the indices meet in the middle',
+          9: 'Front node points to the current back node',
+          10: 'Advance the front index',
+          11: 'Indices met — the weave is complete',
+          12: 'Stop weaving',
+          13: 'Back node points to the next front node',
+          14: 'Pull the back index inward',
+          15: 'Terminate the list to avoid a cycle',
+        },
+        javascript: {
+          1: 'Define function taking head of linked list',
+          2: 'Array to hold every node for O(1) indexed access',
+          3: 'Start traversal at the head',
+          4: 'Walk the whole list once',
+          5: 'Store each node in the array',
+          6: 'Advance to the next node',
+          8: 'Two indices: i at the front, j at the back',
+          9: 'Weave until the indices meet in the middle',
+          10: 'Front node points to the current back node',
+          11: 'Advance the front index',
+          12: 'Indices met — stop weaving',
+          13: 'Back node points to the next front node',
+          14: 'Pull the back index inward',
+          16: 'Terminate the list to avoid a cycle',
+        },
+        java: {
+          1: 'Define method taking head of linked list',
+          2: 'ArrayList to hold every node for O(1) indexed access',
+          3: 'Start traversal at the head',
+          4: 'Walk the whole list once',
+          5: 'Store each node in the list',
+          6: 'Advance to the next node',
+          8: 'Two indices: i at the front, j at the back',
+          9: 'Weave until the indices meet in the middle',
+          10: 'Front node points to the current back node',
+          11: 'Advance the front index',
+          12: 'Indices met — stop weaving',
+          13: 'Back node points to the next front node',
+          14: 'Pull the back index inward',
+          16: 'Terminate the list to avoid a cycle',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking head of linked list',

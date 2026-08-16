@@ -77,6 +77,89 @@ function runValidateBST(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runValidateBSTInorder(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), inorder: [] },
+    highlights: [],
+    message: 'Key insight: an inorder traversal (left, node, right) of a valid BST visits values in strictly increasing order — so just check that each value beats the previous one',
+    codeLine: 1,
+  });
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+
+  function getVal(i: number): number | null {
+    if (i >= arr.length) return null;
+    return arr[i];
+  }
+
+  let prev: number | null = null;
+  const visited: number[] = [];
+  let valid = true;
+
+  function inorder(i: number): boolean {
+    const val = getVal(i);
+    if (val === null) return true;
+
+    if (!inorder(getLeft(i))) return false;
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), inorder: [...visited, val], prev: prev === null ? 'none' : prev },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Inorder visit: node ${val}. Previous inorder value: ${prev === null ? 'none (this is the smallest so far)' : prev}`,
+      codeLine: 9,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    if (prev !== null && val <= prev) {
+      steps.push({
+        state: { tree: toTreeNodes(arr), inorder: [...visited, val], prev, valid: false },
+        highlights: [],
+        treeHighlights: [i],
+        message: `Violation! ${val} <= ${prev} — the inorder sequence is not strictly increasing, so this is NOT a valid BST`,
+        codeLine: 10,
+        action: 'compare',
+      } as AlgorithmStep);
+      valid = false;
+      return false;
+    }
+
+    visited.push(val);
+    prev = val;
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), inorder: [...visited], prev },
+      highlights: [],
+      treeHighlights: [i],
+      message: `${prev === val && visited.length === 1 ? `${val} starts` : `${val} extends`} the increasing sequence: [${visited.join(', ')}]. Continue into the right subtree`,
+      codeLine: 11,
+      action: 'found',
+    } as AlgorithmStep);
+
+    return inorder(getRight(i));
+  }
+
+  if (getVal(0) !== null) {
+    inorder(0);
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), inorder: [...visited], result: valid, valid },
+    highlights: [],
+    message: valid
+      ? `Full inorder sequence [${visited.join(', ')}] is strictly increasing — the tree IS a valid BST!`
+      : 'Inorder sequence stopped increasing — the tree is NOT a valid BST!',
+    codeLine: 13,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const validateBST: Algorithm = {
   id: 'validate-bst',
   name: 'Validate Binary Search Tree',
@@ -125,6 +208,98 @@ private static boolean dfs(TreeNode node, long lower, long upper) {
   },
   defaultInput: [2, 1, 3],
   run: runValidateBST,
+  optimalApproachName: 'DFS with Min/Max Bounds',
+  approaches: [
+    {
+      id: 'inorder-traversal',
+      name: 'Inorder Traversal',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(h)',
+      description:
+        'Instead of passing (min, max) bounds down, exploit the fact that an inorder traversal of a BST must produce strictly increasing values — track only the previously visited value.',
+      code: {
+        python: `def isValidBST(root):
+    prev = None
+    def inorder(node):
+        nonlocal prev
+        if not node:
+            return True
+        if not inorder(node.left):
+            return False
+        if prev is not None and node.val <= prev:
+            return False
+        prev = node.val
+        return inorder(node.right)
+    return inorder(root)`,
+        javascript: `function isValidBST(root) {
+    let prev = null;
+    function inorder(node) {
+        if (!node) return true;
+        if (!inorder(node.left)) return false;
+        if (prev !== null && node.val <= prev) return false;
+        prev = node.val;
+        return inorder(node.right);
+    }
+    return inorder(root);
+}`,
+        java: `private static Integer prev;
+
+public static boolean isValidBST(TreeNode root) {
+    prev = null;
+    return inorder(root);
+}
+
+private static boolean inorder(TreeNode node) {
+    if (node == null) return true;
+    if (!inorder(node.left)) return false;
+    if (prev != null && node.val <= prev) return false;
+    prev = node.val;
+    return inorder(node.right);
+}`,
+      },
+      run: runValidateBSTInorder,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root',
+          2: 'Last value visited inorder — starts as none',
+          3: 'Inorder helper: left, node, right',
+          4: 'Allow updating prev from the nested function',
+          5: 'Base case: null node',
+          6: 'An empty subtree is always valid',
+          7: 'Validate the entire left subtree first',
+          8: 'A violation anywhere fails the whole tree',
+          9: 'Current value must be strictly greater than the previous inorder value',
+          10: 'Not increasing — not a BST',
+          11: 'This node becomes the new previous value',
+          12: 'Finally validate the right subtree',
+          13: 'Kick off inorder traversal from the root',
+        },
+        javascript: {
+          1: 'Define function taking tree root',
+          2: 'Last value visited inorder — starts as null',
+          3: 'Inorder helper: left, node, right',
+          4: 'An empty subtree is always valid',
+          5: 'Validate the entire left subtree first',
+          6: 'Current value must be strictly greater than the previous inorder value',
+          7: 'This node becomes the new previous value',
+          8: 'Finally validate the right subtree',
+          10: 'Kick off inorder traversal from the root',
+        },
+        java: {
+          1: 'Last value visited inorder, as a field (null = none yet)',
+          3: 'Define method taking tree root',
+          4: 'Reset prev before traversing',
+          5: 'Kick off inorder traversal from the root',
+          8: 'Inorder helper: left, node, right',
+          9: 'An empty subtree is always valid',
+          10: 'Validate the entire left subtree first',
+          11: 'Current value must be strictly greater than the previous inorder value',
+          12: 'This node becomes the new previous value',
+          13: 'Finally validate the right subtree',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root',

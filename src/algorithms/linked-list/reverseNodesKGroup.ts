@@ -169,6 +169,144 @@ function runReverseNodesKGroup(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runReverseNodesKGroupStack(input: unknown): AlgorithmStep[] {
+  const { list, k } = input as ReverseKGroupInput;
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const linkedList = list.map((val) => ({ val, id: nodeId++ }));
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: `Stack idea: a stack reverses order for free — push k=${k} nodes, then pop them. Pops come out back-to-front, which is exactly the reversed group.`,
+    codeLine: 1,
+  });
+
+  if (k <= 1 || linkedList.length === 0) {
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: linkedList.map((_, i) => i),
+        linkedListSecondary: [],
+        linkedListPointers: {},
+      },
+      highlights: [],
+      message: k <= 1 ? 'k=1, groups of one node are already "reversed".' : 'Empty list.',
+      codeLine: 21,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const result: { val: number | string; id: number }[] = [];
+  let groupStart = 0;
+  let groupNum = 0;
+
+  while (groupStart < linkedList.length) {
+    const groupEnd = Math.min(groupStart + k, linkedList.length);
+    const groupSize = groupEnd - groupStart;
+    groupNum++;
+
+    // Push phase
+    const stacked: number[] = [];
+    for (let i = groupStart; i < groupEnd; i++) {
+      stacked.push(i);
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [i],
+          linkedListSecondary: stacked.slice(0, -1),
+          linkedListPointers: { probe: i },
+          result: result.map((n) => ({ ...n })),
+        },
+        highlights: [i],
+        pointers: { probe: i },
+        message: `Group ${groupNum}: push node ${linkedList[i].val} onto the stack (stack: [${stacked.map((s) => linkedList[s].val).join(', ')}], top on the right).`,
+        codeLine: 10,
+        action: 'push',
+      });
+    }
+
+    if (groupSize < k) {
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: stacked,
+          linkedListSecondary: [],
+          linkedListPointers: {},
+          result: result.map((n) => ({ ...n })),
+        },
+        highlights: stacked,
+        message: `Only ${groupSize} node(s) gathered — fewer than k=${k}. Attach the leftover in original order instead of popping.`,
+        codeLine: 14,
+        action: 'visit',
+      });
+
+      for (let i = groupStart; i < groupEnd; i++) {
+        result.push({ ...linkedList[i] });
+      }
+      break;
+    }
+
+    // Pop phase
+    for (let r = stacked.length - 1; r >= 0; r--) {
+      const idx = stacked[r];
+      result.push({ ...linkedList[idx] });
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [idx],
+          linkedListSecondary: stacked.slice(0, r),
+          linkedListPointers: { top: idx },
+          result: result.map((n) => ({ ...n })),
+        },
+        highlights: [idx],
+        pointers: { top: idx },
+        message: `Pop node ${linkedList[idx].val} (stack top) and append it — last pushed comes out first, reversing the group.`,
+        codeLine: 17,
+        action: 'pop',
+      });
+    }
+
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: stacked,
+        linkedListSecondary: [],
+        linkedListPointers: {},
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: stacked,
+      message: `Group ${groupNum} done. Reconnect the tail to the rest of the list and move to the next group.`,
+      codeLine: 19,
+      action: 'visit',
+    });
+
+    groupStart = groupEnd;
+  }
+
+  steps.push({
+    state: {
+      linkedList: result.map((n) => ({ ...n })),
+      linkedListHighlights: result.map((_, i) => i),
+      linkedListSecondary: [],
+      linkedListPointers: { head: 0 },
+    },
+    highlights: result.map((_, i) => i),
+    message: `All groups processed! Result: [${result.map((n) => n.val).join(' -> ')}]. Simpler than in-place relinking, but the stack costs O(k) extra space.`,
+    codeLine: 21,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const reverseNodesKGroup: Algorithm = {
   id: 'reverse-nodes-k-group',
   name: 'Reverse Nodes in K-Group',
@@ -272,6 +410,164 @@ private static ListNode getKth(ListNode curr, int k) {
   },
   defaultInput: { list: [1, 2, 3, 4, 5], k: 2 },
   run: runReverseNodesKGroup,
+  optimalApproachName: 'Iterative In-Place Reversal',
+  approaches: [
+    {
+      id: 'stack-per-group',
+      name: 'Stack per Group',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(k)',
+      description:
+        'Push each group of k nodes onto a stack and pop them back out — LIFO order reverses the group with no pointer gymnastics, trading O(k) extra space for much simpler logic.',
+      code: {
+        python: `def reverseKGroup(head, k):
+    dummy = ListNode(0)
+    tail = dummy
+    curr = head
+    while curr:
+        stack = []
+        probe = curr
+        count = 0
+        while probe and count < k:
+            stack.append(probe)
+            probe = probe.next
+            count += 1
+        if count < k:
+            tail.next = curr
+            break
+        while stack:
+            tail.next = stack.pop()
+            tail = tail.next
+        tail.next = probe
+        curr = probe
+    return dummy.next`,
+        javascript: `function reverseKGroup(head, k) {
+    const dummy = new ListNode(0);
+    let tail = dummy;
+    let curr = head;
+    while (curr) {
+        const stack = [];
+        let probe = curr;
+        let count = 0;
+        while (probe && count < k) {
+            stack.push(probe);
+            probe = probe.next;
+            count++;
+        }
+        if (count < k) {
+            tail.next = curr;
+            break;
+        }
+        while (stack.length) {
+            tail.next = stack.pop();
+            tail = tail.next;
+        }
+        tail.next = probe;
+        curr = probe;
+    }
+    return dummy.next;
+}`,
+        java: `public static ListNode reverseKGroup(ListNode head, int k) {
+    ListNode dummy = new ListNode(0);
+    ListNode tail = dummy;
+    ListNode curr = head;
+    while (curr != null) {
+        Deque<ListNode> stack = new ArrayDeque<>();
+        ListNode probe = curr;
+        int count = 0;
+        while (probe != null && count < k) {
+            stack.push(probe);
+            probe = probe.next;
+            count++;
+        }
+        if (count < k) {
+            tail.next = curr;
+            break;
+        }
+        while (!stack.isEmpty()) {
+            tail.next = stack.pop();
+            tail = tail.next;
+        }
+        tail.next = probe;
+        curr = probe;
+    }
+    return dummy.next;
+}`,
+      },
+      run: runReverseNodesKGroupStack,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking head and group size k',
+          2: 'Dummy node anchors the rebuilt list',
+          3: 'Tail is where the next popped node attaches',
+          4: 'curr marks the start of the current group',
+          5: 'Process group after group until the list ends',
+          6: 'Fresh stack for this group',
+          7: 'Probe walks ahead to gather the group',
+          8: 'Count how many nodes we managed to gather',
+          9: 'Gather up to k nodes',
+          10: 'Push each node — last pushed will pop first',
+          11: 'Probe moves toward the next group',
+          12: 'One more node gathered',
+          13: 'Incomplete group at the end?',
+          14: 'Attach the leftover nodes in original order',
+          15: 'Done — no more full groups',
+          16: 'Pop the whole stack',
+          17: 'Each pop appends nodes in reverse push order',
+          18: 'Advance the tail to the appended node',
+          19: 'Reconnect the reversed group to the rest of the list',
+          20: 'Next group starts where probe stopped',
+          21: 'Return the rebuilt list after the dummy',
+        },
+        javascript: {
+          1: 'Define function taking head and group size k',
+          2: 'Dummy node anchors the rebuilt list',
+          3: 'Tail is where the next popped node attaches',
+          4: 'curr marks the start of the current group',
+          5: 'Process group after group until the list ends',
+          6: 'Fresh stack for this group',
+          7: 'Probe walks ahead to gather the group',
+          8: 'Count how many nodes we managed to gather',
+          9: 'Gather up to k nodes',
+          10: 'Push each node — last pushed will pop first',
+          11: 'Probe moves toward the next group',
+          12: 'One more node gathered',
+          14: 'Incomplete group at the end?',
+          15: 'Attach the leftover nodes in original order',
+          16: 'Done — no more full groups',
+          18: 'Pop the whole stack',
+          19: 'Each pop appends nodes in reverse push order',
+          20: 'Advance the tail to the appended node',
+          22: 'Reconnect the reversed group to the rest of the list',
+          23: 'Next group starts where probe stopped',
+          25: 'Return the rebuilt list after the dummy',
+        },
+        java: {
+          1: 'Define method taking head and group size k',
+          2: 'Dummy node anchors the rebuilt list',
+          3: 'Tail is where the next popped node attaches',
+          4: 'curr marks the start of the current group',
+          5: 'Process group after group until the list ends',
+          6: 'Fresh stack (ArrayDeque) for this group',
+          7: 'Probe walks ahead to gather the group',
+          8: 'Count how many nodes we managed to gather',
+          9: 'Gather up to k nodes',
+          10: 'Push each node — last pushed will pop first',
+          11: 'Probe moves toward the next group',
+          12: 'One more node gathered',
+          14: 'Incomplete group at the end?',
+          15: 'Attach the leftover nodes in original order',
+          16: 'Done — no more full groups',
+          18: 'Pop the whole stack',
+          19: 'Each pop appends nodes in reverse push order',
+          20: 'Advance the tail to the appended node',
+          22: 'Reconnect the reversed group to the rest of the list',
+          23: 'Next group starts where probe stopped',
+          25: 'Return the rebuilt list after the dummy',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking head and group size k',

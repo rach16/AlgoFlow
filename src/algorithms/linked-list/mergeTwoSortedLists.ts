@@ -170,6 +170,152 @@ function runMergeTwoSortedLists(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMergeTwoSortedListsRecursive(input: unknown): AlgorithmStep[] {
+  const { list1, list2 } = input as MergeTwoInput;
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const ll1 = list1.map((val) => ({ val, id: nodeId++ }));
+  const ll2 = list2.map((val) => ({ val, id: nodeId++ }));
+  const result: { val: number | string; id: number }[] = [];
+
+  steps.push({
+    state: {
+      linkedList: ll1.map((n) => ({ ...n })),
+      linkedList2: ll2.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: [],
+    },
+    highlights: [],
+    message:
+      'Recursive idea: the merged list starts with the smaller head, whose next is the merge of everything that remains. Each call peels off one node.',
+    codeLine: 1,
+  });
+
+  let i = 0;
+  let j = 0;
+  let depth = 0;
+
+  while (i < ll1.length && j < ll2.length) {
+    const v1 = ll1[i].val as number;
+    const v2 = ll2[j].val as number;
+    depth++;
+
+    steps.push({
+      state: {
+        linkedList: ll1.map((n) => ({ ...n })),
+        linkedList2: ll2.map((n) => ({ ...n })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [j],
+        linkedListPointers: { l1: i, l2: j },
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: [i, j],
+      pointers: { l1: i, l2: j },
+      message: `Call ${depth}: compare list1.val=${v1} vs list2.val=${v2} — the smaller node wins this level of recursion.`,
+      codeLine: 6,
+      action: 'compare',
+    });
+
+    if (v1 <= v2) {
+      result.push({ val: v1, id: nodeId++ });
+      steps.push({
+        state: {
+          linkedList: ll1.map((n) => ({ ...n })),
+          linkedList2: ll2.map((n) => ({ ...n })),
+          linkedListHighlights: [i],
+          linkedListSecondary: [],
+          linkedListPointers: { l1: i, l2: j },
+          result: result.map((n) => ({ ...n })),
+        },
+        highlights: [i],
+        pointers: { l1: i },
+        message: `${v1} <= ${v2}: node ${v1} takes this spot. Its next will be filled by recursing on (list1.next, list2).`,
+        codeLine: 7,
+        action: 'insert',
+      });
+      i++;
+    } else {
+      result.push({ val: v2, id: nodeId++ });
+      steps.push({
+        state: {
+          linkedList: ll1.map((n) => ({ ...n })),
+          linkedList2: ll2.map((n) => ({ ...n })),
+          linkedListHighlights: [],
+          linkedListSecondary: [j],
+          linkedListPointers: { l1: i, l2: j },
+          result: result.map((n) => ({ ...n })),
+        },
+        highlights: [j],
+        pointers: { l2: j },
+        message: `${v2} < ${v1}: node ${v2} takes this spot. Its next will be filled by recursing on (list1, list2.next).`,
+        codeLine: 10,
+        action: 'insert',
+      });
+      j++;
+    }
+  }
+
+  while (i < ll1.length) {
+    result.push({ val: ll1[i].val, id: nodeId++ });
+    steps.push({
+      state: {
+        linkedList: ll1.map((n) => ({ ...n })),
+        linkedList2: ll2.map((n) => ({ ...n })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [],
+        linkedListPointers: { l1: i },
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: [i],
+      pointers: { l1: i },
+      message: `Base case: list2 is empty, so the recursion returns the rest of list1 as-is — append node ${ll1[i].val}.`,
+      codeLine: 5,
+      action: 'insert',
+    });
+    i++;
+  }
+
+  while (j < ll2.length) {
+    result.push({ val: ll2[j].val, id: nodeId++ });
+    steps.push({
+      state: {
+        linkedList: ll1.map((n) => ({ ...n })),
+        linkedList2: ll2.map((n) => ({ ...n })),
+        linkedListHighlights: [],
+        linkedListSecondary: [j],
+        linkedListPointers: { l2: j },
+        result: result.map((n) => ({ ...n })),
+      },
+      highlights: [j],
+      pointers: { l2: j },
+      message: `Base case: list1 is empty, so the recursion returns the rest of list2 as-is — append node ${ll2[j].val}.`,
+      codeLine: 3,
+      action: 'insert',
+    });
+    j++;
+  }
+
+  steps.push({
+    state: {
+      linkedList: ll1.map((n) => ({ ...n })),
+      linkedList2: ll2.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: result.map((n) => ({ ...n })),
+    },
+    highlights: [],
+    message: `All calls return and the chain links up: [${result.map((n) => n.val).join(' -> ')}]`,
+    codeLine: 8,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const mergeTwoSortedLists: Algorithm = {
   id: 'merge-two-sorted-lists',
   name: 'Merge Two Sorted Lists',
@@ -230,6 +376,86 @@ export const mergeTwoSortedLists: Algorithm = {
   },
   defaultInput: { list1: [1, 2, 4], list2: [1, 3, 4] },
   run: runMergeTwoSortedLists,
+  optimalApproachName: 'Iterative with Dummy Node',
+  approaches: [
+    {
+      id: 'recursive',
+      name: 'Recursion',
+      timeComplexity: 'O(n+m)',
+      spaceComplexity: 'O(n+m)',
+      description:
+        'Let recursion do the linking: the smaller head claims the front and its next is the merge of the rest — no dummy node needed, but the call stack costs O(n+m) space.',
+      code: {
+        python: `def mergeTwoLists(list1, list2):
+    if not list1:
+        return list2
+    if not list2:
+        return list1
+    if list1.val <= list2.val:
+        list1.next = mergeTwoLists(list1.next, list2)
+        return list1
+    else:
+        list2.next = mergeTwoLists(list1, list2.next)
+        return list2`,
+        javascript: `function mergeTwoLists(list1, list2) {
+    if (!list1) return list2;
+    if (!list2) return list1;
+    if (list1.val <= list2.val) {
+        list1.next = mergeTwoLists(list1.next, list2);
+        return list1;
+    }
+    list2.next = mergeTwoLists(list1, list2.next);
+    return list2;
+}`,
+        java: `public static ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+    if (list1 == null) return list2;
+    if (list2 == null) return list1;
+    if (list1.val <= list2.val) {
+        list1.next = mergeTwoLists(list1.next, list2);
+        return list1;
+    }
+    list2.next = mergeTwoLists(list1, list2.next);
+    return list2;
+}`,
+      },
+      run: runMergeTwoSortedListsRecursive,
+      lineExplanations: {
+        python: {
+          1: 'Define recursive function taking two sorted list heads',
+          2: 'Base case: list1 is empty',
+          3: 'Nothing left to merge — return the rest of list2',
+          4: 'Base case: list2 is empty',
+          5: 'Nothing left to merge — return the rest of list1',
+          6: 'Compare the two heads',
+          7: 'list1 head is smaller: its next is the merge of the rest',
+          8: 'Return list1 head as the front of this sublist',
+          9: 'Otherwise list2 head is smaller',
+          10: 'list2 head claims the spot: its next is the merge of the rest',
+          11: 'Return list2 head as the front of this sublist',
+        },
+        javascript: {
+          1: 'Define recursive function taking two sorted list heads',
+          2: 'Base case: list1 empty — return the rest of list2',
+          3: 'Base case: list2 empty — return the rest of list1',
+          4: 'Compare the two heads',
+          5: 'list1 head is smaller: its next is the merge of the rest',
+          6: 'Return list1 head as the front of this sublist',
+          8: 'list2 head is smaller: its next is the merge of the rest',
+          9: 'Return list2 head as the front of this sublist',
+        },
+        java: {
+          1: 'Define recursive method taking two sorted list heads',
+          2: 'Base case: list1 empty — return the rest of list2',
+          3: 'Base case: list2 empty — return the rest of list1',
+          4: 'Compare the two heads',
+          5: 'list1 head is smaller: its next is the merge of the rest',
+          6: 'Return list1 head as the front of this sublist',
+          8: 'list2 head is smaller: its next is the merge of the rest',
+          9: 'Return list2 head as the front of this sublist',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking two sorted list heads',

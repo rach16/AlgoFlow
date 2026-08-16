@@ -140,6 +140,109 @@ function runFindDuplicateNumber(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runFindDuplicateNumberHashSet(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      linkedList: nums.map((val, i) => ({ val, id: i })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message:
+      "Straightforward idea: scan left to right, remembering every value in a hash set. The first value we've seen before is the duplicate. (Violates the O(1)-space constraint, but it is the natural first solution.)",
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: {
+      linkedList: nums.map((val, i) => ({ val, id: i })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: 'Create an empty set to remember which values have appeared.',
+    codeLine: 2,
+    action: 'visit',
+  });
+
+  const seen = new Set<number>();
+  const seenIndices: number[] = [];
+
+  for (let i = 0; i < nums.length; i++) {
+    const num = nums[i];
+
+    steps.push({
+      state: {
+        linkedList: nums.map((val, idx) => ({ val, id: idx })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [...seenIndices],
+        linkedListPointers: { i },
+      },
+      highlights: [i],
+      pointers: { i },
+      message: `Check nums[${i}] = ${num}: is ${num} already in the seen set {${[...seen].join(', ')}}?`,
+      codeLine: 4,
+      action: 'compare',
+    });
+
+    if (seen.has(num)) {
+      const firstIdx = nums.findIndex((v) => v === num);
+      steps.push({
+        state: {
+          linkedList: nums.map((val, idx) => ({ val, id: idx })),
+          linkedListHighlights: [i, firstIdx],
+          linkedListSecondary: [...seenIndices],
+          linkedListPointers: { duplicate: i, 'first seen': firstIdx },
+          result: num,
+        },
+        highlights: [i, firstIdx],
+        pointers: { i },
+        message: `Yes! ${num} was already seen (first at index ${firstIdx}). The duplicate number is ${num}. One pass, but the set used O(n) extra memory — Floyd's achieves this in O(1).`,
+        codeLine: 5,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    seen.add(num);
+    seenIndices.push(i);
+
+    steps.push({
+      state: {
+        linkedList: nums.map((val, idx) => ({ val, id: idx })),
+        linkedListHighlights: [i],
+        linkedListSecondary: [...seenIndices],
+        linkedListPointers: { i },
+      },
+      highlights: [i],
+      pointers: { i },
+      message: `${num} is new — add it to the seen set (now ${seen.size} value${seen.size === 1 ? '' : 's'}).`,
+      codeLine: 6,
+      action: 'insert',
+    });
+  }
+
+  steps.push({
+    state: {
+      linkedList: nums.map((val, i) => ({ val, id: i })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: 'No duplicate found (should not happen for a valid input).',
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const findDuplicateNumber: Algorithm = {
   id: 'find-duplicate-number',
   name: 'Find the Duplicate Number',
@@ -204,6 +307,76 @@ export const findDuplicateNumber: Algorithm = {
   },
   defaultInput: [1, 3, 4, 2, 2],
   run: runFindDuplicateNumber,
+  optimalApproachName: "Floyd's Cycle Detection",
+  approaches: [
+    {
+      id: 'hash-set',
+      name: 'Hash Set',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        "Remember every value in a set and return the first repeat — the intuitive one-pass solution, but it breaks the problem's O(1)-space constraint that Floyd's algorithm satisfies.",
+      code: {
+        python: `def findDuplicate(nums):
+    seen = set()
+    for num in nums:
+        if num in seen:
+            return num
+        seen.add(num)
+    return -1`,
+        javascript: `function findDuplicate(nums) {
+    const seen = new Set();
+    for (const num of nums) {
+        if (seen.has(num)) {
+            return num;
+        }
+        seen.add(num);
+    }
+    return -1;
+}`,
+        java: `public static int findDuplicate(int[] nums) {
+    Set<Integer> seen = new HashSet<>();
+    for (int num : nums) {
+        if (seen.contains(num)) {
+            return num;
+        }
+        seen.add(num);
+    }
+    return -1;
+}`,
+      },
+      run: runFindDuplicateNumberHashSet,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Empty set to remember values already encountered',
+          3: 'Scan the array left to right',
+          4: 'Has this value appeared before?',
+          5: 'Yes — it is the duplicate, return it immediately',
+          6: 'First occurrence — remember it in the set',
+          7: 'Unreachable for valid input (a duplicate always exists)',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Empty Set to remember values already encountered',
+          3: 'Scan the array left to right',
+          4: 'Has this value appeared before?',
+          5: 'Yes — it is the duplicate, return it immediately',
+          7: 'First occurrence — remember it in the set',
+          9: 'Unreachable for valid input (a duplicate always exists)',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'Empty HashSet to remember values already encountered',
+          3: 'Scan the array left to right',
+          4: 'Has this value appeared before?',
+          5: 'Yes — it is the duplicate, return it immediately',
+          7: 'First occurrence — remember it in the set',
+          9: 'Unreachable for valid input (a duplicate always exists)',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

@@ -116,6 +116,72 @@ function runLevelOrderTraversal(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLevelOrderDFS(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+  const result: number[][] = [];
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+  function getVal(i: number): number | null {
+    return i < arr.length ? arr[i] : null;
+  }
+
+  function snapshotResult(): number[][] {
+    return result.map(level => [...level]);
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), result: [] },
+    highlights: [],
+    message: 'DFS version: no queue at all — carry a depth counter down the recursion and append each node to result[depth]. Preorder (node → left → right) keeps every level left-to-right',
+    codeLine: 1,
+  });
+
+  function dfs(i: number, depth: number): void {
+    const val = getVal(i);
+    if (val === null) return;
+
+    if (depth === result.length) {
+      result.push([]);
+      steps.push({
+        state: { tree: toTreeNodes(arr), result: snapshotResult() },
+        highlights: [],
+        treeHighlights: [i],
+        message: `First node seen at depth ${depth} — create a new empty level result[${depth}]`,
+        codeLine: 8,
+        action: 'insert',
+      } as AlgorithmStep);
+    }
+
+    result[depth].push(val);
+
+    steps.push({
+      state: { tree: toTreeNodes(arr), result: snapshotResult(), currentLevel: [...result[depth]] },
+      highlights: [],
+      treeHighlights: [i],
+      message: `Visit node ${val} at depth ${depth}: append to result[${depth}] → [${result[depth].join(', ')}]. DFS may jump between levels, but each level list still fills left-to-right`,
+      codeLine: 9,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    dfs(getLeft(i), depth + 1);
+    dfs(getRight(i), depth + 1);
+  }
+
+  dfs(0, 0);
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), result: snapshotResult() },
+    highlights: [],
+    message: `DFS complete — same level-order output as BFS: [${result.map(l => `[${l.join(', ')}]`).join(', ')}], using only O(h) recursion space instead of an O(n) queue`,
+    codeLine: 14,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const levelOrderTraversal: Algorithm = {
   id: 'level-order-traversal',
   name: 'Binary Tree Level Order Traversal',
@@ -182,6 +248,101 @@ export const levelOrderTraversal: Algorithm = {
   },
   defaultInput: [3, 9, 20, null, null, 15, 7],
   run: runLevelOrderTraversal,
+  optimalApproachName: 'Iterative BFS',
+  approaches: [
+    {
+      id: 'dfs-by-depth',
+      name: 'DFS by Depth',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(h)',
+      description:
+        'Recursive DFS that passes the current depth down and appends each node to result[depth] — no queue, and preorder traversal keeps each level ordered left-to-right.',
+      code: {
+        python: `def levelOrder(root):
+    result = []
+
+    def dfs(node, depth):
+        if not node:
+            return
+        if depth == len(result):
+            result.append([])
+        result[depth].append(node.val)
+        dfs(node.left, depth + 1)
+        dfs(node.right, depth + 1)
+
+    dfs(root, 0)
+    return result`,
+        javascript: `function levelOrder(root) {
+    const result = [];
+
+    function dfs(node, depth) {
+        if (!node) return;
+        if (depth === result.length) result.push([]);
+        result[depth].push(node.val);
+        dfs(node.left, depth + 1);
+        dfs(node.right, depth + 1);
+    }
+
+    dfs(root, 0);
+    return result;
+}`,
+        java: `public static List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> result = new ArrayList<>();
+    dfs(root, 0, result);
+    return result;
+}
+
+private static void dfs(TreeNode node, int depth, List<List<Integer>> result) {
+    if (node == null) return;
+    if (depth == result.size()) result.add(new ArrayList<>());
+    result.get(depth).add(node.val);
+    dfs(node.left, depth + 1, result);
+    dfs(node.right, depth + 1, result);
+}`,
+      },
+      run: runLevelOrderDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root',
+          2: 'Result list — one inner list per depth',
+          4: 'DFS helper carrying the current depth',
+          5: 'Base case: null node',
+          6: 'Nothing to add for null node',
+          7: 'First time reaching this depth?',
+          8: 'Create the empty list for this new level',
+          9: 'Append node value to its level (preorder keeps levels left-to-right)',
+          10: 'Recurse left with depth + 1',
+          11: 'Recurse right with depth + 1',
+          13: 'Start DFS at the root, depth 0',
+          14: 'Return all levels',
+        },
+        javascript: {
+          1: 'Define function taking tree root',
+          2: 'Result array — one inner array per depth',
+          4: 'DFS helper carrying the current depth',
+          5: 'Base case: null node — nothing to add',
+          6: 'First time reaching this depth: create its empty level',
+          7: 'Append node value to its level (preorder keeps levels left-to-right)',
+          8: 'Recurse left with depth + 1',
+          9: 'Recurse right with depth + 1',
+          12: 'Start DFS at the root, depth 0',
+          13: 'Return all levels',
+        },
+        java: {
+          1: 'Define function returning list of levels',
+          2: 'Result list — one inner list per depth',
+          3: 'Start DFS at the root, depth 0',
+          4: 'Return all levels',
+          7: 'DFS helper carrying the current depth',
+          8: 'Base case: null node — nothing to add',
+          9: 'First time reaching this depth: create its empty level',
+          10: 'Append node value to its level (preorder keeps levels left-to-right)',
+          11: 'Recurse left with depth + 1',
+          12: 'Recurse right with depth + 1',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root',

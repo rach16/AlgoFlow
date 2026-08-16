@@ -97,6 +97,88 @@ function runSubtreeOfAnotherTree(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSubtreeSerialize(input: unknown): AlgorithmStep[] {
+  const { root, subRoot } = input as SubtreeInput;
+  const steps: AlgorithmStep[] = [];
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+
+  function getVal(arr: (number | null)[], i: number): number | null {
+    if (i >= arr.length) return null;
+    return arr[i];
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(root), tree2: toTreeNodes(subRoot) },
+    highlights: [],
+    message: 'Trick: turn BOTH trees into strings (preorder, with null markers), then subRoot is a subtree exactly when its string appears inside root\'s string',
+    codeLine: 1,
+  });
+
+  function serialize(arr: (number | null)[], i: number, isMain: boolean, out: { s: string }): void {
+    const val = getVal(arr, i);
+    if (val === null) {
+      out.s += ',#';
+      return;
+    }
+    out.s += ',' + String(val);
+
+    steps.push({
+      state: {
+        tree: toTreeNodes(root),
+        tree2: toTreeNodes(subRoot),
+        ...(isMain ? { serializedRoot: out.s } : { serializedSub: out.s }),
+      },
+      highlights: [],
+      treeHighlights: isMain ? [i] : [],
+      message: `Serialize ${isMain ? 'root' : 'subRoot'}: append ",${val}" (the leading comma stops "2" from matching inside "12"). So far: "${out.s}"`,
+      codeLine: 5,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    serialize(arr, getLeft(i), isMain, out);
+    serialize(arr, getRight(i), isMain, out);
+  }
+
+  const rootSer = { s: '' };
+  serialize(root, 0, true, rootSer);
+
+  steps.push({
+    state: { tree: toTreeNodes(root), tree2: toTreeNodes(subRoot), serializedRoot: rootSer.s },
+    highlights: [],
+    message: `Root serialized: "${rootSer.s}" — every "#" marks a missing child, so the string encodes the exact shape`,
+    codeLine: 6,
+    action: 'found',
+  });
+
+  const subSer = { s: '' };
+  serialize(subRoot, 0, false, subSer);
+
+  steps.push({
+    state: { tree: toTreeNodes(root), tree2: toTreeNodes(subRoot), serializedRoot: rootSer.s, serializedSub: subSer.s },
+    highlights: [],
+    message: `subRoot serialized: "${subSer.s}". Now the tree problem is just a substring search!`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  const result = rootSer.s.includes(subSer.s);
+  const matchAt = rootSer.s.indexOf(subSer.s);
+
+  steps.push({
+    state: { tree: toTreeNodes(root), tree2: toTreeNodes(subRoot), serializedRoot: rootSer.s, serializedSub: subSer.s, result },
+    highlights: [],
+    message: result
+      ? `"${subSer.s}" found inside root's string at position ${matchAt} — subRoot IS a subtree of root!`
+      : `"${subSer.s}" does not appear in "${rootSer.s}" — subRoot is NOT a subtree of root!`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const subtreeOfAnotherTree: Algorithm = {
   id: 'subtree-of-another-tree',
   name: 'Subtree of Another Tree',
@@ -161,6 +243,73 @@ private static boolean isSameTree(TreeNode p, TreeNode q) {
   },
   defaultInput: { root: [3, 4, 5, 1, 2], subRoot: [4, 1, 2] },
   run: runSubtreeOfAnotherTree,
+  optimalApproachName: 'DFS + Same-Tree Check',
+  approaches: [
+    {
+      id: 'serialize-string-matching',
+      name: 'Serialize + String Matching',
+      timeComplexity: 'O(m + n)',
+      spaceComplexity: 'O(m + n)',
+      description:
+        'Instead of re-comparing subtrees at every node (O(m·n)), serialize both trees once with null markers and reduce the problem to a single substring search (linear with KMP).',
+      code: {
+        python: `def isSubtree(root, subRoot):
+    def serialize(node):
+        if not node:
+            return ",#"
+        return ("," + str(node.val) +
+                serialize(node.left) + serialize(node.right))
+
+    return serialize(subRoot) in serialize(root)`,
+        javascript: `function isSubtree(root, subRoot) {
+    function serialize(node) {
+        if (!node) return ",#";
+        return "," + node.val +
+            serialize(node.left) + serialize(node.right);
+    }
+
+    return serialize(root).includes(serialize(subRoot));
+}`,
+        java: `public static boolean isSubtree(TreeNode root, TreeNode subRoot) {
+    return serialize(root).contains(serialize(subRoot));
+}
+
+private static String serialize(TreeNode node) {
+    if (node == null) return ",#";
+    return "," + node.val +
+           serialize(node.left) + serialize(node.right);
+}`,
+      },
+      run: runSubtreeSerialize,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking root and subRoot trees',
+          2: 'Preorder serializer shared by both trees',
+          3: 'Null child?',
+          4: 'Emit ",#" — null markers make the string encode the exact shape',
+          5: 'Emit ",value" — the leading comma prevents "2" matching inside "12"',
+          6: 'Recurse left then right (preorder)',
+          8: 'subRoot is a subtree iff its string occurs inside root\'s string',
+        },
+        javascript: {
+          1: 'Define function taking root and subRoot trees',
+          2: 'Preorder serializer shared by both trees',
+          3: 'Null child emits ",#" — null markers encode the exact shape',
+          4: 'Emit ",value" — the leading comma prevents "2" matching inside "12"',
+          5: 'Recurse left then right (preorder)',
+          8: 'subRoot is a subtree iff its string occurs inside root\'s string',
+        },
+        java: {
+          1: 'Define method taking root and subRoot trees',
+          2: 'subRoot is a subtree iff its string occurs inside root\'s string',
+          5: 'Preorder serializer shared by both trees',
+          6: 'Null child emits ",#" — null markers encode the exact shape',
+          7: 'Emit ",value" — the leading comma prevents "2" matching inside "12"',
+          8: 'Recurse left then right (preorder)',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking root and subRoot trees',

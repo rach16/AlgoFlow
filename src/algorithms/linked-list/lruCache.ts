@@ -213,6 +213,189 @@ function runLruCache(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLruCacheArray(input: unknown): AlgorithmStep[] {
+  const operations = input as Operation[];
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const capacity = 2;
+  const items: { key: number; value: number; node: { val: string; id: number } }[] = [];
+
+  const display = () => items.map((it) => ({ ...it.node }));
+
+  steps.push({
+    state: {
+      linkedList: [],
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: `Initialize an array-based LRU cache with capacity ${capacity}: a plain list of [key, value] pairs, LRU at the front. No hashmap — every operation scans the list, so get/put cost O(n) instead of O(1).`,
+    codeLine: 1,
+  });
+
+  for (let opIdx = 0; opIdx < operations.length; opIdx++) {
+    const op = operations[opIdx];
+    const opName = op[0];
+
+    if (opName === 'put') {
+      const key = op[1];
+      const value = op[2];
+
+      steps.push({
+        state: {
+          linkedList: display(),
+          linkedListHighlights: [],
+          linkedListSecondary: [],
+          linkedListPointers: {},
+        },
+        highlights: [],
+        message: `Operation ${opIdx + 1}: put(${key}, ${value}) — scan the whole array for key ${key}.`,
+        codeLine: 14,
+        action: 'visit',
+      });
+
+      const existingIdx = items.findIndex((it) => it.key === key);
+      if (existingIdx >= 0) {
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [existingIdx],
+            linkedListSecondary: [],
+            linkedListPointers: { found: existingIdx },
+          },
+          highlights: [existingIdx],
+          message: `Linear scan finds key ${key} at position ${existingIdx} (this scan is the O(n) cost). Remove the old entry before re-inserting.`,
+          codeLine: 17,
+          action: 'compare',
+        });
+        items.splice(existingIdx, 1);
+      } else if (items.length > 0) {
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [],
+            linkedListSecondary: items.map((_, i) => i),
+            linkedListPointers: {},
+          },
+          highlights: [],
+          message: `Linear scan checks all ${items.length} entr${items.length === 1 ? 'y' : 'ies'} — key ${key} is not present.`,
+          codeLine: 16,
+          action: 'compare',
+        });
+      }
+
+      items.push({ key, value, node: { val: `${key}:${value}`, id: nodeId++ } });
+      steps.push({
+        state: {
+          linkedList: display(),
+          linkedListHighlights: [items.length - 1],
+          linkedListSecondary: [],
+          linkedListPointers: { 'MRU (new)': items.length - 1 },
+        },
+        highlights: [items.length - 1],
+        message: `Append [${key}, ${value}] at the end — the end of the array is the most-recently-used side.`,
+        codeLine: 19,
+        action: 'insert',
+      });
+
+      if (items.length > capacity) {
+        const evicted = items[0];
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [0],
+            linkedListSecondary: [],
+            linkedListPointers: { 'LRU (evict)': 0 },
+          },
+          highlights: [0],
+          message: `Over capacity (${items.length} > ${capacity}). Evict the front of the array — the least recently used entry, key=${evicted.key}.`,
+          codeLine: 21,
+          action: 'delete',
+        });
+        items.shift();
+      }
+    } else if (opName === 'get') {
+      const key = op[1];
+
+      steps.push({
+        state: {
+          linkedList: display(),
+          linkedListHighlights: [],
+          linkedListSecondary: [],
+          linkedListPointers: {},
+        },
+        highlights: [],
+        message: `Operation ${opIdx + 1}: get(${key}) — scan the array from the front looking for key ${key}.`,
+        codeLine: 6,
+        action: 'visit',
+      });
+
+      const foundIdx = items.findIndex((it) => it.key === key);
+      if (foundIdx >= 0) {
+        const found = items[foundIdx];
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [foundIdx],
+            linkedListSecondary: [],
+            linkedListPointers: { found: foundIdx },
+          },
+          highlights: [foundIdx],
+          message: `Scan hits key ${key} at position ${foundIdx} after checking ${foundIdx + 1} entr${foundIdx === 0 ? 'y' : 'ies'}. Value = ${found.value}.`,
+          codeLine: 8,
+          action: 'found',
+        });
+
+        items.splice(foundIdx, 1);
+        items.push(found);
+
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [items.length - 1],
+            linkedListSecondary: [],
+            linkedListPointers: { MRU: items.length - 1 },
+          },
+          highlights: [items.length - 1],
+          message: `Move [${key}, ${found.value}] to the end (most recently used) and return ${found.value}.`,
+          codeLine: 11,
+          action: 'visit',
+        });
+      } else {
+        steps.push({
+          state: {
+            linkedList: display(),
+            linkedListHighlights: [],
+            linkedListSecondary: items.map((_, i) => i),
+            linkedListPointers: {},
+          },
+          highlights: [],
+          message: `Scanned the entire array — key ${key} is not cached. Return -1.`,
+          codeLine: 12,
+          action: 'compare',
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      linkedList: display(),
+      linkedListHighlights: items.map((_, i) => i),
+      linkedListSecondary: [],
+      linkedListPointers: items.length > 0 ? { LRU: 0, MRU: items.length - 1 } : {},
+    },
+    highlights: [],
+    message: `All operations complete. Cache: [${items.map((it) => `${it.key}:${it.value}`).join(', ')}] (LRU left, MRU right). Same behavior as the optimal design, but each operation paid an O(n) scan.`,
+    codeLine: 19,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const lruCache: Algorithm = {
   id: 'lru-cache',
   name: 'LRU Cache',
@@ -353,6 +536,171 @@ export const lruCache: Algorithm = {
     ['get', 2],
   ],
   run: runLruCache,
+  optimalApproachName: 'Hash Map + Doubly Linked List',
+  approaches: [
+    {
+      id: 'array-scan',
+      name: 'Array Scan (O(n) ops)',
+      timeComplexity: 'O(n) per op',
+      spaceComplexity: 'O(n)',
+      description:
+        'Keep a plain array of [key, value] pairs ordered by recency and linearly scan it on every operation — trivially correct, but each get/put costs O(n) versus the O(1) of hashmap + doubly linked list.',
+      code: {
+        python: `class LRUCache:
+    def __init__(self, capacity):
+        self.cap = capacity
+        self.items = []  # [key, value] pairs, LRU first
+
+    def get(self, key):
+        for i, (k, v) in enumerate(self.items):
+            if k == key:
+                self.items.pop(i)
+                self.items.append((k, v))
+                return v
+        return -1
+
+    def put(self, key, value):
+        for i, (k, v) in enumerate(self.items):
+            if k == key:
+                self.items.pop(i)
+                break
+        self.items.append((key, value))
+        if len(self.items) > self.cap:
+            self.items.pop(0)`,
+        javascript: `class LRUCache {
+    constructor(capacity) {
+        this.cap = capacity;
+        this.items = []; // [key, value] pairs, LRU first
+    }
+
+    get(key) {
+        for (let i = 0; i < this.items.length; i++) {
+            if (this.items[i][0] === key) {
+                const [k, v] = this.items.splice(i, 1)[0];
+                this.items.push([k, v]);
+                return v;
+            }
+        }
+        return -1;
+    }
+
+    put(key, value) {
+        for (let i = 0; i < this.items.length; i++) {
+            if (this.items[i][0] === key) {
+                this.items.splice(i, 1);
+                break;
+            }
+        }
+        this.items.push([key, value]);
+        if (this.items.length > this.cap) {
+            this.items.shift();
+        }
+    }
+}`,
+        java: `class LRUCache {
+    private int cap;
+    private List<int[]> items; // {key, value} pairs, LRU first
+
+    public LRUCache(int capacity) {
+        cap = capacity;
+        items = new ArrayList<>();
+    }
+
+    public int get(int key) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i)[0] == key) {
+                int[] item = items.remove(i);
+                items.add(item);
+                return item[1];
+            }
+        }
+        return -1;
+    }
+
+    public void put(int key, int value) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i)[0] == key) {
+                items.remove(i);
+                break;
+            }
+        }
+        items.add(new int[] { key, value });
+        if (items.size() > cap) {
+            items.remove(0);
+        }
+    }
+}`,
+      },
+      run: runLruCacheArray,
+      lineExplanations: {
+        python: {
+          1: 'Define LRUCache class',
+          2: 'Constructor takes capacity parameter',
+          3: 'Store the max capacity',
+          4: 'Plain list of (key, value) pairs — LRU at the front, MRU at the back',
+          6: 'Define get method with key parameter',
+          7: 'Linear scan through every stored pair — this is the O(n) cost',
+          8: 'Does this pair match the requested key?',
+          9: 'Remove the pair from its current position',
+          10: 'Re-append at the back, marking it most recently used',
+          11: 'Return the found value',
+          12: 'Scanned everything without a match — return -1',
+          14: 'Define put method with key and value',
+          15: 'Linear scan to check whether the key already exists',
+          16: 'Does this pair match the key being written?',
+          17: 'Remove the stale entry',
+          18: 'Stop scanning — keys are unique',
+          19: 'Append the fresh pair at the MRU end',
+          20: 'Did the insert push us over capacity?',
+          21: 'Evict the front pair — the least recently used',
+        },
+        javascript: {
+          1: 'Define LRUCache class',
+          2: 'Constructor takes capacity parameter',
+          3: 'Store the max capacity',
+          4: 'Plain array of [key, value] pairs — LRU at the front, MRU at the back',
+          7: 'Define get method with key parameter',
+          8: 'Linear scan through every stored pair — this is the O(n) cost',
+          9: 'Does this pair match the requested key?',
+          10: 'Remove the pair from its current position',
+          11: 'Re-append at the back, marking it most recently used',
+          12: 'Return the found value',
+          15: 'Scanned everything without a match — return -1',
+          18: 'Define put method with key and value',
+          19: 'Linear scan to check whether the key already exists',
+          20: 'Does this pair match the key being written?',
+          21: 'Remove the stale entry',
+          22: 'Stop scanning — keys are unique',
+          25: 'Append the fresh pair at the MRU end',
+          26: 'Did the insert push us over capacity?',
+          27: 'Evict the front pair — the least recently used',
+        },
+        java: {
+          1: 'Define LRUCache class',
+          2: 'Capacity field for max cache size',
+          3: 'Plain list of {key, value} pairs — LRU at the front, MRU at the back',
+          5: 'Constructor takes capacity parameter',
+          6: 'Store the max capacity',
+          7: 'Initialize the empty list',
+          10: 'Define get method with key parameter',
+          11: 'Linear scan through every stored pair — this is the O(n) cost',
+          12: 'Does this pair match the requested key?',
+          13: 'Remove the pair from its current position',
+          14: 'Re-append at the back, marking it most recently used',
+          15: 'Return the found value',
+          18: 'Scanned everything without a match — return -1',
+          21: 'Define put method with key and value',
+          22: 'Linear scan to check whether the key already exists',
+          23: 'Does this pair match the key being written?',
+          24: 'Remove the stale entry',
+          25: 'Stop scanning — keys are unique',
+          28: 'Append the fresh pair at the MRU end',
+          29: 'Did the insert push us over capacity?',
+          30: 'Evict the front pair — the least recently used',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define LRUCache class',

@@ -208,6 +208,104 @@ function runFindMedianDataStream(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runFindMedianSortedList(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const data: number[] = [];
+
+  steps.push({
+    state: {
+      nums: [],
+      hashMap: { structure: 'one sorted list (binary insertion)' },
+    },
+    highlights: [],
+    message:
+      'Initialize MedianFinder with a single sorted list. Each addNum binary-inserts; the median is read straight from the middle.',
+    codeLine: 5,
+  });
+
+  for (const num of nums) {
+    steps.push({
+      state: {
+        nums: [...data],
+        hashMap: { data: `[${data.join(', ')}]`, adding: num },
+      },
+      highlights: [],
+      message: `addNum(${num}): binary-search for where ${num} belongs in the sorted list`,
+      codeLine: 7,
+      action: 'visit',
+    });
+
+    // Binary insertion (bisect.insort)
+    let lo = 0;
+    let hi = data.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (data[mid] < num) lo = mid + 1;
+      else hi = mid;
+    }
+    data.splice(lo, 0, num);
+
+    steps.push({
+      state: {
+        nums: [...data],
+        hashMap: { data: `[${data.join(', ')}]`, insertedAt: lo },
+      },
+      highlights: [lo],
+      message: `Insert ${num} at index ${lo}. List stays sorted: [${data.join(', ')}]. (This shift is the O(n) cost the two heaps avoid.)`,
+      codeLine: 8,
+      action: 'insert',
+    });
+
+    const n = data.length;
+    let median: number;
+    if (n % 2 === 1) {
+      median = data[(n - 1) / 2];
+      steps.push({
+        state: {
+          nums: [...data],
+          hashMap: { data: `[${data.join(', ')}]`, median: median },
+          result: median,
+        },
+        highlights: [(n - 1) / 2],
+        message: `findMedian: Odd count (${n}). Median = middle element data[${(n - 1) / 2}] = ${median}`,
+        codeLine: 13,
+        action: 'found',
+      });
+    } else {
+      median = (data[n / 2 - 1] + data[n / 2]) / 2;
+      steps.push({
+        state: {
+          nums: [...data],
+          hashMap: { data: `[${data.join(', ')}]`, median: median },
+          result: median,
+        },
+        highlights: [n / 2 - 1, n / 2],
+        message: `findMedian: Even count (${n}). Median = (${data[n / 2 - 1]} + ${data[n / 2]}) / 2 = ${median}`,
+        codeLine: 14,
+        action: 'found',
+      });
+    }
+  }
+
+  const n = data.length;
+  const finalMedian = n % 2 === 1 ? data[(n - 1) / 2] : (data[n / 2 - 1] + data[n / 2]) / 2;
+
+  steps.push({
+    state: {
+      nums: [...data],
+      hashMap: { data: `[${data.join(', ')}]`, finalMedian: finalMedian },
+      result: finalMedian,
+    },
+    highlights: n % 2 === 1 ? [(n - 1) / 2] : [n / 2 - 1, n / 2],
+    message: `All numbers added. Final median = ${finalMedian}. Insertion is O(n) per add vs O(log n) with two heaps — the trade for simplicity.`,
+    codeLine: 14,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const findMedianDataStream: Algorithm = {
   id: 'find-median-data-stream',
   name: 'Find Median from Data Stream',
@@ -318,6 +416,113 @@ class MedianFinder:
   },
   defaultInput: [5, 2, 8, 1, 9, 3],
   run: runFindMedianDataStream,
+  optimalApproachName: 'Two Heaps',
+  approaches: [
+    {
+      id: 'sorted-list-insertion',
+      name: 'Sorted List + Binary Insert',
+      timeComplexity: 'O(n) per add',
+      spaceComplexity: 'O(n)',
+      description:
+        'Keep every number in one sorted list via binary insertion and read the median from the middle — conceptually simpler than balancing two heaps, but each insert pays O(n) element shifting.',
+      code: {
+        python: `import bisect
+
+class MedianFinder:
+    def __init__(self):
+        self.data = []
+
+    def addNum(self, num):
+        bisect.insort(self.data, num)
+
+    def findMedian(self):
+        n = len(self.data)
+        if n % 2 == 1:
+            return self.data[n // 2]
+        return (self.data[n // 2 - 1] + self.data[n // 2]) / 2`,
+        javascript: `class MedianFinder {
+    constructor() {
+        this.data = [];
+    }
+
+    addNum(num) {
+        let lo = 0, hi = this.data.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (this.data[mid] < num) lo = mid + 1;
+            else hi = mid;
+        }
+        this.data.splice(lo, 0, num);
+    }
+
+    findMedian() {
+        const n = this.data.length;
+        if (n % 2 === 1) return this.data[(n - 1) / 2];
+        return (this.data[n / 2 - 1] + this.data[n / 2]) / 2;
+    }
+}`,
+        java: `class MedianFinder {
+    private List<Integer> data = new ArrayList<>();
+
+    public void addNum(int num) {
+        int pos = Collections.binarySearch(data, num);
+        if (pos < 0) pos = -pos - 1;
+        data.add(pos, num);
+    }
+
+    public double findMedian() {
+        int n = data.size();
+        if (n % 2 == 1) return data.get(n / 2);
+        return (data.get(n / 2 - 1) + data.get(n / 2)) / 2.0;
+    }
+}`,
+      },
+      run: runFindMedianSortedList,
+      lineExplanations: {
+        python: {
+          1: 'Import bisect for binary-search insertion',
+          3: 'Define the MedianFinder class',
+          4: 'Initialize MedianFinder instance',
+          5: 'One sorted list holds every number',
+          7: 'Add a number to the structure',
+          8: 'Binary-insert num — the list stays sorted (O(n) shift)',
+          10: 'Find current median',
+          11: 'Current count of stored numbers',
+          12: 'Odd count: there is a single middle element',
+          13: 'Return the middle element',
+          14: 'Even count: average the two middle elements',
+        },
+        javascript: {
+          1: 'Define the MedianFinder class',
+          2: 'Initialize MedianFinder instance',
+          3: 'One sorted array holds every number',
+          6: 'Add a number to the structure',
+          7: 'Binary search bounds for insertion point',
+          8: 'Halve the search range each iteration',
+          9: 'Midpoint of the current range',
+          10: 'num belongs right of mid — search upper half',
+          11: 'Otherwise search lower half',
+          13: 'Insert num at the found index (O(n) shift)',
+          16: 'Find current median',
+          17: 'Current count of stored numbers',
+          18: 'Odd count: return the single middle element',
+          19: 'Even count: average the two middle elements',
+        },
+        java: {
+          1: 'Define the MedianFinder class',
+          2: 'One sorted list holds every number',
+          4: 'Add a number to the structure',
+          5: 'Binary search for the insertion point',
+          6: 'Negative result encodes the insertion index',
+          7: 'Insert num at that index (O(n) shift)',
+          10: 'Find current median',
+          11: 'Current count of stored numbers',
+          12: 'Odd count: return the single middle element',
+          13: 'Even count: average the two middle elements',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Import heapq for priority queue operations',

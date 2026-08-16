@@ -148,6 +148,96 @@ function runTaskScheduler(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runTaskSchedulerMathFormula(input: unknown): AlgorithmStep[] {
+  const { tasks, n } = input as TaskSchedulerInput;
+  const steps: AlgorithmStep[] = [];
+
+  const freq: Record<string, number> = {};
+  for (const task of tasks) {
+    freq[task] = (freq[task] || 0) + 1;
+  }
+
+  steps.push({
+    state: {
+      chars: [...tasks],
+      hashMap: { ...freq },
+    },
+    highlights: [],
+    message: `Tasks: [${tasks.join(', ')}], cooldown n=${n}. No simulation needed — the answer follows from a counting formula.`,
+    codeLine: 4,
+  });
+
+  const maxFreq = Math.max(...Object.values(freq));
+
+  steps.push({
+    state: {
+      chars: [],
+      hashMap: { ...freq, maxFreq: maxFreq },
+    },
+    highlights: [],
+    message: `The MOST frequent task appears maxFreq=${maxFreq} times. It dictates the schedule's skeleton: its copies must sit at least n+1=${n + 1} slots apart.`,
+    codeLine: 5,
+    action: 'visit',
+  });
+
+  const maxTasks = Object.keys(freq).filter((t) => freq[t] === maxFreq);
+  const maxCount = maxTasks.length;
+
+  steps.push({
+    state: {
+      chars: [],
+      hashMap: { ...freq, maxFreq: maxFreq, maxCount: maxCount },
+    },
+    highlights: [],
+    message: `maxCount=${maxCount} task(s) share that top frequency: [${maxTasks.join(', ')}]. They all ride in the final block together.`,
+    codeLine: 6,
+    action: 'compare',
+  });
+
+  // Build the conceptual frame: (maxFreq-1) blocks of size (n+1), then maxCount finishers
+  const frame: string[] = [];
+  for (let b = 0; b < maxFreq - 1; b++) {
+    for (let s = 0; s < n + 1; s++) {
+      frame.push(s < maxCount ? maxTasks[s] : '_');
+    }
+  }
+  for (let s = 0; s < maxCount; s++) {
+    frame.push(maxTasks[s]);
+  }
+
+  const slots = (maxFreq - 1) * (n + 1) + maxCount;
+
+  steps.push({
+    state: {
+      chars: [...frame],
+      hashMap: { maxFreq: maxFreq, maxCount: maxCount, slots: slots },
+    },
+    highlights: frame.map((c, i) => (c !== '_' ? i : -1)).filter((i) => i >= 0),
+    message: `Frame: (maxFreq-1)=${maxFreq - 1} blocks of (n+1)=${n + 1} slots, plus ${maxCount} finisher(s). slots = ${maxFreq - 1} * ${n + 1} + ${maxCount} = ${slots}. Gaps ('_') absorb the other tasks or become idles.`,
+    codeLine: 7,
+    action: 'insert',
+  });
+
+  const result = Math.max(tasks.length, slots);
+
+  steps.push({
+    state: {
+      chars: [...frame],
+      hashMap: { slots: slots, totalTasks: tasks.length, answer: result },
+      result,
+    },
+    highlights: [],
+    message:
+      tasks.length > slots
+        ? `More tasks (${tasks.length}) than frame slots (${slots}): the gaps overflow, no idles needed. Answer = ${result}.`
+        : `Answer = max(len(tasks)=${tasks.length}, slots=${slots}) = ${result}. Same result the heap simulation computes step by step.`,
+    codeLine: 8,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const taskScheduler: Algorithm = {
   id: 'task-scheduler',
   name: 'Task Scheduler',
@@ -235,6 +325,79 @@ def leastInterval(tasks, n):
   },
   defaultInput: { tasks: ['A', 'A', 'A', 'B', 'B', 'B'], n: 2 },
   run: runTaskScheduler,
+  optimalApproachName: 'Max-Heap + Cooldown Queue',
+  approaches: [
+    {
+      id: 'greedy-math-formula',
+      name: 'Greedy Math Formula',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Skip the tick-by-tick heap simulation entirely: the most frequent task fixes the schedule skeleton, so the answer is just max(len(tasks), (maxFreq-1)*(n+1) + maxCount).',
+      code: {
+        python: `from collections import Counter
+
+def leastInterval(tasks, n):
+    count = Counter(tasks)
+    maxFreq = max(count.values())
+    maxCount = sum(1 for c in count.values() if c == maxFreq)
+    slots = (maxFreq - 1) * (n + 1) + maxCount
+    return max(len(tasks), slots)`,
+        javascript: `function leastInterval(tasks, n) {
+    const count = {};
+    for (const t of tasks) count[t] = (count[t] || 0) + 1;
+    const freqs = Object.values(count);
+    const maxFreq = Math.max(...freqs);
+    const maxCount = freqs.filter((f) => f === maxFreq).length;
+    const slots = (maxFreq - 1) * (n + 1) + maxCount;
+    return Math.max(tasks.length, slots);
+}`,
+        java: `public static int leastInterval(char[] tasks, int n) {
+    int[] count = new int[26];
+    for (char t : tasks) count[t - 'A']++;
+    int maxFreq = 0;
+    for (int c : count) maxFreq = Math.max(maxFreq, c);
+    int maxCount = 0;
+    for (int c : count) if (c == maxFreq) maxCount++;
+    int slots = (maxFreq - 1) * (n + 1) + maxCount;
+    return Math.max(tasks.length, slots);
+}`,
+      },
+      run: runTaskSchedulerMathFormula,
+      lineExplanations: {
+        python: {
+          1: 'Import Counter for task frequencies',
+          3: 'Define function with tasks and cooldown n',
+          4: 'Count how often each task appears',
+          5: 'Frequency of the most common task — it dictates the skeleton',
+          6: 'How many tasks tie for that top frequency',
+          7: 'Skeleton: (maxFreq-1) blocks of (n+1) slots, plus the finishers',
+          8: 'If there are more tasks than slots, gaps overflow — no idles needed',
+        },
+        javascript: {
+          1: 'Define function with tasks and cooldown n',
+          2: 'Frequency map for the tasks',
+          3: 'Count how often each task appears',
+          4: 'Collect the frequency values',
+          5: 'Frequency of the most common task — it dictates the skeleton',
+          6: 'How many tasks tie for that top frequency',
+          7: 'Skeleton: (maxFreq-1) blocks of (n+1) slots, plus the finishers',
+          8: 'If there are more tasks than slots, gaps overflow — no idles needed',
+        },
+        java: {
+          1: 'Define method with tasks and cooldown n',
+          2: 'Frequency array for tasks A-Z',
+          3: 'Count how often each task appears',
+          4: 'Track the highest frequency',
+          5: 'Find the frequency of the most common task',
+          6: 'Track how many tasks tie for the top frequency',
+          7: 'Count tasks sharing that top frequency',
+          8: 'Skeleton: (maxFreq-1) blocks of (n+1) slots, plus the finishers',
+          9: 'If there are more tasks than slots, gaps overflow — no idles needed',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Import heapq for priority queue operations',

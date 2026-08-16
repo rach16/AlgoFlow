@@ -162,6 +162,207 @@ function runWordSearchII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runWordSearchIIPerWordDFS(input: unknown): AlgorithmStep[] {
+  const { board, words } = input as WordSearchIIInput;
+  const steps: AlgorithmStep[] = [];
+  const rows = board.length;
+  const cols = board[0].length;
+  const foundWords: string[] = [];
+
+  const copyBoard = () => board.map((row) => [...row]);
+  const charsView = () => words.map((w) => (foundWords.includes(w) ? `${w} [FOUND]` : w));
+
+  steps.push({
+    state: {
+      matrix: copyBoard(),
+      matrixHighlights: [],
+      chars: charsView(),
+      result: [],
+    },
+    highlights: [],
+    message: `No trie: run a separate Word-Search-I style backtracking DFS for each of the ${words.length} words. Simpler code, but the board is re-scanned once per word.`,
+    codeLine: 1,
+  });
+
+  const visited: boolean[][] = Array.from({ length: rows }, () => Array(cols).fill(false));
+  const path: [number, number][] = [];
+
+  function dfs(r: number, c: number, word: string, i: number): boolean {
+    if (r < 0 || r >= rows || c < 0 || c >= cols || visited[r][c] || board[r][c] !== word[i]) {
+      return false;
+    }
+
+    visited[r][c] = true;
+    path.push([r, c]);
+
+    steps.push({
+      state: {
+        matrix: copyBoard(),
+        matrixHighlights: path.map(([pr, pc]) => [pr, pc]),
+        chars: charsView(),
+        result: [...foundWords],
+      },
+      highlights: [],
+      message: `"${word}": matched '${word[i]}' at board[${r}][${c}] (${i + 1}/${word.length}) — path "${word.slice(0, i + 1)}"`,
+      codeLine: 12,
+      action: 'visit',
+    });
+
+    if (i + 1 === word.length) {
+      steps.push({
+        state: {
+          matrix: copyBoard(),
+          matrixHighlights: path.map(([pr, pc]) => [pr, pc]),
+          chars: charsView(),
+          result: [...foundWords],
+        },
+        highlights: [],
+        message: `"${word}" fully matched — all ${word.length} letters lie on one connected, non-repeating path!`,
+        codeLine: 8,
+        action: 'found',
+      });
+      visited[r][c] = false;
+      path.pop();
+      return true;
+    }
+
+    const directions: [number, number][] = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
+    for (const [dr, dc] of directions) {
+      if (dfs(r + dr, c + dc, word, i + 1)) {
+        visited[r][c] = false;
+        path.pop();
+        return true;
+      }
+    }
+
+    steps.push({
+      state: {
+        matrix: copyBoard(),
+        matrixHighlights: path.map(([pr, pc]) => [pr, pc]),
+        chars: charsView(),
+        result: [...foundWords],
+      },
+      highlights: [],
+      message: `"${word}": dead end at board[${r}][${c}] — no unvisited neighbor continues "${word.slice(0, i + 1)}". Backtrack and unmark the cell.`,
+      codeLine: 15,
+      action: 'pop',
+    });
+
+    visited[r][c] = false;
+    path.pop();
+    return false;
+  }
+
+  for (let w = 0; w < words.length; w++) {
+    const word = words[w];
+
+    steps.push({
+      state: {
+        matrix: copyBoard(),
+        matrixHighlights: [],
+        chars: charsView(),
+        result: [...foundWords],
+      },
+      highlights: [],
+      message: `Word ${w + 1}/${words.length}: search the whole board for "${word}" from scratch (this is the cost of skipping the trie)`,
+      codeLine: 20,
+      action: 'visit',
+    });
+
+    const startCells: [number, number][] = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (board[r][c] === word[0]) startCells.push([r, c]);
+      }
+    }
+
+    if (startCells.length === 0) {
+      steps.push({
+        state: {
+          matrix: copyBoard(),
+          matrixHighlights: [],
+          chars: charsView(),
+          result: [...foundWords],
+        },
+        highlights: [],
+        message: `"${word}": no cell contains its first letter '${word[0]}' — the word cannot exist on this board`,
+        codeLine: 11,
+        action: 'compare',
+      });
+      continue;
+    }
+
+    let exists = false;
+    for (const [r, c] of startCells) {
+      steps.push({
+        state: {
+          matrix: copyBoard(),
+          matrixHighlights: [[r, c]],
+          chars: charsView(),
+          result: [...foundWords],
+        },
+        highlights: [],
+        message: `"${word}": start DFS at board[${r}][${c}]='${board[r][c]}' (matches first letter)`,
+        codeLine: 17,
+        action: 'visit',
+      });
+      if (dfs(r, c, word, 0)) {
+        exists = true;
+        break;
+      }
+    }
+
+    if (exists) {
+      foundWords.push(word);
+      steps.push({
+        state: {
+          matrix: copyBoard(),
+          matrixHighlights: [],
+          chars: charsView(),
+          result: [...foundWords],
+        },
+        highlights: [],
+        message: `Add "${word}" to results. Found so far: [${foundWords.join(', ')}]`,
+        codeLine: 22,
+        action: 'found',
+      });
+    } else {
+      steps.push({
+        state: {
+          matrix: copyBoard(),
+          matrixHighlights: [],
+          chars: charsView(),
+          result: [...foundWords],
+        },
+        highlights: [],
+        message: `"${word}": every starting cell was exhausted — the word is not on the board`,
+        codeLine: 21,
+        action: 'compare',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: copyBoard(),
+      matrixHighlights: [],
+      chars: charsView(),
+      result: [...foundWords],
+    },
+    highlights: [],
+    message: `Search complete! Found ${foundWords.length} word(s): [${foundWords.join(', ')}]. The trie version shares prefix work across words; this version repeats it per word.`,
+    codeLine: 23,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const wordSearchII: Algorithm = {
   id: 'word-search-ii',
   name: 'Word Search II',
@@ -302,6 +503,169 @@ private static void dfs(char[][] board, int r, int c, TrieNode node,
     words: ['oath', 'pea', 'eat', 'rain'],
   },
   run: runWordSearchII,
+  optimalApproachName: 'Trie + Backtracking',
+  approaches: [
+    {
+      id: 'per-word-dfs',
+      name: 'DFS per Word (No Trie)',
+      timeComplexity: 'O(W·m·n·4^L)',
+      spaceComplexity: 'O(L)',
+      description:
+        'Skip the trie entirely and run a Word Search I backtracking DFS once per word — much simpler code, but prefix work shared by words like "oat"/"oath" is repeated for every word.',
+      code: {
+        python: `def findWords(board, words):
+    ROWS, COLS = len(board), len(board[0])
+    result = []
+
+    def exist(word):
+        def dfs(r, c, i):
+            if i == len(word):
+                return True
+            if (r < 0 or r >= ROWS or c < 0 or c >= COLS
+                or board[r][c] != word[i]):
+                return False
+            board[r][c] = "#"
+            found = any(dfs(r + dr, c + dc, i + 1)
+                        for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)])
+            board[r][c] = word[i]
+            return found
+        return any(dfs(r, c, 0)
+                   for r in range(ROWS) for c in range(COLS))
+
+    for word in words:
+        if exist(word):
+            result.append(word)
+    return result`,
+        javascript: `function findWords(board, words) {
+    const ROWS = board.length, COLS = board[0].length;
+    const result = [];
+
+    function exist(word) {
+        function dfs(r, c, i) {
+            if (i === word.length) return true;
+            if (r < 0 || r >= ROWS || c < 0 || c >= COLS
+                || board[r][c] !== word[i]) return false;
+            board[r][c] = "#";
+            const found = [[0,1],[0,-1],[1,0],[-1,0]]
+                .some(([dr, dc]) => dfs(r + dr, c + dc, i + 1));
+            board[r][c] = word[i];
+            return found;
+        }
+        for (let r = 0; r < ROWS; r++)
+            for (let c = 0; c < COLS; c++)
+                if (dfs(r, c, 0)) return true;
+        return false;
+    }
+
+    for (const word of words)
+        if (exist(word)) result.push(word);
+    return result;
+}`,
+        java: `public static List<String> findWords(char[][] board, String[] words) {
+    List<String> result = new ArrayList<>();
+    for (String word : words) {
+        if (exist(board, word)) result.add(word);
+    }
+    return result;
+}
+
+private static boolean exist(char[][] board, String word) {
+    for (int r = 0; r < board.length; r++) {
+        for (int c = 0; c < board[0].length; c++) {
+            if (dfs(board, r, c, word, 0)) return true;
+        }
+    }
+    return false;
+}
+
+private static boolean dfs(char[][] board, int r, int c, String word, int i) {
+    if (i == word.length()) return true;
+    if (r < 0 || r >= board.length || c < 0 || c >= board[0].length
+        || board[r][c] != word.charAt(i)) return false;
+    char saved = board[r][c];
+    board[r][c] = '#';
+    boolean found = dfs(board, r + 1, c, word, i + 1)
+        || dfs(board, r - 1, c, word, i + 1)
+        || dfs(board, r, c + 1, word, i + 1)
+        || dfs(board, r, c - 1, word, i + 1);
+    board[r][c] = saved;
+    return found;
+}`,
+      },
+      run: runWordSearchIIPerWordDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking board and word list',
+          2: 'Get board dimensions',
+          3: 'Init result list',
+          5: 'Helper: does one word exist on the board? (Word Search I)',
+          6: 'DFS trying to match word[i:] starting at (r, c)',
+          7: 'Every character has been matched',
+          8: 'The word exists on the board',
+          9: 'Out-of-bounds check',
+          10: 'Current cell must equal the current character',
+          11: 'Prune this path',
+          12: "Mark the cell with '#' so it cannot be reused in this word",
+          13: 'Try to extend the match in all four directions',
+          14: 'Right, left, down, up neighbor offsets',
+          15: 'Backtrack: restore the original letter',
+          16: 'Report whether any direction completed the word',
+          17: 'Try a DFS from every cell of the board',
+          18: 'Scan all rows and all columns as starting points',
+          20: 'Run the full board search once per word',
+          21: 'If that word exists somewhere on the board',
+          22: 'Add it to the results',
+          23: 'Return every word that was found',
+        },
+        javascript: {
+          1: 'Define function taking board and word list',
+          2: 'Get board dimensions',
+          3: 'Init result array',
+          5: 'Helper: does one word exist on the board? (Word Search I)',
+          6: 'DFS trying to match word from index i at (r, c)',
+          7: 'Every character matched — the word exists',
+          8: 'Out-of-bounds check',
+          9: 'Current cell must equal the current character, else prune',
+          10: "Mark the cell with '#' so it cannot be reused in this word",
+          11: 'Try to extend the match in all four directions',
+          12: 'Recurse into each neighbor with the next index',
+          13: 'Backtrack: restore the original letter',
+          14: 'Report whether any direction completed the word',
+          16: 'Scan all rows as starting points',
+          17: 'Scan all columns as starting points',
+          18: 'A DFS from this cell matched the whole word',
+          19: 'No starting cell worked — word not on board',
+          22: 'Run the full board search once per word',
+          23: 'Word found — collect it',
+          24: 'Return every word that was found',
+        },
+        java: {
+          1: 'Define function taking board and word list',
+          2: 'Init result list',
+          3: 'Run the full board search once per word',
+          4: 'Word found — collect it',
+          6: 'Return every word that was found',
+          9: 'Helper: does one word exist on the board? (Word Search I)',
+          10: 'Scan all rows as starting points',
+          11: 'Scan all columns as starting points',
+          12: 'A DFS from this cell matched the whole word',
+          15: 'No starting cell worked — word not on board',
+          18: 'DFS trying to match word from index i at (r, c)',
+          19: 'Every character matched — the word exists',
+          20: 'Out-of-bounds check',
+          21: 'Current cell must equal the current character, else prune',
+          22: 'Remember the letter before marking',
+          23: "Mark the cell with '#' so it cannot be reused in this word",
+          24: 'Try extending the match downward',
+          25: 'Try extending the match upward',
+          26: 'Try extending the match rightward',
+          27: 'Try extending the match leftward',
+          28: 'Backtrack: restore the original letter',
+          29: 'Report whether any direction completed the word',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define TrieNode class',

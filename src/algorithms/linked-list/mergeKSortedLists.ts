@@ -203,6 +203,140 @@ function runMergeKSortedLists(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMergeKSortedListsHeap(input: unknown): AlgorithmStep[] {
+  const lists = input as number[][];
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const allLists = lists.map((list) => list.map((val) => ({ val, id: nodeId++ })));
+
+  // Heap entries: value, source list index, element index within that list
+  type HeapEntry = { val: number; listIdx: number; elemIdx: number; id: number };
+  const heap: HeapEntry[] = [];
+  const heapDisplay = () => heap.map((e) => ({ val: e.val, id: e.id }));
+
+  const result: { val: number | string; id: number }[] = [];
+
+  steps.push({
+    state: {
+      linkedList: [],
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: [],
+      allLists: allLists.map((ll) => ll.map((n) => ({ ...n }))),
+    },
+    highlights: [],
+    message: `Min-heap idea: keep one candidate per list in a heap of size at most k=${lists.length}. Repeatedly pop the global minimum and push that list's next node — n pops at O(log k) each.`,
+    codeLine: 3,
+  });
+
+  // Push initial heads
+  for (let i = 0; i < allLists.length; i++) {
+    if (allLists[i].length === 0) continue;
+    const head = allLists[i][0];
+    heap.push({ val: head.val as number, listIdx: i, elemIdx: 0, id: head.id });
+    heap.sort((a, b) => a.val - b.val);
+
+    steps.push({
+      state: {
+        linkedList: heapDisplay(),
+        linkedListHighlights: [heap.findIndex((e) => e.id === head.id)],
+        linkedListSecondary: [],
+        linkedListPointers: { min: 0 },
+        result: [],
+        allLists: allLists.map((ll) => ll.map((n) => ({ ...n }))),
+      },
+      highlights: [heap.findIndex((e) => e.id === head.id)],
+      message: `Seed the heap with the head of list ${i + 1}: push ${head.val}. Heap now holds [${heap.map((e) => e.val).join(', ')}] (min at front).`,
+      codeLine: 7,
+      action: 'push',
+    });
+  }
+
+  // Pop min, push successor
+  while (heap.length > 0) {
+    const min = heap[0];
+
+    steps.push({
+      state: {
+        linkedList: heapDisplay(),
+        linkedListHighlights: [0],
+        linkedListSecondary: [],
+        linkedListPointers: { min: 0 },
+        result: result.map((n) => ({ ...n })),
+        allLists: allLists.map((ll) => ll.map((n) => ({ ...n }))),
+      },
+      highlights: [0],
+      pointers: { min: 0 },
+      message: `Pop the heap minimum: ${min.val} (from list ${min.listIdx + 1}). Only k candidates were compared — never all remaining nodes.`,
+      codeLine: 11,
+      action: 'pop',
+    });
+
+    heap.shift();
+    result.push({ val: min.val, id: nodeId++ });
+
+    steps.push({
+      state: {
+        linkedList: heapDisplay(),
+        linkedListHighlights: [],
+        linkedListSecondary: [],
+        linkedListPointers: {},
+        result: result.map((n) => ({ ...n })),
+        allLists: allLists.map((ll) => ll.map((n) => ({ ...n }))),
+      },
+      highlights: [],
+      message: `Append ${min.val} to the merged list: [${result.map((n) => n.val).join(' -> ')}]`,
+      codeLine: 12,
+      action: 'insert',
+    });
+
+    const nextIdx = min.elemIdx + 1;
+    if (nextIdx < allLists[min.listIdx].length) {
+      const nextNode = allLists[min.listIdx][nextIdx];
+      heap.push({
+        val: nextNode.val as number,
+        listIdx: min.listIdx,
+        elemIdx: nextIdx,
+        id: nextNode.id,
+      });
+      heap.sort((a, b) => a.val - b.val);
+
+      steps.push({
+        state: {
+          linkedList: heapDisplay(),
+          linkedListHighlights: [heap.findIndex((e) => e.id === nextNode.id)],
+          linkedListSecondary: [],
+          linkedListPointers: { min: 0 },
+          result: result.map((n) => ({ ...n })),
+          allLists: allLists.map((ll) => ll.map((n) => ({ ...n }))),
+        },
+        highlights: [heap.findIndex((e) => e.id === nextNode.id)],
+        message: `List ${min.listIdx + 1} still has nodes: push its next value ${nextNode.val}. Heap: [${heap.map((e) => e.val).join(', ')}]`,
+        codeLine: 15,
+        action: 'push',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      linkedList: result.map((n) => ({ ...n })),
+      linkedListHighlights: result.map((_, i) => i),
+      linkedListSecondary: [],
+      linkedListPointers: { head: 0 },
+      result: result.map((n) => ({ ...n })),
+    },
+    highlights: result.map((_, i) => i),
+    message: `Heap empty — all nodes consumed. Merged result: [${result.map((n) => n.val).join(' -> ')}]`,
+    codeLine: 16,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const mergeKSortedLists: Algorithm = {
   id: 'merge-k-sorted-lists',
   name: 'Merge K Sorted Lists',
@@ -309,6 +443,120 @@ private static ListNode mergeTwoLists(ListNode l1, ListNode l2) {
     [2, 6],
   ],
   run: runMergeKSortedLists,
+  optimalApproachName: 'Divide & Conquer — Pairwise Merge',
+  approaches: [
+    {
+      id: 'min-heap',
+      name: 'Min-Heap',
+      timeComplexity: 'O(n log k)',
+      spaceComplexity: 'O(k)',
+      description:
+        'Keep the current head of each list in a size-k min-heap and repeatedly pop the global minimum — same O(n log k) time as pairwise merging, but built around a priority queue instead of recursion on pairs.',
+      code: {
+        python: `import heapq
+
+def mergeKLists(lists):
+    heap = []
+    for i, node in enumerate(lists):
+        if node:
+            heapq.heappush(heap, (node.val, i, node))
+    dummy = ListNode()
+    tail = dummy
+    while heap:
+        val, i, node = heapq.heappop(heap)
+        tail.next = node
+        tail = tail.next
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+    return dummy.next`,
+        javascript: `function mergeKLists(lists) {
+    const heap = []; // acts as a min priority queue
+    const push = (node) => {
+        heap.push(node);
+        heap.sort((a, b) => a.val - b.val);
+    };
+    for (const node of lists) {
+        if (node) push(node);
+    }
+    const dummy = new ListNode();
+    let tail = dummy;
+    while (heap.length) {
+        const node = heap.shift(); // smallest head
+        tail.next = node;
+        tail = tail.next;
+        if (node.next) push(node.next);
+    }
+    return dummy.next;
+}`,
+        java: `public static ListNode mergeKLists(ListNode[] lists) {
+    PriorityQueue<ListNode> heap = new PriorityQueue<>((a, b) -> a.val - b.val);
+    for (ListNode node : lists) {
+        if (node != null) heap.offer(node);
+    }
+    ListNode dummy = new ListNode();
+    ListNode tail = dummy;
+    while (!heap.isEmpty()) {
+        ListNode node = heap.poll();
+        tail.next = node;
+        tail = tail.next;
+        if (node.next != null) heap.offer(node.next);
+    }
+    return dummy.next;
+}`,
+      },
+      run: runMergeKSortedListsHeap,
+      lineExplanations: {
+        python: {
+          1: 'heapq provides a binary min-heap over a plain list',
+          3: 'Define function taking array of linked lists',
+          4: 'The heap holds at most k entries — one per list',
+          5: 'Look at the head of every input list',
+          6: 'Skip empty lists',
+          7: 'Push (val, i, node); the tuple sorts by val, i breaks ties',
+          8: 'Dummy node to anchor the merged list',
+          9: 'Tail tracks where the next node attaches',
+          10: 'Keep going while any candidates remain',
+          11: 'Pop the smallest head among all k lists — O(log k)',
+          12: 'Attach that node to the merged list',
+          13: 'Advance the tail',
+          14: 'Does the popped node have a successor in its list?',
+          15: 'Push the successor as that list\'s new candidate',
+          16: 'Return merged list after the dummy',
+        },
+        javascript: {
+          1: 'Define function taking array of linked lists',
+          2: 'Array standing in for a min priority queue',
+          3: 'Helper: insert a node keeping the queue ordered',
+          4: 'Add the node',
+          5: 'Re-sort so the smallest val sits at index 0',
+          7: 'Look at the head of every input list',
+          8: 'Skip empty lists; seed the queue with each head',
+          10: 'Dummy node to anchor the merged list',
+          11: 'Tail tracks where the next node attaches',
+          12: 'Keep going while any candidates remain',
+          13: 'Take the smallest head among all k lists',
+          14: 'Attach that node to the merged list',
+          15: 'Advance the tail',
+          16: 'Push the popped node\'s successor as the new candidate',
+          18: 'Return merged list after the dummy',
+        },
+        java: {
+          1: 'Define method taking array of linked lists',
+          2: 'PriorityQueue ordered by node value — a size-k min-heap',
+          3: 'Look at the head of every input list',
+          4: 'Skip nulls; seed the heap with each head',
+          6: 'Dummy node to anchor the merged list',
+          7: 'Tail tracks where the next node attaches',
+          8: 'Keep going while any candidates remain',
+          9: 'Poll the smallest head among all k lists — O(log k)',
+          10: 'Attach that node to the merged list',
+          11: 'Advance the tail',
+          12: 'Offer the popped node\'s successor as the new candidate',
+          14: 'Return merged list after the dummy',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking array of linked lists',

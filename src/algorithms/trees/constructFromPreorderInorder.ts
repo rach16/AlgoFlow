@@ -119,6 +119,99 @@ function runConstructFromPreorderInorder(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runConstructSlicing(input: unknown): AlgorithmStep[] {
+  const { preorder, inorder } = input as ConstructInput;
+  const steps: AlgorithmStep[] = [];
+
+  const maxNodes = 64;
+  const tree: (number | null)[] = new Array(maxNodes).fill(null);
+
+  function snapshot(): (number | null)[] {
+    let last = -1;
+    for (let i = tree.length - 1; i >= 0; i--) {
+      if (tree[i] !== null) { last = i; break; }
+    }
+    return tree.slice(0, last + 1);
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes([]), preorder: [...preorder], inorder: [...inorder] },
+    highlights: preorder.map((_, i) => i),
+    message: `Slicing approach: preorder[0] is always the root — find it in inorder by LINEAR SCAN, then physically slice both arrays into left/right halves`,
+    codeLine: 1,
+  });
+
+  function build(pre: number[], ino: number[], treeIdx: number): void {
+    if (pre.length === 0) return;
+
+    const rootVal = pre[0];
+    const mid = ino.indexOf(rootVal);
+
+    tree[treeIdx] = rootVal;
+
+    steps.push({
+      state: { tree: toTreeNodes(snapshot()), preorder: [...pre], inorder: [...ino] },
+      highlights: [0],
+      treeHighlights: [treeIdx],
+      message: `Root of this slice is preorder[0] = ${rootVal} — place it at tree position ${treeIdx}`,
+      codeLine: 4,
+      action: 'insert',
+    } as AlgorithmStep);
+
+    steps.push({
+      state: { tree: toTreeNodes(snapshot()), preorder: [...pre], inorder: [...ino] },
+      highlights: [],
+      treeHighlights: [treeIdx],
+      message: `Linear-scan inorder [${ino.join(', ')}] for ${rootVal}: found at index ${mid}. This O(n) scan plus O(n) slice copies is what makes the approach O(n²) — the hashmap version replaces it with an O(1) lookup.`,
+      codeLine: 6,
+      action: 'compare',
+    } as AlgorithmStep);
+
+    const leftPre = pre.slice(1, mid + 1);
+    const leftIn = ino.slice(0, mid);
+    const rightPre = pre.slice(mid + 1);
+    const rightIn = ino.slice(mid + 1);
+
+    if (leftPre.length > 0) {
+      steps.push({
+        state: { tree: toTreeNodes(snapshot()), preorder: [...leftPre], inorder: [...leftIn] },
+        highlights: [],
+        treeHighlights: [treeIdx],
+        message: `Everything LEFT of ${rootVal} in inorder is its left subtree: recurse with copied slices preorder=[${leftPre.join(', ')}], inorder=[${leftIn.join(', ')}]`,
+        codeLine: 7,
+        action: 'visit',
+      } as AlgorithmStep);
+    }
+    build(leftPre, leftIn, 2 * treeIdx + 1);
+
+    if (rightPre.length > 0) {
+      steps.push({
+        state: { tree: toTreeNodes(snapshot()), preorder: [...rightPre], inorder: [...rightIn] },
+        highlights: [],
+        treeHighlights: [treeIdx],
+        message: `Everything RIGHT of ${rootVal} in inorder is its right subtree: recurse with copied slices preorder=[${rightPre.join(', ')}], inorder=[${rightIn.join(', ')}]`,
+        codeLine: 8,
+        action: 'visit',
+      } as AlgorithmStep);
+    }
+    build(rightPre, rightIn, 2 * treeIdx + 2);
+  }
+
+  build([...preorder], [...inorder], 0);
+
+  const finalTree = snapshot();
+
+  steps.push({
+    state: { tree: toTreeNodes(finalTree), result: finalTree },
+    highlights: [],
+    message: `Tree construction complete: [${finalTree.join(', ')}] — same tree as the hashmap version, but every recursion level copied fresh subarrays`,
+    codeLine: 9,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const constructFromPreorderInorder: Algorithm = {
   id: 'construct-from-preorder-inorder',
   name: 'Construct Binary Tree from Preorder and Inorder',
@@ -189,6 +282,90 @@ private static TreeNode build(int[] preorder, int left, int right) {
   },
   defaultInput: { preorder: [3, 9, 20, 15, 7], inorder: [9, 3, 15, 20, 7] },
   run: runConstructFromPreorderInorder,
+  optimalApproachName: 'Hash Map Index Lookup',
+  approaches: [
+    {
+      id: 'array-slicing',
+      name: 'Array Slicing',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(n²)',
+      description:
+        'The intuitive first solution: find the root in inorder by linear scan and pass physically sliced subarrays to each recursive call, instead of O(1) hashmap lookups over shared index ranges.',
+      code: {
+        python: `def buildTree(preorder, inorder):
+    if not preorder or not inorder:
+        return None
+    rootVal = preorder[0]
+    root = TreeNode(rootVal)
+    mid = inorder.index(rootVal)
+    root.left = buildTree(preorder[1:mid + 1], inorder[:mid])
+    root.right = buildTree(preorder[mid + 1:], inorder[mid + 1:])
+    return root`,
+        javascript: `function buildTree(preorder, inorder) {
+    if (preorder.length === 0) return null;
+    const rootVal = preorder[0];
+    const root = new TreeNode(rootVal);
+    const mid = inorder.indexOf(rootVal);
+    root.left = buildTree(preorder.slice(1, mid + 1), inorder.slice(0, mid));
+    root.right = buildTree(preorder.slice(mid + 1), inorder.slice(mid + 1));
+    return root;
+}`,
+        java: `public static TreeNode buildTree(int[] preorder, int[] inorder) {
+    if (preorder.length == 0) return null;
+    int rootVal = preorder[0];
+    TreeNode root = new TreeNode(rootVal);
+    int mid = 0;
+    while (inorder[mid] != rootVal) mid++;
+    root.left = buildTree(
+        Arrays.copyOfRange(preorder, 1, mid + 1),
+        Arrays.copyOfRange(inorder, 0, mid));
+    root.right = buildTree(
+        Arrays.copyOfRange(preorder, mid + 1, preorder.length),
+        Arrays.copyOfRange(inorder, mid + 1, inorder.length));
+    return root;
+}`,
+      },
+      run: runConstructSlicing,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking preorder and inorder arrays',
+          2: 'Base case: empty slice means no subtree',
+          3: 'Return None for empty subtree',
+          4: 'First preorder element is always the root of this slice',
+          5: 'Create the tree node for this root',
+          6: 'Linear scan: find root position in inorder (O(n) each call)',
+          7: 'Left subtree: preorder elements after root, inorder elements before mid (copied slices)',
+          8: 'Right subtree: remaining preorder and inorder elements after mid (copied slices)',
+          9: 'Return constructed node',
+        },
+        javascript: {
+          1: 'Define function taking preorder and inorder arrays',
+          2: 'Base case: empty slice means no subtree',
+          3: 'First preorder element is always the root of this slice',
+          4: 'Create the tree node for this root',
+          5: 'Linear scan: find root position in inorder (O(n) each call)',
+          6: 'Left subtree: preorder elements after root, inorder elements before mid (copied slices)',
+          7: 'Right subtree: remaining preorder and inorder elements after mid (copied slices)',
+          8: 'Return constructed node',
+        },
+        java: {
+          1: 'Define function taking preorder and inorder arrays',
+          2: 'Base case: empty array means no subtree',
+          3: 'First preorder element is always the root of this slice',
+          4: 'Create the tree node for this root',
+          5: 'Start scan index at 0',
+          6: 'Linear scan: find root position in inorder (O(n) each call)',
+          7: 'Recursively build left subtree',
+          8: 'Left preorder slice: elements after root, mid of them',
+          9: 'Left inorder slice: elements before mid',
+          10: 'Recursively build right subtree',
+          11: 'Right preorder slice: elements after the left subtree',
+          12: 'Right inorder slice: elements after mid',
+          13: 'Return constructed node',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking preorder and inorder arrays',

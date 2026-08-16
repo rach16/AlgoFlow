@@ -111,6 +111,139 @@ function runAddTwoNumbers(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runAddTwoNumbersRecursive(input: unknown): AlgorithmStep[] {
+  const { l1, l2 } = input as AddTwoNumbersInput;
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const ll1 = l1.map((val) => ({ val, id: nodeId++ }));
+  const ll2 = l2.map((val) => ({ val, id: nodeId++ }));
+  const result: { val: number | string; id: number }[] = [];
+
+  steps.push({
+    state: {
+      linkedList: ll1.map((n) => ({ ...n })),
+      linkedList2: ll2.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: [],
+    },
+    highlights: [],
+    message:
+      'Recursive idea: each call creates one digit node and delegates the rest (including the carry) to a recursive call on the two tails — the carry rides along as a parameter.',
+    codeLine: 1,
+  });
+
+  let carry = 0;
+  let i = 0;
+  let j = 0;
+  let depth = 0;
+
+  while (i < ll1.length || j < ll2.length || carry > 0) {
+    depth++;
+    const d1 = i < ll1.length ? (ll1[i].val as number) : 0;
+    const d2 = j < ll2.length ? (ll2[j].val as number) : 0;
+    const total = d1 + d2 + carry;
+    const digit = total % 10;
+    const oldCarry = carry;
+    carry = Math.floor(total / 10);
+
+    const pointers: Record<string, number> = {};
+    if (i < ll1.length) pointers['l1'] = i;
+    if (j < ll2.length) pointers['l2'] = j;
+
+    steps.push({
+      state: {
+        linkedList: ll1.map((n) => ({ ...n })),
+        linkedList2: ll2.map((n) => ({ ...n })),
+        linkedListHighlights: i < ll1.length ? [i] : [],
+        linkedListSecondary: j < ll2.length ? [j] : [],
+        linkedListPointers: pointers,
+        result: result.map((n) => ({ ...n })),
+        carry: oldCarry,
+      },
+      highlights: [...(i < ll1.length ? [i] : []), ...(j < ll2.length ? [j] : [])],
+      pointers,
+      message: `Call ${depth}: total = ${d1} + ${d2}${oldCarry > 0 ? ` + carry(${oldCarry})` : ''} = ${total}. This call owns digit ${digit}${carry > 0 ? ` and passes carry ${carry} down` : ''}.`,
+      codeLine: 6,
+      action: 'compare',
+    });
+
+    result.push({ val: digit, id: nodeId++ });
+
+    steps.push({
+      state: {
+        linkedList: ll1.map((n) => ({ ...n })),
+        linkedList2: ll2.map((n) => ({ ...n })),
+        linkedListHighlights: i < ll1.length ? [i] : [],
+        linkedListSecondary: j < ll2.length ? [j] : [],
+        linkedListPointers: pointers,
+        result: result.map((n) => ({ ...n })),
+        carry,
+      },
+      highlights: [...(i < ll1.length ? [i] : []), ...(j < ll2.length ? [j] : [])],
+      pointers,
+      message: `Create node ${digit} (total % 10). Its .next will be whatever the recursive call on the tails returns.`,
+      codeLine: 7,
+      action: 'insert',
+    });
+
+    if (i < ll1.length) i++;
+    if (j < ll2.length) j++;
+
+    if (i < ll1.length || j < ll2.length || carry > 0) {
+      steps.push({
+        state: {
+          linkedList: ll1.map((n) => ({ ...n })),
+          linkedList2: ll2.map((n) => ({ ...n })),
+          linkedListHighlights: i < ll1.length ? [i] : [],
+          linkedListSecondary: j < ll2.length ? [j] : [],
+          linkedListPointers: {},
+          result: result.map((n) => ({ ...n })),
+          carry,
+        },
+        highlights: [],
+        message: `Recurse on the remaining digits with carry = ${carry}.`,
+        codeLine: 8,
+        action: 'visit',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      linkedList: ll1.map((n) => ({ ...n })),
+      linkedList2: ll2.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: result.map((n) => ({ ...n })),
+    },
+    highlights: [],
+    message: 'Base case: both lists exhausted and carry is 0 — return None, ending the chain.',
+    codeLine: 3,
+    action: 'visit',
+  });
+
+  steps.push({
+    state: {
+      linkedList: ll1.map((n) => ({ ...n })),
+      linkedList2: ll2.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+      result: result.map((n) => ({ ...n })),
+    },
+    highlights: [],
+    message: `Every call returns its node and the chain assembles: [${result.map((n) => n.val).join(' -> ')}] representing ${parseInt(result.map((n) => n.val).reverse().join(''), 10)}.`,
+    codeLine: 12,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const addTwoNumbers: Algorithm = {
   id: 'add-two-numbers',
   name: 'Add Two Numbers',
@@ -177,6 +310,110 @@ export const addTwoNumbers: Algorithm = {
   },
   defaultInput: { l1: [2, 4, 3], l2: [5, 6, 4] },
   run: runAddTwoNumbers,
+  optimalApproachName: 'Iterative with Carry',
+  approaches: [
+    {
+      id: 'recursive',
+      name: 'Recursion',
+      timeComplexity: 'O(max(m,n))',
+      spaceComplexity: 'O(max(m,n))',
+      description:
+        'Each recursive call builds one digit node and passes the carry down as a parameter — no dummy node or loop bookkeeping, at the cost of a call stack as deep as the longer number.',
+      code: {
+        python: `def addTwoNumbers(l1, l2, carry=0):
+    if not l1 and not l2 and carry == 0:
+        return None
+    v1 = l1.val if l1 else 0
+    v2 = l2.val if l2 else 0
+    total = v1 + v2 + carry
+    node = ListNode(total % 10)
+    node.next = addTwoNumbers(
+        l1.next if l1 else None,
+        l2.next if l2 else None,
+        total // 10)
+    return node`,
+        javascript: `function addTwoNumbers(l1, l2, carry = 0) {
+    if (!l1 && !l2 && carry === 0) {
+        return null;
+    }
+    const v1 = l1 ? l1.val : 0;
+    const v2 = l2 ? l2.val : 0;
+    const total = v1 + v2 + carry;
+    const node = new ListNode(total % 10);
+    node.next = addTwoNumbers(
+        l1 ? l1.next : null,
+        l2 ? l2.next : null,
+        Math.floor(total / 10));
+    return node;
+}`,
+        java: `public static ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+    return add(l1, l2, 0);
+}
+
+private static ListNode add(ListNode l1, ListNode l2, int carry) {
+    if (l1 == null && l2 == null && carry == 0) {
+        return null;
+    }
+    int v1 = l1 != null ? l1.val : 0;
+    int v2 = l2 != null ? l2.val : 0;
+    int total = v1 + v2 + carry;
+    ListNode node = new ListNode(total % 10);
+    node.next = add(
+        l1 != null ? l1.next : null,
+        l2 != null ? l2.next : null,
+        total / 10);
+    return node;
+}`,
+      },
+      run: runAddTwoNumbersRecursive,
+      lineExplanations: {
+        python: {
+          1: 'Recursive function; the carry travels as a default parameter',
+          2: 'Base case: no digits left and nothing carried',
+          3: 'End the list with None',
+          4: 'Current l1 digit, or 0 past its end',
+          5: 'Current l2 digit, or 0 past its end',
+          6: 'Sum this column: both digits plus incoming carry',
+          7: 'This call owns exactly one node: the ones digit',
+          8: 'The rest of the sum is delegated to recursion',
+          9: 'Advance l1 if it still has digits',
+          10: 'Advance l2 if it still has digits',
+          11: 'Pass the tens digit down as the next carry',
+          12: 'Return this digit node up to the caller',
+        },
+        javascript: {
+          1: 'Recursive function; the carry travels as a default parameter',
+          2: 'Base case: no digits left and nothing carried',
+          3: 'End the list with null',
+          5: 'Current l1 digit, or 0 past its end',
+          6: 'Current l2 digit, or 0 past its end',
+          7: 'Sum this column: both digits plus incoming carry',
+          8: 'This call owns exactly one node: the ones digit',
+          9: 'The rest of the sum is delegated to recursion',
+          10: 'Advance l1 if it still has digits',
+          11: 'Advance l2 if it still has digits',
+          12: 'Pass the tens digit down as the next carry',
+          13: 'Return this digit node up to the caller',
+        },
+        java: {
+          1: 'Public entry point keeps the LeetCode signature',
+          2: 'Kick off the recursion with carry 0',
+          5: 'Recursive helper; the carry travels as a parameter',
+          6: 'Base case: no digits left and nothing carried',
+          7: 'End the list with null',
+          9: 'Current l1 digit, or 0 past its end',
+          10: 'Current l2 digit, or 0 past its end',
+          11: 'Sum this column: both digits plus incoming carry',
+          12: 'This call owns exactly one node: the ones digit',
+          13: 'The rest of the sum is delegated to recursion',
+          14: 'Advance l1 if it still has digits',
+          15: 'Advance l2 if it still has digits',
+          16: 'Pass the tens digit down as the next carry',
+          17: 'Return this digit node up to the caller',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking two linked list heads',

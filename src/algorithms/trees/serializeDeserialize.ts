@@ -156,6 +156,201 @@ function runSerializeDeserialize(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSerializeDeserializeBFS(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+
+  function getVal(a: (number | null)[], i: number): number | null {
+    if (i >= a.length) return null;
+    return a[i];
+  }
+
+  function trimTree(t: (number | null)[]): (number | null)[] {
+    let last = 0;
+    for (let i = t.length - 1; i >= 0; i--) {
+      if (t[i] !== null) { last = i; break; }
+    }
+    return t.slice(0, last + 1);
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(arr) },
+    highlights: [],
+    message: 'BFS codec: instead of preorder DFS, serialize the tree level by level with a queue — the same order LeetCode uses to display trees',
+    codeLine: 1,
+  });
+
+  if (getVal(arr, 0) === null) {
+    steps.push({
+      state: { tree: toTreeNodes(arr), serializedStr: '', result: [] },
+      highlights: [],
+      message: 'Empty tree serializes to an empty string',
+      codeLine: 4,
+    });
+    return steps;
+  }
+
+  // ========== SERIALIZE (BFS) ==========
+  steps.push({
+    state: { tree: toTreeNodes(arr), serialized: [] },
+    highlights: [],
+    message: '--- PHASE 1: SERIALIZE using BFS (level order) ---',
+    codeLine: 6,
+    action: 'push',
+  });
+
+  const serialized: string[] = [];
+  const queue: (number | null)[] = [0]; // indices into arr, null = explicit null child
+  let head = 0;
+
+  while (head < queue.length) {
+    const idx = queue[head++];
+    const val = idx === null ? null : getVal(arr, idx);
+
+    if (val !== null && idx !== null) {
+      serialized.push(String(val));
+      queue.push(2 * idx + 1 < arr.length && arr[2 * idx + 1] !== null ? 2 * idx + 1 : null);
+      queue.push(2 * idx + 2 < arr.length && arr[2 * idx + 2] !== null ? 2 * idx + 2 : null);
+
+      steps.push({
+        state: { tree: toTreeNodes(arr), serialized: [...serialized] },
+        highlights: [],
+        treeHighlights: [idx],
+        message: `Dequeue node ${val}: append "${val}" and enqueue BOTH its children (even null ones). Serialized: [${serialized.join(', ')}]`,
+        codeLine: 10,
+        action: 'visit',
+      } as AlgorithmStep);
+    } else {
+      serialized.push('N');
+
+      steps.push({
+        state: { tree: toTreeNodes(arr), serialized: [...serialized] },
+        highlights: [],
+        message: `Dequeue a null: append "N" — null markers keep every parent's two child slots aligned. Serialized: [${serialized.join(', ')}]`,
+        codeLine: 14,
+      } as AlgorithmStep);
+    }
+  }
+
+  const serializedStr = serialized.join(',');
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), serialized: [...serialized], serializedStr },
+    highlights: [],
+    message: `Serialization complete: "${serializedStr}"`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  // ========== DESERIALIZE (BFS) ==========
+  steps.push({
+    state: { tree: toTreeNodes([]), serialized: [...serialized], serializedStr },
+    highlights: [],
+    message: '--- PHASE 2: DESERIALIZE — rebuild level by level, consuming two tokens (left, right) per dequeued parent ---',
+    codeLine: 17,
+  });
+
+  const tokens = serialized.slice();
+  const rebuilt: (number | null)[] = new Array(Math.max(arr.length, 1) * 2 + 2).fill(null);
+  rebuilt[0] = parseInt(tokens[0]);
+
+  steps.push({
+    state: { tree: toTreeNodes(trimTree(rebuilt)), serialized: [...tokens], tokenIdx: 1 },
+    highlights: [0],
+    treeHighlights: [0],
+    message: `The first token "${tokens[0]}" is always the root — place it and enqueue it as the first parent`,
+    codeLine: 21,
+    action: 'insert',
+  } as AlgorithmStep);
+
+  const buildQueue: number[] = [0]; // tree positions of real nodes awaiting children
+  let bHead = 0;
+  let ti = 1;
+
+  while (bHead < buildQueue.length && ti < tokens.length) {
+    const pos = buildQueue[bHead++];
+    const parentVal = rebuilt[pos];
+
+    // left child
+    if (tokens[ti] !== 'N') {
+      const leftPos = 2 * pos + 1;
+      rebuilt[leftPos] = parseInt(tokens[ti]);
+      buildQueue.push(leftPos);
+
+      steps.push({
+        state: { tree: toTreeNodes(trimTree(rebuilt)), serialized: [...tokens], tokenIdx: ti },
+        highlights: [ti],
+        treeHighlights: [leftPos],
+        treeSecondary: [pos],
+        message: `Token "${tokens[ti]}" becomes the LEFT child of ${parentVal}`,
+        codeLine: 27,
+        action: 'insert',
+      } as AlgorithmStep);
+    } else {
+      steps.push({
+        state: { tree: toTreeNodes(trimTree(rebuilt)), serialized: [...tokens], tokenIdx: ti },
+        highlights: [ti],
+        treeSecondary: [pos],
+        message: `Token "N": node ${parentVal} has no left child`,
+        codeLine: 26,
+      } as AlgorithmStep);
+    }
+    ti++;
+
+    // right child
+    if (ti < tokens.length) {
+      if (tokens[ti] !== 'N') {
+        const rightPos = 2 * pos + 2;
+        rebuilt[rightPos] = parseInt(tokens[ti]);
+        buildQueue.push(rightPos);
+
+        steps.push({
+          state: { tree: toTreeNodes(trimTree(rebuilt)), serialized: [...tokens], tokenIdx: ti },
+          highlights: [ti],
+          treeHighlights: [rightPos],
+          treeSecondary: [pos],
+          message: `Token "${tokens[ti]}" becomes the RIGHT child of ${parentVal}`,
+          codeLine: 31,
+          action: 'insert',
+        } as AlgorithmStep);
+      } else {
+        steps.push({
+          state: { tree: toTreeNodes(trimTree(rebuilt)), serialized: [...tokens], tokenIdx: ti },
+          highlights: [ti],
+          treeSecondary: [pos],
+          message: `Token "N": node ${parentVal} has no right child`,
+          codeLine: 30,
+        } as AlgorithmStep);
+      }
+      ti++;
+    }
+  }
+
+  const finalTree = trimTree(rebuilt);
+
+  steps.push({
+    state: { tree: toTreeNodes(finalTree), result: finalTree },
+    highlights: [],
+    message: `Deserialization complete! Rebuilt tree: [${finalTree.join(', ')}]`,
+    codeLine: 34,
+    action: 'found',
+  });
+
+  const matches = JSON.stringify(arr) === JSON.stringify(finalTree);
+
+  steps.push({
+    state: { tree: toTreeNodes(finalTree), original: arr, result: finalTree, matches },
+    highlights: [],
+    message: matches
+      ? 'Verification: Original and deserialized trees MATCH!'
+      : `Verification: Trees differ. Original: [${arr.join(', ')}], Rebuilt: [${finalTree.join(', ')}]`,
+    codeLine: 34,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const serializeDeserialize: Algorithm = {
   id: 'serialize-deserialize',
   name: 'Serialize and Deserialize Binary Tree',
@@ -257,6 +452,237 @@ export const serializeDeserialize: Algorithm = {
   },
   defaultInput: [1, 2, 3, null, null, 4, 5],
   run: runSerializeDeserialize,
+  optimalApproachName: 'Preorder DFS',
+  approaches: [
+    {
+      id: 'bfs-level-order',
+      name: 'BFS Level Order',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Serializes level by level with a queue instead of preorder DFS — the format mirrors how LeetCode displays trees, and deserialization rebuilds parents before children with the same queue discipline.',
+      code: {
+        python: `class Codec:
+    def serialize(self, root):
+        if not root:
+            return ""
+        res = []
+        queue = deque([root])
+        while queue:
+            node = queue.popleft()
+            if node:
+                res.append(str(node.val))
+                queue.append(node.left)
+                queue.append(node.right)
+            else:
+                res.append("N")
+        return ",".join(res)
+
+    def deserialize(self, data):
+        if not data:
+            return None
+        vals = data.split(",")
+        root = TreeNode(int(vals[0]))
+        queue = deque([root])
+        i = 1
+        while queue:
+            node = queue.popleft()
+            if vals[i] != "N":
+                node.left = TreeNode(int(vals[i]))
+                queue.append(node.left)
+            i += 1
+            if vals[i] != "N":
+                node.right = TreeNode(int(vals[i]))
+                queue.append(node.right)
+            i += 1
+        return root`,
+        javascript: `class Codec {
+    serialize(root) {
+        if (!root) return "";
+        const res = [];
+        const queue = [root];
+        while (queue.length > 0) {
+            const node = queue.shift();
+            if (node) {
+                res.push(String(node.val));
+                queue.push(node.left);
+                queue.push(node.right);
+            } else {
+                res.push("N");
+            }
+        }
+        return res.join(",");
+    }
+
+    deserialize(data) {
+        if (!data) return null;
+        const vals = data.split(",");
+        const root = new TreeNode(parseInt(vals[0]));
+        const queue = [root];
+        let i = 1;
+        while (queue.length > 0) {
+            const node = queue.shift();
+            if (vals[i] !== "N") {
+                node.left = new TreeNode(parseInt(vals[i]));
+                queue.push(node.left);
+            }
+            i++;
+            if (vals[i] !== "N") {
+                node.right = new TreeNode(parseInt(vals[i]));
+                queue.push(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+}`,
+        java: `public class Codec {
+    public String serialize(TreeNode root) {
+        if (root == null) return "";
+        List<String> res = new ArrayList<>();
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                res.add(String.valueOf(node.val));
+                queue.offer(node.left);
+                queue.offer(node.right);
+            } else {
+                res.add("N");
+            }
+        }
+        return String.join(",", res);
+    }
+
+    public TreeNode deserialize(String data) {
+        if (data.isEmpty()) return null;
+        String[] vals = data.split(",");
+        TreeNode root = new TreeNode(Integer.parseInt(vals[0]));
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < vals.length) {
+            TreeNode node = queue.poll();
+            if (!vals[i].equals("N")) {
+                node.left = new TreeNode(Integer.parseInt(vals[i]));
+                queue.offer(node.left);
+            }
+            i++;
+            if (!vals[i].equals("N")) {
+                node.right = new TreeNode(Integer.parseInt(vals[i]));
+                queue.offer(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+}`,
+      },
+      run: runSerializeDeserializeBFS,
+      lineExplanations: {
+        python: {
+          1: 'Codec class holding both directions',
+          2: 'Serialize: tree -> string',
+          3: 'Empty tree edge case',
+          4: 'Represent it as an empty string',
+          5: 'Collected tokens',
+          6: 'BFS queue seeded with the root',
+          7: 'Process until every node (and null slot) is emitted',
+          8: 'Take the next node in level order',
+          9: 'Real node?',
+          10: 'Emit its value',
+          11: 'Enqueue its left child — even if null',
+          12: 'Enqueue its right child — even if null',
+          13: 'Null slot dequeued',
+          14: 'Emit "N" so child positions stay aligned',
+          15: 'Join tokens into the final string',
+          17: 'Deserialize: string -> tree',
+          18: 'Empty string edge case',
+          19: 'Empty string means empty tree',
+          20: 'Split back into tokens',
+          21: 'First token is always the root',
+          22: 'Queue of parents still waiting for their children',
+          23: 'Token pointer starts after the root',
+          24: 'Each parent consumes exactly two tokens',
+          25: 'Next parent in level order',
+          26: 'Non-"N" token: build the left child',
+          27: 'Attach it and let it become a parent later',
+          28: 'It will get its own children from later tokens',
+          29: 'Move past the left token either way',
+          30: 'Non-"N" token: build the right child',
+          31: 'Attach it and let it become a parent later',
+          32: 'It will get its own children from later tokens',
+          33: 'Move past the right token either way',
+          34: 'Root of the fully rebuilt tree',
+        },
+        javascript: {
+          1: 'Codec class holding both directions',
+          2: 'Serialize: tree -> string',
+          3: 'Empty tree becomes an empty string',
+          4: 'Collected tokens',
+          5: 'BFS queue seeded with the root',
+          6: 'Process until every node (and null slot) is emitted',
+          7: 'Take the next node in level order',
+          8: 'Real node?',
+          9: 'Emit its value',
+          10: 'Enqueue its left child — even if null',
+          11: 'Enqueue its right child — even if null',
+          13: 'Emit "N" so child positions stay aligned',
+          16: 'Join tokens into the final string',
+          19: 'Deserialize: string -> tree',
+          20: 'Empty string means empty tree',
+          21: 'Split back into tokens',
+          22: 'First token is always the root',
+          23: 'Queue of parents still waiting for their children',
+          24: 'Token pointer starts after the root',
+          25: 'Each parent consumes exactly two tokens',
+          26: 'Next parent in level order',
+          27: 'Non-"N" token: build the left child',
+          28: 'Attach it and let it become a parent later',
+          31: 'Move past the left token either way',
+          32: 'Non-"N" token: build the right child',
+          33: 'Attach it and let it become a parent later',
+          36: 'Move past the right token either way',
+          38: 'Root of the fully rebuilt tree',
+        },
+        java: {
+          1: 'Codec class holding both directions',
+          2: 'Serialize: tree -> string',
+          3: 'Empty tree becomes an empty string',
+          4: 'Collected tokens',
+          5: 'BFS queue for level-order traversal',
+          6: 'Seed with the root',
+          7: 'Process until every node (and null slot) is emitted',
+          8: 'Take the next node in level order',
+          9: 'Real node?',
+          10: 'Emit its value',
+          11: 'Enqueue its left child — even if null',
+          12: 'Enqueue its right child — even if null',
+          14: 'Emit "N" so child positions stay aligned',
+          17: 'Join tokens into the final string',
+          20: 'Deserialize: string -> tree',
+          21: 'Empty string means empty tree',
+          22: 'Split back into tokens',
+          23: 'First token is always the root',
+          24: 'Queue of parents still waiting for their children',
+          25: 'Seed with the root',
+          26: 'Token pointer starts after the root',
+          27: 'Each parent consumes exactly two tokens',
+          28: 'Next parent in level order',
+          29: 'Non-"N" token: build the left child',
+          30: 'Attach it and let it become a parent later',
+          31: 'It will get its own children from later tokens',
+          33: 'Move past the left token either way',
+          34: 'Non-"N" token: build the right child',
+          35: 'Attach it and let it become a parent later',
+          36: 'It will get its own children from later tokens',
+          38: 'Move past the right token either way',
+          40: 'Root of the fully rebuilt tree',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define Codec class for serialize/deserialize',

@@ -116,6 +116,139 @@ function runInvertBinaryTree(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runInvertBinaryTreeBFS(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+  const tree = arr.slice();
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+  function getVal(i: number): number | null {
+    return i < tree.length ? tree[i] : null;
+  }
+
+  // Swap the entire left/right subtrees of node i in the flat level-order array
+  function swapSubtrees(i: number): void {
+    const pairs: [number, number][] = [[getLeft(i), getRight(i)]];
+    while (pairs.length > 0) {
+      const [l, r] = pairs.shift()!;
+      if (l < tree.length || r < tree.length) {
+        const lVal = l < tree.length ? tree[l] : null;
+        const rVal = r < tree.length ? tree[r] : null;
+        while (tree.length <= Math.max(l, r)) tree.push(null);
+        tree[l] = rVal;
+        tree[r] = lVal;
+        pairs.push([getLeft(l), getLeft(r)]);
+        pairs.push([getRight(l), getRight(r)]);
+      }
+    }
+  }
+
+  steps.push({
+    state: { tree: toTreeNodes(tree), queue: [] },
+    highlights: [],
+    message: 'BFS version: process nodes level by level with a queue, swapping each node\'s children as it is dequeued — no recursion needed',
+    codeLine: 1,
+  });
+
+  if (getVal(0) === null) {
+    steps.push({
+      state: { tree: toTreeNodes(tree), result: [] },
+      highlights: [],
+      message: 'Empty tree — nothing to invert',
+      codeLine: 3,
+    });
+    return steps;
+  }
+
+  const queue: number[] = [0];
+
+  steps.push({
+    state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+    highlights: [],
+    treeHighlights: [0],
+    message: `Seed the queue with the root ${tree[0]}`,
+    codeLine: 4,
+    action: 'push',
+  } as AlgorithmStep);
+
+  while (queue.length > 0) {
+    const idx = queue.shift()!;
+    const val = getVal(idx);
+
+    steps.push({
+      state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+      highlights: [],
+      treeHighlights: [idx],
+      message: `Dequeue node ${val}`,
+      codeLine: 6,
+      action: 'pop',
+    } as AlgorithmStep);
+
+    const left = getLeft(idx);
+    const right = getRight(idx);
+    const hasLeft = getVal(left) !== null;
+    const hasRight = getVal(right) !== null;
+
+    if (hasLeft || hasRight) {
+      swapSubtrees(idx);
+
+      steps.push({
+        state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+        highlights: [],
+        treeHighlights: [left, right].filter(x => getVal(x) !== null),
+        message: `Swap children of node ${val}: left is now ${getVal(left) ?? 'null'}, right is now ${getVal(right) ?? 'null'}`,
+        codeLine: 7,
+        action: 'swap',
+      } as AlgorithmStep);
+    } else {
+      steps.push({
+        state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+        highlights: [],
+        treeHighlights: [idx],
+        message: `Node ${val} is a leaf — swapping two nulls changes nothing`,
+        codeLine: 7,
+      } as AlgorithmStep);
+    }
+
+    if (getVal(left) !== null) {
+      queue.push(left);
+      steps.push({
+        state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+        highlights: [],
+        treeHighlights: [left],
+        message: `Enqueue (new) left child ${getVal(left)} so its own children get swapped later`,
+        codeLine: 9,
+        action: 'push',
+      } as AlgorithmStep);
+    }
+
+    if (getVal(right) !== null) {
+      queue.push(right);
+      steps.push({
+        state: { tree: toTreeNodes(tree), queue: queue.map(i => tree[i]) },
+        highlights: [],
+        treeHighlights: [right],
+        message: `Enqueue (new) right child ${getVal(right)} so its own children get swapped later`,
+        codeLine: 11,
+        action: 'push',
+      } as AlgorithmStep);
+    }
+  }
+
+  while (tree.length > 0 && tree[tree.length - 1] === null) tree.pop();
+
+  steps.push({
+    state: { tree: toTreeNodes(tree), result: tree },
+    highlights: [],
+    message: `Queue empty — every node's children have been swapped exactly once. Result: [${tree.join(', ')}]`,
+    codeLine: 12,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const invertBinaryTree: Algorithm = {
   id: 'invert-binary-tree',
   name: 'Invert Binary Tree',
@@ -162,6 +295,102 @@ export const invertBinaryTree: Algorithm = {
   },
   defaultInput: [4, 2, 7, 1, 3, 6, 9],
   run: runInvertBinaryTree,
+  optimalApproachName: 'Recursive DFS',
+  approaches: [
+    {
+      id: 'iterative-bfs',
+      name: 'Iterative BFS',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Swap children level by level with an explicit queue instead of recursion — same O(n) work, but queue space grows to the widest level (O(n)) rather than the tree height.',
+      code: {
+        python: `def invertTree(root):
+    if not root:
+        return None
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        node.left, node.right = node.right, node.left
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return root`,
+        javascript: `function invertTree(root) {
+    if (!root) return null;
+    const queue = [root];
+    while (queue.length > 0) {
+        const node = queue.shift();
+        const temp = node.left;
+        node.left = node.right;
+        node.right = temp;
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+    }
+    return root;
+}`,
+        java: `public static TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+    while (!queue.isEmpty()) {
+        TreeNode node = queue.poll();
+        TreeNode temp = node.left;
+        node.left = node.right;
+        node.right = temp;
+        if (node.left != null) queue.offer(node.left);
+        if (node.right != null) queue.offer(node.right);
+    }
+    return root;
+}`,
+      },
+      run: runInvertBinaryTreeBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree',
+          3: 'Return None for null root',
+          4: 'Init queue with the root node',
+          5: 'Process until queue is empty',
+          6: 'Dequeue the next node',
+          7: 'Swap its left and right children in place',
+          8: 'If the (new) left child exists...',
+          9: 'Enqueue it so its children get swapped too',
+          10: 'If the (new) right child exists...',
+          11: 'Enqueue it so its children get swapped too',
+          12: 'All nodes processed — return the inverted root',
+        },
+        javascript: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree returns null',
+          3: 'Init queue with the root node',
+          4: 'Process until queue is empty',
+          5: 'Dequeue the next node',
+          6: 'Save left child in temp variable',
+          7: 'Set left child to right child',
+          8: 'Set right child to saved left child (swap complete)',
+          9: 'Enqueue new left child so its children get swapped too',
+          10: 'Enqueue new right child so its children get swapped too',
+          12: 'All nodes processed — return the inverted root',
+        },
+        java: {
+          1: 'Define function taking tree root',
+          2: 'Base case: empty tree returns null',
+          3: 'Init queue using LinkedList',
+          4: 'Seed the queue with the root node',
+          5: 'Process until queue is empty',
+          6: 'Dequeue the next node',
+          7: 'Save left child in temp variable',
+          8: 'Set left child to right child',
+          9: 'Set right child to saved left child (swap complete)',
+          10: 'Enqueue new left child so its children get swapped too',
+          11: 'Enqueue new right child so its children get swapped too',
+          13: 'All nodes processed — return the inverted root',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define recursive function taking a tree node',

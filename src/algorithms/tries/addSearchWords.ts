@@ -228,6 +228,110 @@ function runAddSearchWords(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runAddSearchWordsBuckets(input: unknown): AlgorithmStep[] {
+  const operations = input as WordOp[];
+  const steps: AlgorithmStep[] = [];
+
+  const buckets: Record<number, string[]> = {};
+  const opLabels = operations.map((op) => `${op[0]}("${op[1]}")`);
+  const bucketsView = (): Record<string, string> => {
+    const view: Record<string, string> = {};
+    for (const len of Object.keys(buckets).sort((a, b) => Number(a) - Number(b))) {
+      view[`len ${len}`] = buckets[Number(len)].join(', ');
+    }
+    return view;
+  };
+
+  steps.push({
+    state: { hashMap: bucketsView(), chars: [...opLabels] },
+    highlights: [],
+    message:
+      'Skip the trie: group words into buckets by length. A search pattern (dots included) can only ever match words of exactly its own length.',
+    codeLine: 5,
+  });
+
+  for (let i = 0; i < operations.length; i++) {
+    const [op, word] = operations[i];
+
+    if (op === 'addWord') {
+      if (!buckets[word.length]) buckets[word.length] = [];
+      buckets[word.length].push(word);
+      steps.push({
+        state: { hashMap: bucketsView(), chars: [...opLabels] },
+        highlights: [i],
+        pointers: { op: i },
+        message: `addWord("${word}"): append to the length-${word.length} bucket — O(1), no tree nodes to build`,
+        codeLine: 8,
+        action: 'insert',
+      });
+    } else if (op === 'search') {
+      const candidates = buckets[word.length] ?? [];
+      steps.push({
+        state: { hashMap: bucketsView(), chars: [...opLabels] },
+        highlights: [i],
+        pointers: { op: i },
+        message: `search("${word}"): only the length-${word.length} bucket can match — scan ${candidates.length} candidate(s): [${candidates.join(', ')}]`,
+        codeLine: 11,
+        action: 'visit',
+      });
+
+      let matched = false;
+      for (const candidate of candidates) {
+        let mismatchAt = -1;
+        for (let j = 0; j < word.length; j++) {
+          if (word[j] !== '.' && word[j] !== candidate[j]) {
+            mismatchAt = j;
+            break;
+          }
+        }
+
+        if (mismatchAt === -1) {
+          steps.push({
+            state: { hashMap: bucketsView(), chars: [...opLabels], result: true },
+            highlights: [i],
+            pointers: { op: i },
+            message: `Candidate "${candidate}" matches "${word}" — every position is either equal or a wildcard '.'. Return true.`,
+            codeLine: 13,
+            action: 'found',
+          });
+          matched = true;
+          break;
+        }
+
+        steps.push({
+          state: { hashMap: bucketsView(), chars: [...opLabels] },
+          highlights: [i],
+          pointers: { op: i },
+          message: `Candidate "${candidate}": mismatch at index ${mismatchAt} ('${word[mismatchAt]}' vs '${candidate[mismatchAt]}') — try the next candidate`,
+          codeLine: 12,
+          action: 'compare',
+        });
+      }
+
+      if (!matched) {
+        steps.push({
+          state: { hashMap: bucketsView(), chars: [...opLabels], result: false },
+          highlights: [i],
+          pointers: { op: i },
+          message: `search("${word}"): no candidate in the length-${word.length} bucket matches — return false`,
+          codeLine: 14,
+          action: 'compare',
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: { hashMap: bucketsView(), chars: [...opLabels] },
+    highlights: [],
+    message:
+      'All operations complete. Trade-off vs the trie: adds are O(1), but each search linearly scans every same-length word instead of pruning shared prefixes.',
+    codeLine: 14,
+  });
+
+  return steps;
+}
+
 export const addSearchWords: Algorithm = {
   id: 'add-search-words',
   name: 'Design Add and Search Words Data Structure',
@@ -361,6 +465,134 @@ class WordDictionary {
     ['search', 'b..'],
   ],
   run: runAddSearchWords,
+  optimalApproachName: 'Trie + Wildcard DFS',
+  approaches: [
+    {
+      id: 'length-buckets',
+      name: 'Length Buckets + Scan',
+      timeComplexity: 'O(1) add, O(N·L) search',
+      spaceComplexity: 'O(N·L)',
+      description:
+        'Instead of a trie with branching DFS, bucket words by length and linearly compare the pattern against every same-length word, letting dots match any character — trivial adds, but searches scan the whole bucket.',
+      code: {
+        python: `from collections import defaultdict
+
+class WordDictionary:
+    def __init__(self):
+        self.buckets = defaultdict(list)
+
+    def addWord(self, word):
+        self.buckets[len(word)].append(word)
+
+    def search(self, word):
+        for candidate in self.buckets[len(word)]:
+            if all(c == "." or c == w for c, w in zip(word, candidate)):
+                return True
+        return False`,
+        javascript: `class WordDictionary {
+    constructor() {
+        this.buckets = new Map();
+    }
+
+    addWord(word) {
+        if (!this.buckets.has(word.length)) this.buckets.set(word.length, []);
+        this.buckets.get(word.length).push(word);
+    }
+
+    search(word) {
+        const candidates = this.buckets.get(word.length) || [];
+        for (const candidate of candidates) {
+            let match = true;
+            for (let i = 0; i < word.length; i++) {
+                if (word[i] !== "." && word[i] !== candidate[i]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return true;
+        }
+        return false;
+    }
+}`,
+        java: `class WordDictionary {
+    private Map<Integer, List<String>> buckets;
+
+    public WordDictionary() {
+        buckets = new HashMap<>();
+    }
+
+    public void addWord(String word) {
+        buckets.computeIfAbsent(word.length(), k -> new ArrayList<>()).add(word);
+    }
+
+    public boolean search(String word) {
+        for (String candidate : buckets.getOrDefault(word.length(), List.of())) {
+            boolean match = true;
+            for (int i = 0; i < word.length(); i++) {
+                if (word.charAt(i) != '.' && word.charAt(i) != candidate.charAt(i)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return true;
+        }
+        return false;
+    }
+}`,
+      },
+      run: runAddSearchWordsBuckets,
+      lineExplanations: {
+        python: {
+          1: 'Import defaultdict so buckets auto-create on first use',
+          3: 'Define WordDictionary class (no trie nodes)',
+          4: 'Initialize constructor',
+          5: 'Map word length → list of all words of that length',
+          7: 'Define addWord method',
+          8: 'Append the word to its length bucket — O(1)',
+          10: 'Define search method',
+          11: 'Only same-length words can match; scan that bucket',
+          12: "Position-by-position: '.' matches anything, letters must be equal",
+          13: 'A candidate matched every position — return True',
+          14: 'No candidate in the bucket matched — return False',
+        },
+        javascript: {
+          1: 'Define WordDictionary class (no trie nodes)',
+          2: 'Initialize constructor',
+          3: 'Map word length → list of all words of that length',
+          6: 'Define addWord method',
+          7: 'Create the bucket for this length if missing',
+          8: 'Append the word to its length bucket — O(1)',
+          11: 'Define search method',
+          12: 'Fetch same-length candidates (empty if none)',
+          13: 'Scan every candidate in the bucket',
+          14: 'Assume this candidate matches until proven otherwise',
+          15: 'Compare the pattern to the candidate position by position',
+          16: "A non-dot letter must equal the candidate's letter",
+          17: 'Mark the mismatch',
+          18: 'Stop comparing this candidate early',
+          21: 'A candidate matched every position — return true',
+          23: 'No candidate matched — return false',
+        },
+        java: {
+          1: 'Define WordDictionary class (no trie nodes)',
+          2: 'Declare map of word length → words of that length',
+          4: 'Initialize constructor',
+          5: 'Create empty HashMap of buckets',
+          8: 'Define addWord method',
+          9: 'Create bucket if missing, then append — O(1)',
+          12: 'Define search method',
+          13: 'Scan every same-length candidate (empty list if none)',
+          14: 'Assume this candidate matches until proven otherwise',
+          15: 'Compare the pattern to the candidate position by position',
+          16: "A non-dot letter must equal the candidate's letter",
+          17: 'Mark the mismatch',
+          18: 'Stop comparing this candidate early',
+          21: 'A candidate matched every position — return true',
+          23: 'No candidate matched — return false',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define TrieNode class',

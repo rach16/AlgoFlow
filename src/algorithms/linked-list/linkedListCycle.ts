@@ -171,6 +171,148 @@ function runLinkedListCycle(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLinkedListCycleHashSet(input: unknown): AlgorithmStep[] {
+  const { list, pos } = input as LinkedListCycleInput;
+  const steps: AlgorithmStep[] = [];
+  let nodeId = 0;
+
+  const linkedList = list.map((val) => ({ val, id: nodeId++ }));
+  const hasCycle = pos >= 0 && pos < linkedList.length;
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: `Brute-force idea: remember every node we visit in a hash set. If we ever see a node twice, we walked in a circle.${hasCycle ? ` (Cycle links back to index ${pos}.)` : ' (No cycle here.)'}`,
+    codeLine: 1,
+  });
+
+  if (linkedList.length === 0) {
+    steps.push({
+      state: {
+        linkedList: [],
+        linkedListHighlights: [],
+        linkedListSecondary: [],
+        linkedListPointers: {},
+      },
+      highlights: [],
+      message: 'Empty list — curr is null immediately. Return false.',
+      codeLine: 9,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [0],
+      linkedListSecondary: [],
+      linkedListPointers: { curr: 0 },
+    },
+    highlights: [0],
+    pointers: { curr: 0 },
+    message: 'Create an empty set of seen nodes and start curr at the head.',
+    codeLine: 2,
+    action: 'visit',
+  });
+
+  const getNext = (idx: number): number => {
+    if (idx === linkedList.length - 1) {
+      return hasCycle ? pos : -1;
+    }
+    return idx + 1;
+  };
+
+  const visited: number[] = [];
+  let curr = 0;
+
+  while (curr >= 0) {
+    // Membership check
+    if (visited.includes(curr)) {
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [curr],
+          linkedListSecondary: [...visited],
+          linkedListPointers: { curr },
+        },
+        highlights: [curr],
+        pointers: { curr },
+        message: `Node at index ${curr} (val=${linkedList[curr].val}) is already in the seen set — we have looped back. Cycle detected!`,
+        codeLine: 5,
+        action: 'found',
+      });
+
+      steps.push({
+        state: {
+          linkedList: linkedList.map((n) => ({ ...n })),
+          linkedListHighlights: [curr],
+          linkedListSecondary: [...visited],
+          linkedListPointers: { 'cycle start': curr },
+        },
+        highlights: [curr],
+        message: `Return true. Note the trade-off: this finds the cycle in one pass but stores up to n nodes, whereas Floyd's uses O(1) space.`,
+        codeLine: 6,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: [curr],
+        linkedListSecondary: [...visited],
+        linkedListPointers: { curr },
+      },
+      highlights: [curr],
+      pointers: { curr },
+      message: `Node ${linkedList[curr].val} (index ${curr}) is not in the seen set yet — no cycle so far.`,
+      codeLine: 5,
+      action: 'compare',
+    });
+
+    visited.push(curr);
+    const next = getNext(curr);
+
+    steps.push({
+      state: {
+        linkedList: linkedList.map((n) => ({ ...n })),
+        linkedListHighlights: next >= 0 ? [next] : [],
+        linkedListSecondary: [...visited],
+        linkedListPointers: next >= 0 ? { curr: next } : {},
+      },
+      highlights: [curr],
+      pointers: next >= 0 ? { curr: next } : {},
+      message: `Add node ${linkedList[curr].val} to the seen set (${visited.length} node${visited.length === 1 ? '' : 's'} remembered), then advance curr${next >= 0 ? ` to index ${next}` : ' — it is now null'}.`,
+      codeLine: 7,
+      action: 'insert',
+    });
+
+    curr = next;
+  }
+
+  steps.push({
+    state: {
+      linkedList: linkedList.map((n) => ({ ...n })),
+      linkedListHighlights: [],
+      linkedListSecondary: [...visited],
+      linkedListPointers: {},
+    },
+    highlights: [],
+    message: 'curr reached null without revisiting any node — the list ends, so there is no cycle. Return false.',
+    codeLine: 9,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const linkedListCycle: Algorithm = {
   id: 'linked-list-cycle',
   name: 'Linked List Cycle',
@@ -221,6 +363,88 @@ export const linkedListCycle: Algorithm = {
   },
   defaultInput: { list: [3, 2, 0, -4], pos: 1 },
   run: runLinkedListCycle,
+  optimalApproachName: "Floyd's Tortoise & Hare",
+  approaches: [
+    {
+      id: 'hash-set',
+      name: 'Hash Set',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        "Store every visited node in a hash set and flag the first repeat — simpler to reason about than Floyd's two pointers, but pays O(n) extra memory.",
+      code: {
+        python: `def hasCycle(head):
+    seen = set()
+    curr = head
+    while curr:
+        if curr in seen:
+            return True
+        seen.add(curr)
+        curr = curr.next
+    return False`,
+        javascript: `function hasCycle(head) {
+    const seen = new Set();
+    let curr = head;
+    while (curr) {
+        if (seen.has(curr)) {
+            return true;
+        }
+        seen.add(curr);
+        curr = curr.next;
+    }
+    return false;
+}`,
+        java: `public static boolean hasCycle(ListNode head) {
+    Set<ListNode> seen = new HashSet<>();
+    ListNode curr = head;
+    while (curr != null) {
+        if (seen.contains(curr)) {
+            return true;
+        }
+        seen.add(curr);
+        curr = curr.next;
+    }
+    return false;
+}`,
+      },
+      run: runLinkedListCycleHashSet,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking head of linked list',
+          2: 'Create empty set to remember visited nodes (by identity)',
+          3: 'Start traversal at the head',
+          4: 'Walk until we fall off the end of the list',
+          5: 'Seen this exact node before? Then we walked in a circle',
+          6: 'Cycle confirmed — return True',
+          7: 'First visit: remember this node in the set',
+          8: 'Advance to the next node',
+          9: 'Reached null — the list terminates, so no cycle',
+        },
+        javascript: {
+          1: 'Define function taking head of linked list',
+          2: 'Create empty Set to remember visited nodes (by reference)',
+          3: 'Start traversal at the head',
+          4: 'Walk until we fall off the end of the list',
+          5: 'Seen this exact node before? Then we walked in a circle',
+          6: 'Cycle confirmed — return true',
+          8: 'First visit: remember this node in the set',
+          9: 'Advance to the next node',
+          11: 'Reached null — the list terminates, so no cycle',
+        },
+        java: {
+          1: 'Define method taking head of linked list',
+          2: 'Create empty HashSet to remember visited nodes (by reference)',
+          3: 'Start traversal at the head',
+          4: 'Walk until we fall off the end of the list',
+          5: 'Seen this exact node before? Then we walked in a circle',
+          6: 'Cycle confirmed — return true',
+          8: 'First visit: remember this node in the set',
+          9: 'Advance to the next node',
+          11: 'Reached null — the list terminates, so no cycle',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking head of linked list',

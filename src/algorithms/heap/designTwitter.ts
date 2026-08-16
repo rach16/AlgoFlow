@@ -155,6 +155,172 @@ function runDesignTwitter(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runDesignTwitterListMerge(input: unknown): AlgorithmStep[] {
+  const operations = input as TwitterOp[];
+  const steps: AlgorithmStep[] = [];
+
+  const tweets: { userId: number; tweetId: number; time: number }[] = [];
+  const following: Record<number, Set<number>> = {};
+  let timestamp = 0;
+
+  const getFollowMap = (): Record<string, string> => {
+    const map: Record<string, string> = {};
+    for (const [userId, followees] of Object.entries(following)) {
+      map[`user${userId}`] = Array.from(followees).join(', ') || 'none';
+    }
+    return map;
+  };
+
+  steps.push({
+    state: {
+      hashMap: {},
+      chars: operations.map((op) => op.join(',')),
+    },
+    highlights: [],
+    message:
+      'Initialize Twitter. Same storage as the heap version — but getNewsFeed will just collect ALL followee tweets and sort them, no heap merge.',
+    codeLine: 4,
+  });
+
+  for (let i = 0; i < operations.length; i++) {
+    const op = operations[i];
+    const opName = op[0];
+
+    if (opName === 'postTweet') {
+      const userId = op[1];
+      const tweetId = op[2];
+      timestamp++;
+
+      if (!following[userId]) {
+        following[userId] = new Set([userId]);
+      }
+      tweets.push({ userId, tweetId, time: timestamp });
+
+      steps.push({
+        state: {
+          hashMap: {
+            ...getFollowMap(),
+            lastTweet: `user${userId}:tweet${tweetId}@t${timestamp}`,
+          },
+          chars: operations.map((o) => o.join(',')),
+        },
+        highlights: [i],
+        pointers: { op: i },
+        message: `postTweet: User ${userId} posts tweet ${tweetId} with timestamp ${timestamp}`,
+        codeLine: 11,
+        action: 'insert',
+      });
+    } else if (opName === 'getNewsFeed') {
+      const userId = op[1];
+      if (!following[userId]) {
+        following[userId] = new Set([userId]);
+      }
+      const followees = following[userId];
+
+      const collected = tweets.filter((t) => followees.has(t.userId));
+
+      steps.push({
+        state: {
+          hashMap: {
+            ...getFollowMap(),
+            collected: collected.map((t) => `tweet${t.tweetId}@t${t.time}`).join(' | ') || 'none',
+          },
+          chars: operations.map((o) => o.join(',')),
+        },
+        highlights: [i],
+        pointers: { op: i },
+        message: `getNewsFeed(${userId}): collect every tweet from followed users [${Array.from(followees).join(', ')}] into one list (${collected.length} tweet(s))`,
+        codeLine: 17,
+        action: 'visit',
+      });
+
+      const sorted = [...collected].sort((a, b) => b.time - a.time);
+
+      steps.push({
+        state: {
+          hashMap: {
+            ...getFollowMap(),
+            sorted: sorted.map((t) => `tweet${t.tweetId}@t${t.time}`).join(' | ') || 'none',
+          },
+          chars: operations.map((o) => o.join(',')),
+        },
+        highlights: [i],
+        message: `Sort the whole list by timestamp descending — newest first. (The heap version avoids sorting everything.)`,
+        codeLine: 18,
+        action: 'swap',
+      });
+
+      const feed = sorted.slice(0, 10).map((t) => t.tweetId);
+
+      steps.push({
+        state: {
+          hashMap: {
+            ...getFollowMap(),
+            [`feed_user${userId}`]: feed.join(', ') || 'empty',
+          },
+          chars: operations.map((o) => o.join(',')),
+          result: feed,
+        },
+        highlights: [i],
+        message: `Take the first 10: feed = [${feed.join(', ')}]`,
+        codeLine: 19,
+        action: 'found',
+      });
+    } else if (opName === 'follow') {
+      const followerId = op[1];
+      const followeeId = op[2];
+
+      if (!following[followerId]) {
+        following[followerId] = new Set([followerId]);
+      }
+      following[followerId].add(followeeId);
+
+      steps.push({
+        state: {
+          hashMap: getFollowMap(),
+          chars: operations.map((o) => o.join(',')),
+        },
+        highlights: [i],
+        pointers: { op: i },
+        message: `follow: User ${followerId} now follows user ${followeeId}. Following: [${Array.from(following[followerId]).join(', ')}]`,
+        codeLine: 22,
+        action: 'insert',
+      });
+    } else if (opName === 'unfollow') {
+      const followerId = op[1];
+      const followeeId = op[2];
+
+      if (following[followerId]) {
+        following[followerId].delete(followeeId);
+      }
+
+      steps.push({
+        state: {
+          hashMap: getFollowMap(),
+          chars: operations.map((o) => o.join(',')),
+        },
+        highlights: [i],
+        pointers: { op: i },
+        message: `unfollow: User ${followerId} unfollows user ${followeeId}. Following: [${following[followerId] ? Array.from(following[followerId]).join(', ') : 'none'}]`,
+        codeLine: 25,
+        action: 'delete',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      hashMap: getFollowMap(),
+      chars: operations.map((o) => o.join(',')),
+    },
+    highlights: [],
+    message: `All operations complete. Total tweets: ${tweets.length}. Collect+sort costs O(T log T) per feed vs the heap's O(k log k) for just the top 10.`,
+    codeLine: 19,
+  });
+
+  return steps;
+}
+
 export const designTwitter: Algorithm = {
   id: 'design-twitter',
   name: 'Design Twitter',
@@ -317,6 +483,188 @@ class Twitter:
     ['getNewsFeed', 1],
   ],
   run: runDesignTwitter,
+  optimalApproachName: 'Hash Map + Min-Heap Merge',
+  approaches: [
+    {
+      id: 'collect-and-sort',
+      name: 'Collect + Sort',
+      timeComplexity: 'O(T log T)',
+      spaceComplexity: 'O(T)',
+      description:
+        'For each news feed, dump every followee tweet into one list and sort it by timestamp — far simpler than the heap merge of k sorted lists, but it sorts all T tweets to return just 10.',
+      code: {
+        python: `from collections import defaultdict
+
+class Twitter:
+    def __init__(self):
+        self.time = 0
+        self.tweets = defaultdict(list)
+        self.following = defaultdict(set)
+
+    def postTweet(self, userId, tweetId):
+        self.time += 1
+        self.tweets[userId].append((self.time, tweetId))
+
+    def getNewsFeed(self, userId):
+        users = self.following[userId] | {userId}
+        feed = []
+        for u in users:
+            feed.extend(self.tweets[u])
+        feed.sort(reverse=True)
+        return [tweetId for _, tweetId in feed[:10]]
+
+    def follow(self, followerId, followeeId):
+        self.following[followerId].add(followeeId)
+
+    def unfollow(self, followerId, followeeId):
+        self.following[followerId].discard(followeeId)`,
+        javascript: `class Twitter {
+    constructor() {
+        this.time = 0;
+        this.tweets = new Map();
+        this.following = new Map();
+    }
+
+    postTweet(userId, tweetId) {
+        if (!this.tweets.has(userId)) this.tweets.set(userId, []);
+        this.tweets.get(userId).push([++this.time, tweetId]);
+    }
+
+    getNewsFeed(userId) {
+        const users = new Set(this.following.get(userId) || []);
+        users.add(userId);
+        const feed = [];
+        for (const u of users)
+            feed.push(...(this.tweets.get(u) || []));
+        feed.sort((a, b) => b[0] - a[0]);
+        return feed.slice(0, 10).map((t) => t[1]);
+    }
+
+    follow(followerId, followeeId) {
+        if (!this.following.has(followerId))
+            this.following.set(followerId, new Set());
+        this.following.get(followerId).add(followeeId);
+    }
+
+    unfollow(followerId, followeeId) {
+        if (this.following.has(followerId))
+            this.following.get(followerId).delete(followeeId);
+    }
+}`,
+        java: `class Twitter {
+    private int time = 0;
+    private Map<Integer, List<int[]>> tweets = new HashMap<>();
+    private Map<Integer, Set<Integer>> following = new HashMap<>();
+
+    public void postTweet(int userId, int tweetId) {
+        tweets.putIfAbsent(userId, new ArrayList<>());
+        tweets.get(userId).add(new int[]{++time, tweetId});
+    }
+
+    public List<Integer> getNewsFeed(int userId) {
+        Set<Integer> users = new HashSet<>(
+            following.getOrDefault(userId, new HashSet<>()));
+        users.add(userId);
+        List<int[]> feed = new ArrayList<>();
+        for (int u : users)
+            feed.addAll(tweets.getOrDefault(u, new ArrayList<>()));
+        feed.sort((a, b) -> b[0] - a[0]);
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < Math.min(10, feed.size()); i++)
+            res.add(feed.get(i)[1]);
+        return res;
+    }
+
+    public void follow(int followerId, int followeeId) {
+        following.putIfAbsent(followerId, new HashSet<>());
+        following.get(followerId).add(followeeId);
+    }
+
+    public void unfollow(int followerId, int followeeId) {
+        if (following.containsKey(followerId))
+            following.get(followerId).remove(followeeId);
+    }
+}`,
+      },
+      run: runDesignTwitterListMerge,
+      lineExplanations: {
+        python: {
+          1: 'Import defaultdict for auto-init collections',
+          3: 'Define the Twitter class',
+          4: 'Initialize Twitter instance',
+          5: 'Global timestamp counter for ordering',
+          6: 'Map userId to list of (time, tweetId)',
+          7: 'Map userId to set of followed userIds',
+          9: 'Post a new tweet for user',
+          10: 'Advance the global clock',
+          11: 'Append (time, tweetId) to the user tweet list',
+          13: 'Get 10 most recent tweets in feed',
+          14: 'Users to read from: followees plus yourself',
+          15: 'One flat list for every candidate tweet',
+          16: 'Walk each relevant user',
+          17: 'Dump all their tweets into the list',
+          18: 'Sort everything newest-first (heap version avoids this)',
+          19: 'Return the tweetIds of the first 10',
+          21: 'Follow another user',
+          22: 'Add followee to follower set',
+          24: 'Unfollow a user',
+          25: 'Remove followee from set (discard is safe if absent)',
+        },
+        javascript: {
+          1: 'Define the Twitter class',
+          2: 'Initialize Twitter instance',
+          3: 'Global timestamp counter for ordering',
+          4: 'Map userId to tweet list',
+          5: 'Map userId to followed set',
+          8: 'Post a new tweet for user',
+          9: 'Create tweet list if not exists',
+          10: 'Push [time, tweetId] with incremented clock',
+          13: 'Get 10 most recent tweets in feed',
+          14: 'Copy the followee set (may be empty)',
+          15: 'Users always see their own tweets',
+          16: 'One flat list for every candidate tweet',
+          17: 'Walk each relevant user',
+          18: 'Dump all their tweets into the list',
+          19: 'Sort everything newest-first (heap version avoids this)',
+          20: 'Return the tweetIds of the first 10',
+          23: 'Follow another user',
+          24: 'Create follow set if not exists',
+          25: 'Init empty set for new user',
+          26: 'Add followee to set',
+          29: 'Unfollow a user',
+          30: 'Check the follow set exists',
+          31: 'Remove followee from set',
+        },
+        java: {
+          1: 'Define the Twitter class',
+          2: 'Global timestamp counter for ordering',
+          3: 'Map userId to list of [time, tweetId]',
+          4: 'Map userId to set of followed userIds',
+          6: 'Post a new tweet for user',
+          7: 'Create tweet list if absent',
+          8: 'Add [time, tweetId] with incremented clock',
+          11: 'Get 10 most recent tweets in feed',
+          12: 'Copy the followee set',
+          13: 'Empty set if the user follows nobody',
+          14: 'Users always see their own tweets',
+          15: 'One flat list for every candidate tweet',
+          16: 'Walk each relevant user',
+          17: 'Dump all their tweets into the list',
+          18: 'Sort everything newest-first (heap version avoids this)',
+          19: 'Result list of tweetIds',
+          20: 'Take at most the first 10',
+          21: 'Extract the tweetId from each entry',
+          22: 'Return the feed',
+          25: 'Follow another user',
+          26: 'Create follow set if absent',
+          27: 'Add followee to set',
+          30: 'Unfollow a user',
+          31: 'Only remove if the follow set exists',
+          32: 'Remove followee from set',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Import heapq for priority queue operations',

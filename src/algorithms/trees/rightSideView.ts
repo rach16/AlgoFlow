@@ -95,6 +95,84 @@ function runRightSideView(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runRightSideViewDFS(input: unknown): AlgorithmStep[] {
+  const arr = input as (number | null)[];
+  const steps: AlgorithmStep[] = [];
+  const result: number[] = [];
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), result: [] },
+    highlights: [],
+    message: 'DFS idea: visit the RIGHT child before the left one — then the first node reached at each depth is exactly the one visible from the right',
+    codeLine: 1,
+  });
+
+  function getLeft(i: number): number { return 2 * i + 1; }
+  function getRight(i: number): number { return 2 * i + 2; }
+
+  function getVal(i: number): number | null {
+    if (i >= arr.length) return null;
+    return arr[i];
+  }
+
+  if (getVal(0) === null) {
+    steps.push({
+      state: { tree: toTreeNodes(arr), result: [] },
+      highlights: [],
+      message: 'Tree is empty, return []',
+      codeLine: 4,
+    });
+    return steps;
+  }
+
+  const seenAtDepth: number[] = []; // index of the node recorded at each depth
+
+  function dfs(i: number, depth: number): void {
+    const val = getVal(i);
+    if (val === null) return;
+
+    if (depth === result.length) {
+      result.push(val);
+      seenAtDepth.push(i);
+
+      steps.push({
+        state: { tree: toTreeNodes(arr), result: [...result], depth },
+        highlights: [],
+        treeHighlights: [i],
+        treeSecondary: seenAtDepth.slice(0, -1),
+        message: `Node ${val} is the FIRST node we reach at depth ${depth} — since we always go right first, it is the rightmost one. Add it: [${result.join(', ')}]`,
+        codeLine: 7,
+        action: 'found',
+      } as AlgorithmStep);
+    } else {
+      steps.push({
+        state: { tree: toTreeNodes(arr), result: [...result], depth },
+        highlights: [],
+        treeHighlights: [i],
+        treeSecondary: [seenAtDepth[depth]],
+        message: `Node ${val} is at depth ${depth}, but ${arr[seenAtDepth[depth]]} was already seen there — a node further right hides it`,
+        codeLine: 6,
+        action: 'visit',
+      } as AlgorithmStep);
+    }
+
+    dfs(getRight(i), depth + 1);
+    dfs(getLeft(i), depth + 1);
+  }
+
+  dfs(0, 0);
+
+  steps.push({
+    state: { tree: toTreeNodes(arr), result },
+    highlights: [],
+    message: `DFS complete. Right side view: [${result.join(', ')}]`,
+    codeLine: 11,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const rightSideView: Algorithm = {
   id: 'right-side-view',
   name: 'Binary Tree Right Side View',
@@ -161,6 +239,97 @@ export const rightSideView: Algorithm = {
   },
   defaultInput: [1, 2, 3, null, 5, null, 4],
   run: runRightSideView,
+  optimalApproachName: 'BFS Level Order',
+  approaches: [
+    {
+      id: 'dfs-right-first',
+      name: 'DFS Right-First',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(h)',
+      description:
+        'Instead of scanning whole levels with a queue, DFS visits the right child first — the first node reached at each depth is the visible one, using only O(h) recursion space.',
+      code: {
+        python: `def rightSideView(root):
+    result = []
+    def dfs(node, depth):
+        if not node:
+            return
+        if depth == len(result):
+            result.append(node.val)
+        dfs(node.right, depth + 1)
+        dfs(node.left, depth + 1)
+    dfs(root, 0)
+    return result`,
+        javascript: `function rightSideView(root) {
+    const result = [];
+    function dfs(node, depth) {
+        if (!node) return;
+        if (depth === result.length) {
+            result.push(node.val);
+        }
+        dfs(node.right, depth + 1);
+        dfs(node.left, depth + 1);
+    }
+    dfs(root, 0);
+    return result;
+}`,
+        java: `public static List<Integer> rightSideView(TreeNode root) {
+    List<Integer> result = new ArrayList<>();
+    dfs(root, 0, result);
+    return result;
+}
+
+private static void dfs(TreeNode node, int depth, List<Integer> result) {
+    if (node == null) return;
+    if (depth == result.size()) {
+        result.add(node.val);
+    }
+    dfs(node.right, depth + 1, result);
+    dfs(node.left, depth + 1, result);
+}`,
+      },
+      run: runRightSideViewDFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking tree root',
+          2: 'Result list — one entry per depth',
+          3: 'DFS helper carrying the current depth',
+          4: 'Base case: null node',
+          5: 'Nothing to record for null',
+          6: 'First time reaching this depth? (result has one value per depth already seen)',
+          7: 'Then this node is the rightmost at this depth — record it',
+          8: 'Go RIGHT first, so the rightmost node reaches each depth first',
+          9: 'Left subtree only fills depths the right side did not reach',
+          10: 'Start DFS at the root, depth 0',
+          11: 'Return the recorded right side view',
+        },
+        javascript: {
+          1: 'Define function taking tree root',
+          2: 'Result array — one entry per depth',
+          3: 'DFS helper carrying the current depth',
+          4: 'Base case: null node, nothing to record',
+          5: 'First time reaching this depth? (result has one value per depth already seen)',
+          6: 'Then this node is the rightmost at this depth — record it',
+          8: 'Go RIGHT first, so the rightmost node reaches each depth first',
+          9: 'Left subtree only fills depths the right side did not reach',
+          11: 'Start DFS at the root, depth 0',
+          12: 'Return the recorded right side view',
+        },
+        java: {
+          1: 'Define method taking tree root',
+          2: 'Result list — one entry per depth',
+          3: 'Start DFS at the root, depth 0',
+          4: 'Return the recorded right side view',
+          7: 'DFS helper carrying the current depth',
+          8: 'Base case: null node, nothing to record',
+          9: 'First time reaching this depth? (result has one value per depth already seen)',
+          10: 'Then this node is the rightmost at this depth — record it',
+          12: 'Go RIGHT first, so the rightmost node reaches each depth first',
+          13: 'Left subtree only fills depths the right side did not reach',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking tree root',
