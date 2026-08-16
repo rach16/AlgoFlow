@@ -14,10 +14,11 @@ import { Controls } from '../components/visualizer/Controls';
 import { CodeBlock } from '../components/common/CodeBlock';
 import { DataStructureInfoPanel } from '../components/visualizer/data-structure-info/DataStructureInfoPanel';
 import { detectDataStructures } from '../utils/detectDataStructures';
+import { getActiveApproach } from '../utils/approaches';
 import { useProgressStore } from '../store/progressStore';
 
 export function VisualizerPage() {
-  const { currentAlgorithm, steps, currentStepIndex, language } = useVisualizerStore();
+  const { currentAlgorithm, steps, currentStepIndex, approachId } = useVisualizerStore();
   const { solvedProblems, toggleSolved } = useProgressStore();
   const [showCode, setShowCode] = useState(false);
   const [codePanelWidth, setCodePanelWidth] = useState(400);
@@ -74,6 +75,7 @@ export function VisualizerPage() {
 
   const currentStep = steps[currentStepIndex];
   const state = currentStep?.state as Record<string, unknown> | undefined;
+  const activeApproach = getActiveApproach(currentAlgorithm, approachId);
 
   const nums = state?.nums as number[] | undefined;
   const chars = state?.chars as string[] | undefined;
@@ -131,8 +133,8 @@ export function VisualizerPage() {
             currentAlgorithm.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
             'bg-red-500/20 text-red-400'
           }`}>{currentAlgorithm.difficulty}</span>
-          <span className="hidden sm:inline text-slate-400">Time: <span className="text-slate-200 font-mono">{currentAlgorithm.timeComplexity}</span></span>
-          <span className="hidden sm:inline text-slate-400">Space: <span className="text-slate-200 font-mono">{currentAlgorithm.spaceComplexity}</span></span>
+          <span className="hidden sm:inline text-slate-400">Time: <span className="text-slate-200 font-mono">{activeApproach.timeComplexity}</span></span>
+          <span className="hidden sm:inline text-slate-400">Space: <span className="text-slate-200 font-mono">{activeApproach.spaceComplexity}</span></span>
           <span className="hidden sm:inline text-slate-400">|</span>
           <span className="hidden sm:inline text-indigo-400 font-medium">{currentAlgorithm.pattern}</span>
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
@@ -168,19 +170,15 @@ export function VisualizerPage() {
 
         {/* Mobile: pattern + complexity row */}
         <div className="sm:hidden bg-slate-800/50 rounded-lg px-3 py-2 text-xs flex flex-wrap gap-x-3 gap-y-1">
-          <span className="text-slate-400">T: <span className="text-slate-300 font-mono">{currentAlgorithm.timeComplexity}</span></span>
-          <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{currentAlgorithm.spaceComplexity}</span></span>
+          <span className="text-slate-400">T: <span className="text-slate-300 font-mono">{activeApproach.timeComplexity}</span></span>
+          <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{activeApproach.spaceComplexity}</span></span>
           <span className="text-indigo-400">{currentAlgorithm.pattern}</span>
         </div>
 
         {/* Mobile code view */}
         {showCode && (
           <div className="lg:hidden h-[60vh]">
-            <CodeBlock
-              code={currentAlgorithm.code[language]}
-              currentLine={currentStep?.codeLine}
-              lineExplanations={currentAlgorithm.lineExplanations?.[language]}
-            />
+            <CodeBlock />
           </div>
         )}
 
@@ -376,11 +374,7 @@ export function VisualizerPage() {
 
       {/* Code Panel — desktop only (mobile uses toggle above) */}
       <div className="hidden lg:block flex-shrink-0 lg:ml-1" style={{ width: codePanelWidth }}>
-        <CodeBlock
-          code={currentAlgorithm.code[language]}
-          currentLine={currentStep?.codeLine}
-          lineExplanations={currentAlgorithm.lineExplanations?.[language]}
-        />
+        <CodeBlock />
       </div>
     </div>
   );

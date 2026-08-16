@@ -10,6 +10,25 @@ export interface AlgorithmStep {
   secondary?: number[]; // Secondary highlights (e.g., for comparisons)
 }
 
+export interface Approach {
+  id: string;
+  name: string; // e.g. "Brute Force", "Sorting", "Hash Map"
+  timeComplexity: string;
+  spaceComplexity: string;
+  description?: string;
+  code: {
+    python: string;
+    javascript: string;
+    java: string;
+  };
+  run: (input: unknown) => AlgorithmStep[];
+  lineExplanations?: {
+    python: Record<number, string>;
+    javascript: Record<number, string>;
+    java: Record<number, string>;
+  };
+}
+
 export interface Algorithm {
   id: string;
   name: string;
@@ -32,6 +51,11 @@ export interface Algorithm {
     javascript: Record<number, string>;
     java: Record<number, string>;
   };
+  // Alternate solutions (e.g. brute force), ordered naive → best.
+  // The algorithm's own flat code/run/complexity fields act as the final "optimal" approach.
+  approaches?: Approach[];
+  // Tab label for the flat/default solution (defaults to "Optimal")
+  optimalApproachName?: string;
 }
 
 export interface Category {

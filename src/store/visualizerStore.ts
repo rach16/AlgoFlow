@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Algorithm, AlgorithmStep } from '../types/algorithm';
+import { getActiveApproach, OPTIMAL_APPROACH_ID } from '../utils/approaches';
 
 interface VisualizerState {
   // Current algorithm
@@ -26,6 +27,10 @@ interface VisualizerState {
   language: 'python' | 'javascript' | 'java';
   setLanguage: (lang: 'python' | 'javascript' | 'java') => void;
 
+  // Solution approach ('optimal' = the algorithm's flat/default solution)
+  approachId: string;
+  setApproachId: (id: string) => void;
+
   // Actions
   nextStep: () => void;
   prevStep: () => void;
@@ -36,7 +41,7 @@ interface VisualizerState {
 export const useVisualizerStore = create<VisualizerState>((set, get) => ({
   currentAlgorithm: null,
   setCurrentAlgorithm: (algorithm) => {
-    set({ currentAlgorithm: algorithm });
+    set({ currentAlgorithm: algorithm, approachId: OPTIMAL_APPROACH_ID });
     if (algorithm) {
       set({ input: algorithm.defaultInput });
       get().runAlgorithm();
@@ -62,6 +67,12 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
   language: 'python',
   setLanguage: (lang) => set({ language: lang }),
 
+  approachId: OPTIMAL_APPROACH_ID,
+  setApproachId: (id) => {
+    set({ approachId: id });
+    get().runAlgorithm();
+  },
+
   nextStep: () => {
     const { currentStepIndex, steps } = get();
     if (currentStepIndex < steps.length - 1) {
@@ -83,9 +94,10 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
   },
 
   runAlgorithm: () => {
-    const { currentAlgorithm, input } = get();
+    const { currentAlgorithm, input, approachId } = get();
     if (currentAlgorithm && input !== null) {
-      const steps = currentAlgorithm.run(input);
+      const approach = getActiveApproach(currentAlgorithm, approachId);
+      const steps = approach.run(input);
       set({ steps, currentStepIndex: 0, isPlaying: false });
     }
   },
