@@ -87,6 +87,67 @@ function runValidParentheses(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runValidParenthesesReplacement(input: unknown): AlgorithmStep[] {
+  const s = input as string;
+  const steps: AlgorithmStep[] = [];
+  let chars = s.split('');
+
+  steps.push({
+    state: { chars: [...chars] },
+    highlights: [],
+    message: `Repeatedly delete adjacent matched pairs from "${s}". A valid string collapses to empty from the inside out.`,
+    codeLine: 1,
+  });
+
+  const isPair = (a: string, b: string) =>
+    (a === '(' && b === ')') || (a === '[' && b === ']') || (a === '{' && b === '}');
+  const pairLine: Record<string, number> = { '(': 3, '[': 4, '{': 5 };
+
+  let removed = true;
+  while (removed) {
+    removed = false;
+    for (let i = 0; i < chars.length - 1; i++) {
+      if (isPair(chars[i], chars[i + 1])) {
+        steps.push({
+          state: { chars: [...chars] },
+          highlights: [i, i + 1],
+          pointers: { i },
+          message: `"${chars[i]}${chars[i + 1]}" at index ${i} is an innermost matched pair — nothing sits between them, so delete both`,
+          codeLine: 2,
+          action: 'compare',
+        });
+
+        const opener = chars[i];
+        chars = [...chars.slice(0, i), ...chars.slice(i + 2)];
+
+        steps.push({
+          state: { chars: [...chars] },
+          highlights: [],
+          message: `After deletion: "${chars.join('') || '(empty)'}". Brackets that wrapped the deleted pair are now adjacent and can match next.`,
+          codeLine: pairLine[opener],
+          action: 'delete',
+        });
+
+        removed = true;
+        break;
+      }
+    }
+  }
+
+  const valid = chars.length === 0;
+  steps.push({
+    state: { chars: [...chars], result: valid },
+    highlights: chars.map((_, i) => i),
+    message: valid
+      ? 'String shrank to empty — every bracket found its partner. VALID'
+      : `No adjacent pairs left but "${chars.join('')}" remains — the leftovers can never match. INVALID`,
+    codeLine: 6,
+    action: valid ? 'found' : undefined,
+  });
+
+  return steps;
+}
+
 export const validParentheses: Algorithm = {
   id: 'valid-parentheses',
   name: 'Valid Parentheses',
@@ -156,6 +217,68 @@ export const validParentheses: Algorithm = {
   },
   defaultInput: '({[]})',
   run: runValidParentheses,
+  optimalApproachName: 'Stack Matching',
+  approaches: [
+    {
+      id: 'string-replacement',
+      name: 'String Replacement',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of tracking openers on a stack, repeatedly delete adjacent matched pairs — a valid string shrinks to empty from the inside out.',
+      code: {
+        python: `def isValid(s):
+    while '()' in s or '[]' in s or '{}' in s:
+        s = s.replace('()', '')
+        s = s.replace('[]', '')
+        s = s.replace('{}', '')
+    return s == ''`,
+        javascript: `function isValid(s) {
+    let prev = null;
+    while (prev !== s) {
+        prev = s;
+        s = s.replace('()', '').replace('[]', '').replace('{}', '');
+    }
+    return s === '';
+}`,
+        java: `public static boolean isValid(String s) {
+    int prevLength = -1;
+    while (s.length() != prevLength) {
+        prevLength = s.length();
+        s = s.replace("()", "").replace("[]", "").replace("{}", "");
+    }
+    return s.isEmpty();
+}`,
+      },
+      run: runValidParenthesesReplacement,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking a string of brackets',
+          2: 'Keep looping while any adjacent matched pair exists',
+          3: 'Delete every "()" — innermost pairs vanish first',
+          4: 'Delete every "[]" the same way',
+          5: 'Delete every "{}" the same way',
+          6: 'Valid only if the whole string shrank to empty',
+        },
+        javascript: {
+          1: 'Define function taking a string of brackets',
+          2: 'Remember the previous string to detect when nothing changed',
+          3: 'Loop until a full pass deletes nothing',
+          4: 'Snapshot the string before this pass',
+          5: 'Delete one adjacent matched pair of each type',
+          7: 'Valid only if the whole string shrank to empty',
+        },
+        java: {
+          1: 'Define method taking a string of brackets',
+          2: 'Track the previous length to detect when nothing changed',
+          3: 'Loop until a pass stops shrinking the string',
+          4: 'Record the length before this pass',
+          5: 'Delete adjacent matched pairs of each type',
+          7: 'Valid only if the whole string shrank to empty',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking a string of brackets',

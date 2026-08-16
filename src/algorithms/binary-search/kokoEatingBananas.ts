@@ -123,6 +123,72 @@ function runKokoEatingBananas(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runKokoEatingBananasLinearScan(input: unknown): AlgorithmStep[] {
+  const { piles, h } = input as KokoInput;
+  const steps: AlgorithmStep[] = [];
+  const maxPile = Math.max(...piles);
+
+  steps.push({
+    state: { nums: [...piles], h },
+    highlights: [],
+    message: `Brute force: try every speed k = 1, 2, 3... — the first one that finishes within ${h} hours is the minimum`,
+    codeLine: 1,
+  });
+
+  for (let k = 1; k <= maxPile; k++) {
+    steps.push({
+      state: { nums: [...piles], h, speed: k },
+      highlights: [],
+      message: `Try speed k=${k} bananas/hour`,
+      codeLine: 4,
+      action: 'visit',
+    });
+
+    let totalHours = 0;
+    for (let i = 0; i < piles.length; i++) {
+      totalHours += Math.ceil(piles[i] / k);
+
+      steps.push({
+        state: { nums: [...piles], h, speed: k, hoursUsed: totalHours, currentPile: i },
+        highlights: [i],
+        pointers: { currentPile: i },
+        message: `Pile ${i}: ceil(${piles[i]}/${k}) = ${Math.ceil(piles[i] / k)} hours. Total so far: ${totalHours}`,
+        codeLine: 6,
+        action: 'compare',
+      });
+    }
+
+    if (totalHours <= h) {
+      steps.push({
+        state: { nums: [...piles], h, speed: k, hoursUsed: totalHours, result: k },
+        highlights: [],
+        message: `${totalHours} <= ${h} — speed ${k} works, and every slower speed already failed. Minimum speed: ${k}`,
+        codeLine: 8,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    steps.push({
+      state: { nums: [...piles], h, speed: k, hoursUsed: totalHours },
+      highlights: [],
+      message: `${totalHours} > ${h} — speed ${k} is too slow. Try k=${k + 1}. (Binary search would skip ahead instead of stepping by 1)`,
+      codeLine: 9,
+      action: 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...piles], h, result: maxPile },
+    highlights: [],
+    message: `Fastest useful speed is the largest pile: ${maxPile} bananas/hour`,
+    codeLine: 8,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const kokoEatingBananas: Algorithm = {
   id: 'koko-eating-bananas',
   name: 'Koko Eating Bananas',
@@ -202,6 +268,90 @@ export const kokoEatingBananas: Algorithm = {
   },
   defaultInput: { piles: [3, 6, 7, 11], h: 8 },
   run: runKokoEatingBananas,
+  optimalApproachName: 'Binary Search on Answer',
+  approaches: [
+    {
+      id: 'linear-scan-speeds',
+      name: 'Linear Scan of Speeds',
+      timeComplexity: 'O(n · m)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Try every speed k = 1, 2, 3... and return the first that finishes within h hours — O(n·m) stepping versus binary search halving the speed range in O(n log m).',
+      code: {
+        python: `def minEatingSpeed(piles, h):
+    k = 1
+    while True:
+        hours = 0
+        for p in piles:
+            hours += math.ceil(p / k)
+        if hours <= h:
+            return k
+        k += 1`,
+        javascript: `function minEatingSpeed(piles, h) {
+    let k = 1;
+    while (true) {
+        let hours = 0;
+        for (const p of piles) {
+            hours += Math.ceil(p / k);
+        }
+        if (hours <= h) {
+            return k;
+        }
+        k++;
+    }
+}`,
+        java: `public static int minEatingSpeed(int[] piles, int h) {
+    int k = 1;
+    while (true) {
+        long hours = 0;
+        for (int p : piles) {
+            hours += (p + k - 1) / k; // ceiling division
+        }
+        if (hours <= h) {
+            return k;
+        }
+        k++;
+    }
+}`,
+      },
+      run: runKokoEatingBananasLinearScan,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking piles array and hours h',
+          2: 'Start at the slowest possible speed, k = 1',
+          3: 'Keep trying speeds until one works',
+          4: 'Reset total hours for this speed',
+          5: 'For each pile, compute hours needed',
+          6: 'A pile of p bananas takes ceil(p/k) hours at speed k',
+          7: 'Does this speed finish within h hours?',
+          8: 'Yes — every slower speed already failed, so k is the minimum',
+          9: 'Too slow — bump the speed by 1 and retry',
+        },
+        javascript: {
+          1: 'Define function taking piles array and hours h',
+          2: 'Start at the slowest possible speed, k = 1',
+          3: 'Keep trying speeds until one works',
+          4: 'Reset total hours for this speed',
+          5: 'For each pile, compute hours needed',
+          6: 'A pile of p bananas takes ceil(p/k) hours at speed k',
+          8: 'Does this speed finish within h hours?',
+          9: 'Yes — every slower speed already failed, so k is the minimum',
+          11: 'Too slow — bump the speed by 1 and retry',
+        },
+        java: {
+          1: 'Define method taking piles array and hours h',
+          2: 'Start at the slowest possible speed, k = 1',
+          3: 'Keep trying speeds until one works',
+          4: 'Reset total hours for this speed',
+          5: 'For each pile, compute hours needed',
+          6: 'Integer ceiling division: (p + k - 1) / k hours per pile',
+          8: 'Does this speed finish within h hours?',
+          9: 'Yes — every slower speed already failed, so k is the minimum',
+          11: 'Too slow — bump the speed by 1 and retry',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking piles array and hours h',

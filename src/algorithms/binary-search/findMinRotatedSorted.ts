@@ -98,6 +98,61 @@ function runFindMinRotatedSorted(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runFindMinRotatedSortedLinearScan(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: { nums: [...nums] },
+    highlights: [],
+    message: `Linear scan: a rotated sorted array climbs, then drops exactly once — the drop lands on the minimum`,
+    codeLine: 1,
+  });
+
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] < nums[i - 1]) {
+      steps.push({
+        state: { nums: [...nums], result: nums[i] },
+        highlights: [i],
+        secondary: [i - 1],
+        pointers: { i },
+        message: `Drop found: nums[${i}]=${nums[i]} < nums[${i - 1}]=${nums[i - 1]} — this is the rotation point, so ${nums[i]} is the minimum`,
+        codeLine: 4,
+        action: 'found',
+      });
+
+      steps.push({
+        state: { nums: [...nums], result: nums[i] },
+        highlights: [i],
+        message: `Minimum element is ${nums[i]}. Linear scan is O(n); binary search finds the same drop in O(log n)`,
+        codeLine: 4,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    steps.push({
+      state: { nums: [...nums], i },
+      highlights: [i],
+      secondary: [i - 1],
+      pointers: { i },
+      message: `nums[${i}]=${nums[i]} >= nums[${i - 1}]=${nums[i - 1]} — still climbing, no rotation point yet`,
+      codeLine: 3,
+      action: 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], result: nums[0] },
+    highlights: [0],
+    message: `No drop anywhere — the array was rotated back to fully sorted, so the first element ${nums[0]} is the minimum`,
+    codeLine: 5,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const findMinRotatedSorted: Algorithm = {
   id: 'find-min-rotated-sorted',
   name: 'Find Minimum in Rotated Sorted Array',
@@ -177,6 +232,64 @@ export const findMinRotatedSorted: Algorithm = {
   },
   defaultInput: [3, 4, 5, 1, 2],
   run: runFindMinRotatedSorted,
+  optimalApproachName: 'Binary Search',
+  approaches: [
+    {
+      id: 'linear-scan-inflection',
+      name: 'Linear Scan for Drop',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Walk the array looking for the single place a value drops (the rotation point) — an O(n) scan for the same inflection point binary search locates in O(log n).',
+      code: {
+        python: `def findMin(nums):
+    for i in range(1, len(nums)):
+        if nums[i] < nums[i - 1]:
+            return nums[i]
+    return nums[0]`,
+        javascript: `function findMin(nums) {
+    for (let i = 1; i < nums.length; i++) {
+        if (nums[i] < nums[i - 1]) {
+            return nums[i];
+        }
+    }
+    return nums[0];
+}`,
+        java: `public static int findMin(int[] nums) {
+    for (int i = 1; i < nums.length; i++) {
+        if (nums[i] < nums[i - 1]) {
+            return nums[i];
+        }
+    }
+    return nums[0];
+}`,
+      },
+      run: runFindMinRotatedSortedLinearScan,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking the rotated sorted array',
+          2: 'Compare each element with its left neighbor',
+          3: 'A value smaller than its predecessor marks the rotation point',
+          4: 'The element right after the drop is the minimum',
+          5: 'No drop found — array is fully sorted, first element is the minimum',
+        },
+        javascript: {
+          1: 'Define function taking the rotated sorted array',
+          2: 'Compare each element with its left neighbor',
+          3: 'A value smaller than its predecessor marks the rotation point',
+          4: 'The element right after the drop is the minimum',
+          7: 'No drop found — array is fully sorted, first element is the minimum',
+        },
+        java: {
+          1: 'Define method taking the rotated sorted array',
+          2: 'Compare each element with its left neighbor',
+          3: 'A value smaller than its predecessor marks the rotation point',
+          4: 'The element right after the drop is the minimum',
+          7: 'No drop found — array is fully sorted, first element is the minimum',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

@@ -92,6 +92,86 @@ function runLongestSubstringWithoutRepeating(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLongestSubstringHashSet(input: unknown): AlgorithmStep[] {
+  const s = input as string;
+  const steps: AlgorithmStep[] = [];
+  const chars = s.split('');
+  const window: Record<string, number> = {}; // char -> index, acts as the set
+
+  steps.push({
+    state: { chars: [...chars], hashMap: {}, result: 0 },
+    highlights: [],
+    message: `Set-based window: expand right; on a duplicate, evict from the left ONE char at a time until the window is unique again`,
+    codeLine: 1,
+  });
+
+  let left = 0;
+  let maxLen = 0;
+
+  for (let right = 0; right < chars.length; right++) {
+    const char = chars[right];
+
+    steps.push({
+      state: { chars: [...chars], hashMap: { ...window }, result: maxLen },
+      highlights: Array.from({ length: right - left + 1 }, (_, i) => left + i),
+      pointers: { left, right },
+      message: `Examining char '${char}' at index ${right}. Set holds: {${Object.keys(window).join(', ')}}`,
+      codeLine: 6,
+      action: 'visit',
+    });
+
+    while (char in window) {
+      const removed = chars[left];
+      delete window[removed];
+
+      steps.push({
+        state: { chars: [...chars], hashMap: { ...window }, result: maxLen },
+        highlights: Array.from({ length: right - left }, (_, i) => left + 1 + i),
+        pointers: { left: left + 1, right },
+        message: `'${char}' is already in the set — evict '${removed}' at index ${left} and shrink. Unlike the index-map jump, we walk left one step at a time`,
+        codeLine: 8,
+        action: 'delete',
+      });
+
+      left++;
+    }
+
+    window[char] = right;
+
+    steps.push({
+      state: { chars: [...chars], hashMap: { ...window }, result: maxLen },
+      highlights: Array.from({ length: right - left + 1 }, (_, i) => left + i),
+      pointers: { left, right },
+      message: `Window is duplicate-free — add '${char}' to the set`,
+      codeLine: 10,
+      action: 'insert',
+    });
+
+    const windowLen = right - left + 1;
+    if (windowLen > maxLen) {
+      maxLen = windowLen;
+      steps.push({
+        state: { chars: [...chars], hashMap: { ...window }, result: maxLen },
+        highlights: Array.from({ length: right - left + 1 }, (_, i) => left + i),
+        pointers: { left, right },
+        message: `Window "${s.slice(left, right + 1)}" has length ${windowLen} — new maximum!`,
+        codeLine: 11,
+        action: 'found',
+      });
+    }
+  }
+
+  steps.push({
+    state: { chars: [...chars], hashMap: { ...window }, result: maxLen },
+    highlights: [],
+    message: `Longest substring without repeating characters has length ${maxLen}. Each char enters and leaves the set at most once — still O(n) overall`,
+    codeLine: 13,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const longestSubstringWithoutRepeating: Algorithm = {
   id: 'longest-substring-without-repeating',
   name: 'Longest Substring Without Repeating Characters',
@@ -150,6 +230,106 @@ export const longestSubstringWithoutRepeating: Algorithm = {
   },
   defaultInput: 'abcabcbb',
   run: runLongestSubstringWithoutRepeating,
+  optimalApproachName: 'Last-Seen Index Map',
+  approaches: [
+    {
+      id: 'hash-set-shrink',
+      name: 'Hash Set + Shrink',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(min(n,m))',
+      description:
+        'Instead of jumping the left pointer straight past a duplicate via its last-seen index, keep a plain set of window chars and evict from the left one character at a time until the duplicate is gone.',
+      code: {
+        python: `def lengthOfLongestSubstring(s):
+    char_set = set()
+    left = 0
+    max_len = 0
+
+    for right in range(len(s)):
+        while s[right] in char_set:
+            char_set.remove(s[left])
+            left += 1
+        char_set.add(s[right])
+        max_len = max(max_len, right - left + 1)
+
+    return max_len`,
+        javascript: `function lengthOfLongestSubstring(s) {
+    const charSet = new Set();
+    let left = 0;
+    let maxLen = 0;
+
+    for (let right = 0; right < s.length; right++) {
+        while (charSet.has(s[right])) {
+            charSet.delete(s[left]);
+            left++;
+        }
+        charSet.add(s[right]);
+        maxLen = Math.max(maxLen, right - left + 1);
+    }
+
+    return maxLen;
+}`,
+        java: `public static int lengthOfLongestSubstring(String s) {
+    Set<Character> charSet = new HashSet<>();
+    int left = 0;
+    int maxLen = 0;
+
+    for (int right = 0; right < s.length(); right++) {
+        while (charSet.contains(s.charAt(right))) {
+            charSet.remove(s.charAt(left));
+            left++;
+        }
+        charSet.add(s.charAt(right));
+        maxLen = Math.max(maxLen, right - left + 1);
+    }
+
+    return maxLen;
+}`,
+      },
+      run: runLongestSubstringHashSet,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking string s',
+          2: 'Set of characters currently inside the window',
+          3: 'Left boundary of current window',
+          4: 'Track longest substring length found',
+          6: 'Expand window by moving right pointer',
+          7: 'While the incoming char already sits in the window',
+          8: 'Evict the leftmost character from the set',
+          9: 'Step the left boundary right by one',
+          10: 'Window is now duplicate-free — add the new char',
+          11: 'Update max length if window is larger',
+          13: 'Return the longest length found',
+        },
+        javascript: {
+          1: 'Define function taking string s',
+          2: 'Set of characters currently inside the window',
+          3: 'Left boundary of current window',
+          4: 'Track longest substring length found',
+          6: 'Expand window by moving right pointer',
+          7: 'While the incoming char already sits in the window',
+          8: 'Evict the leftmost character from the set',
+          9: 'Step the left boundary right by one',
+          11: 'Window is now duplicate-free — add the new char',
+          12: 'Update max length if window is larger',
+          15: 'Return the longest length found',
+        },
+        java: {
+          1: 'Define function taking string s',
+          2: 'Set of characters currently inside the window',
+          3: 'Left boundary of current window',
+          4: 'Track longest substring length found',
+          6: 'Expand window by moving right pointer',
+          7: 'While the incoming char already sits in the window',
+          8: 'Evict the leftmost character from the set',
+          9: 'Step the left boundary right by one',
+          11: 'Window is now duplicate-free — add the new char',
+          12: 'Update max length if window is larger',
+          15: 'Return the longest length found',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking string s',

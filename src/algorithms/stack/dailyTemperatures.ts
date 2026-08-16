@@ -71,6 +71,81 @@ function runDailyTemperatures(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runDailyTemperaturesJump(input: unknown): AlgorithmStep[] {
+  const temperatures = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = temperatures.length;
+  const result = new Array(n).fill(0);
+
+  steps.push({
+    state: { nums: [...temperatures], result: [...result] },
+    highlights: [],
+    message: `Sweep right-to-left with no stack: reuse already-computed answers to JUMP over days that can't be the next warmer day`,
+    codeLine: 1,
+  });
+
+  for (let i = n - 2; i >= 0; i--) {
+    steps.push({
+      state: { nums: [...temperatures], result: [...result] },
+      highlights: [i],
+      pointers: { i },
+      message: `Day ${i} (temp ${temperatures[i]}): days to its right already know their answers — use them as shortcuts`,
+      codeLine: 5,
+      action: 'visit',
+    });
+
+    let j = i + 1;
+    while (j < n && temperatures[j] <= temperatures[i]) {
+      if (result[j] === 0) {
+        steps.push({
+          state: { nums: [...temperatures], result: [...result] },
+          highlights: [i],
+          secondary: [j],
+          pointers: { i, j },
+          message: `Day ${j} (temp ${temperatures[j]}) is not warmer AND never sees a warmer day — so day ${i} won't either. result[${i}] stays 0`,
+          codeLine: 9,
+          action: 'compare',
+        });
+        j = n;
+      } else {
+        const next = j + result[j];
+        steps.push({
+          state: { nums: [...temperatures], result: [...result] },
+          highlights: [i],
+          secondary: [j],
+          pointers: { i, j },
+          message: `Day ${j} (temp ${temperatures[j]}) isn't warmer than ${temperatures[i]}, but its warmer day is ${result[j]} ahead — jump straight to day ${next}`,
+          codeLine: 11,
+          action: 'compare',
+        });
+        j = next;
+      }
+    }
+
+    if (j < n) {
+      result[i] = j - i;
+      steps.push({
+        state: { nums: [...temperatures], result: [...result] },
+        highlights: [i, j],
+        pointers: { i, j },
+        message: `Day ${j} (temp ${temperatures[j]}) is warmer than ${temperatures[i]}! result[${i}] = ${j} - ${i} = ${j - i}`,
+        codeLine: 13,
+        action: 'found',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...temperatures], result: [...result] },
+    highlights: [],
+    message: `Done! Result: [${result.join(', ')}] — computed in place with O(1) extra space`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const dailyTemperatures: Algorithm = {
   id: 'daily-temperatures',
   name: 'Daily Temperatures',
@@ -127,6 +202,102 @@ export const dailyTemperatures: Algorithm = {
   },
   defaultInput: [73, 74, 75, 71, 69, 72, 76, 73],
   run: runDailyTemperatures,
+  optimalApproachName: 'Monotonic Stack',
+  approaches: [
+    {
+      id: 'reverse-jump',
+      name: 'Reverse Iteration + Jumps',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Replaces the stack entirely: sweep right-to-left and use already-computed answers as shortcuts to jump over non-warmer days, using only the output array.',
+      code: {
+        python: `def dailyTemperatures(temperatures):
+    n = len(temperatures)
+    result = [0] * n
+
+    for i in range(n - 2, -1, -1):
+        j = i + 1
+        while j < n and temperatures[j] <= temperatures[i]:
+            if result[j] == 0:
+                j = n
+            else:
+                j += result[j]
+        if j < n:
+            result[i] = j - i
+
+    return result`,
+        javascript: `function dailyTemperatures(temperatures) {
+    const n = temperatures.length;
+    const result = new Array(n).fill(0);
+
+    for (let i = n - 2; i >= 0; i--) {
+        let j = i + 1;
+        while (j < n && temperatures[j] <= temperatures[i]) {
+            j = result[j] === 0 ? n : j + result[j];
+        }
+        if (j < n) result[i] = j - i;
+    }
+
+    return result;
+}`,
+        java: `public static int[] dailyTemperatures(int[] temperatures) {
+    int n = temperatures.length;
+    int[] result = new int[n];
+
+    for (int i = n - 2; i >= 0; i--) {
+        int j = i + 1;
+        while (j < n && temperatures[j] <= temperatures[i]) {
+            j = result[j] == 0 ? n : j + result[j];
+        }
+        if (j < n) result[i] = j - i;
+    }
+
+    return result;
+}`,
+      },
+      run: runDailyTemperaturesJump,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking temperatures list',
+          2: 'Store the number of days',
+          3: 'Result array doubles as our only data structure',
+          5: 'Sweep right-to-left (last day is always 0)',
+          6: 'Start scanning at the next day',
+          7: "While day j isn't warmer than day i",
+          8: 'Day j never sees a warmer day...',
+          9: '...so day i cannot either — bail out',
+          10: 'Day j has a known warmer day ahead',
+          11: 'Jump over the whole block using its answer',
+          12: 'Landed on a strictly warmer day?',
+          13: 'Distance from i to that warmer day',
+          15: 'Return result array of wait days',
+        },
+        javascript: {
+          1: 'Define function taking temperatures array',
+          2: 'Store the number of days',
+          3: 'Result array doubles as our only data structure',
+          5: 'Sweep right-to-left (last day is always 0)',
+          6: 'Start scanning at the next day',
+          7: "While day j isn't warmer than day i",
+          8: 'No warmer day after j means none for i; otherwise jump by its answer',
+          10: 'Landed on a warmer day — record the distance',
+          13: 'Return result array of wait days',
+        },
+        java: {
+          1: 'Define method taking temperatures array',
+          2: 'Store the number of days',
+          3: 'Result array doubles as our only data structure',
+          5: 'Sweep right-to-left (last day is always 0)',
+          6: 'Start scanning at the next day',
+          7: "While day j isn't warmer than day i",
+          8: 'No warmer day after j means none for i; otherwise jump by its answer',
+          10: 'Landed on a warmer day — record the distance',
+          13: 'Return result array of wait days',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking temperatures list',

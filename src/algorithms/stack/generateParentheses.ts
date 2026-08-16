@@ -125,6 +125,82 @@ function runGenerateParentheses(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runGenerateParenthesesBFS(input: unknown): AlgorithmStep[] {
+  const n = input as number;
+  const steps: AlgorithmStep[] = [];
+  const result: string[] = [];
+  const queue: [string, number, number][] = [['', 0, 0]];
+
+  const queueDisplay = () => queue.map(([str]) => (str === '' ? 'ε' : str));
+
+  steps.push({
+    state: { chars: [], stack: queueDisplay(), result: [] },
+    highlights: [],
+    message: `BFS instead of recursion: grow every valid prefix level by level from an explicit queue — no call stack, no backtracking`,
+    codeLine: 3,
+  });
+
+  while (queue.length > 0) {
+    const [current, openCount, closeCount] = queue.shift()!;
+    const curChars = current.split('');
+
+    steps.push({
+      state: { chars: [...curChars], stack: queueDisplay(), result: [...result] },
+      highlights: curChars.length > 0 ? [curChars.length - 1] : [],
+      message: `Dequeue "${current || 'ε'}" (open=${openCount}, close=${closeCount})`,
+      codeLine: 6,
+      action: 'visit',
+    });
+
+    if (current.length === 2 * n) {
+      result.push(current);
+
+      steps.push({
+        state: { chars: [...curChars], stack: queueDisplay(), result: [...result] },
+        highlights: curChars.map((_, i) => i),
+        message: `"${current}" uses all ${n} pairs — complete combination! (total found: ${result.length})`,
+        codeLine: 8,
+        action: 'found',
+      });
+      continue;
+    }
+
+    if (openCount < n) {
+      queue.push([current + '(', openCount + 1, closeCount]);
+
+      steps.push({
+        state: { chars: [...curChars], stack: queueDisplay(), result: [...result] },
+        highlights: [],
+        message: `open ${openCount} < ${n}: extending with '(' is always safe — enqueue "${current + '('}"`,
+        codeLine: 11,
+        action: 'push',
+      });
+    }
+
+    if (closeCount < openCount) {
+      queue.push([current + ')', openCount, closeCount + 1]);
+
+      steps.push({
+        state: { chars: [...curChars], stack: queueDisplay(), result: [...result] },
+        highlights: [],
+        message: `close ${closeCount} < open ${openCount}: an unmatched '(' exists to close — enqueue "${current + ')'}"`,
+        codeLine: 13,
+        action: 'push',
+      });
+    }
+  }
+
+  steps.push({
+    state: { chars: [], stack: [], result: [...result] },
+    highlights: [],
+    message: `Queue empty — done! Generated ${result.length} valid combinations: [${result.map((r) => `"${r}"`).join(', ')}]`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const generateParentheses: Algorithm = {
   id: 'generate-parentheses',
   name: 'Generate Parentheses',
@@ -210,6 +286,121 @@ private static void backtrack(List<String> result, StringBuilder current, int op
   },
   defaultInput: 3,
   run: runGenerateParentheses,
+  optimalApproachName: 'Backtracking (DFS)',
+  approaches: [
+    {
+      id: 'iterative-bfs',
+      name: 'Iterative BFS',
+      timeComplexity: 'O(4ⁿ/√n)',
+      spaceComplexity: 'O(4ⁿ/√n)',
+      description:
+        'Replaces recursive backtracking with an explicit queue: every valid prefix is grown level by level, trading the O(n) call stack for a queue that holds a whole level at once.',
+      code: {
+        python: `def generateParenthesis(n):
+    result = []
+    queue = [("", 0, 0)]
+
+    while queue:
+        current, openN, closeN = queue.pop(0)
+        if len(current) == 2 * n:
+            result.append(current)
+            continue
+        if openN < n:
+            queue.append((current + "(", openN + 1, closeN))
+        if closeN < openN:
+            queue.append((current + ")", openN, closeN + 1))
+
+    return result`,
+        javascript: `function generateParenthesis(n) {
+    const result = [];
+    const queue = [["", 0, 0]];
+
+    while (queue.length) {
+        const [current, open, close] = queue.shift();
+        if (current.length === 2 * n) {
+            result.push(current);
+            continue;
+        }
+        if (open < n) queue.push([current + "(", open + 1, close]);
+        if (close < open) queue.push([current + ")", open, close + 1]);
+    }
+
+    return result;
+}`,
+        java: `public static List<String> generateParenthesis(int n) {
+    List<String> result = new ArrayList<>();
+    Queue<String> queue = new LinkedList<>();
+    queue.add("");
+
+    while (!queue.isEmpty()) {
+        String current = queue.poll();
+        int open = 0, close = 0;
+        for (char c : current.toCharArray()) {
+            if (c == '(') open++;
+            else close++;
+        }
+        if (current.length() == 2 * n) {
+            result.add(current);
+            continue;
+        }
+        if (open < n) queue.add(current + "(");
+        if (close < open) queue.add(current + ")");
+    }
+
+    return result;
+}`,
+      },
+      run: runGenerateParenthesesBFS,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking number of pairs n',
+          2: 'Initialize list to store complete combinations',
+          3: 'Queue seeded with the empty prefix (0 open, 0 close)',
+          5: 'Process prefixes until the queue is drained',
+          6: 'Dequeue the oldest prefix with its bracket counts',
+          7: 'Prefix already has all 2n characters?',
+          8: 'It is a complete valid combination — save it',
+          9: 'Skip extending — this string is finished',
+          10: 'Room for another opener?',
+          11: "Enqueue the prefix extended with '('",
+          12: "Any unmatched '(' that a ')' could close?",
+          13: "Enqueue the prefix extended with ')'",
+          15: 'Return all valid combinations',
+        },
+        javascript: {
+          1: 'Define function taking number of pairs n',
+          2: 'Initialize array to store complete combinations',
+          3: 'Queue seeded with the empty prefix (0 open, 0 close)',
+          5: 'Process prefixes until the queue is drained',
+          6: 'Dequeue the oldest prefix with its bracket counts',
+          7: 'Prefix already has all 2n characters?',
+          8: 'It is a complete valid combination — save it',
+          9: 'Skip extending — this string is finished',
+          11: "Room for another opener? Enqueue prefix + '('",
+          12: "Unmatched '(' available? Enqueue prefix + ')'",
+          15: 'Return all valid combinations',
+        },
+        java: {
+          1: 'Define method returning list of strings',
+          2: 'Initialize list to store complete combinations',
+          3: 'Explicit FIFO queue of prefixes',
+          4: 'Seed the queue with the empty prefix',
+          6: 'Process prefixes until the queue is drained',
+          7: 'Dequeue the oldest prefix',
+          8: 'Recount its open and close brackets',
+          9: 'Scan each character of the prefix',
+          10: 'Count opening brackets',
+          11: 'Count closing brackets',
+          13: 'Prefix already has all 2n characters?',
+          14: 'It is a complete valid combination — save it',
+          15: 'Skip extending — this string is finished',
+          17: "Room for another opener? Enqueue prefix + '('",
+          18: "Unmatched '(' available? Enqueue prefix + ')'",
+          21: 'Return all valid combinations',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking number of pairs n',

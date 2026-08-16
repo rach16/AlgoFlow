@@ -128,6 +128,86 @@ function runSlidingWindowMaximum(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSlidingWindowMaxHeap(input: unknown): AlgorithmStep[] {
+  const { nums, k } = input as SlidingWindowMaxInput;
+  const steps: AlgorithmStep[] = [];
+  const output: number[] = [];
+  // Max-heap of [value, index]; modeled as a list kept ordered by value descending
+  const heap: Array<[number, number]> = [];
+
+  const heapValues = () => heap.map((h) => h[0]);
+
+  steps.push({
+    state: { nums: [...nums], queue: [], result: [], k },
+    highlights: [],
+    message: `Max-heap with LAZY removal: push every element, and only discard an old max when it surfaces at the top while outside the window — no need to delete from the middle`,
+    codeLine: 3,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    heap.push([nums[i], i]);
+    heap.sort((x, y) => y[0] - x[0]);
+
+    steps.push({
+      state: { nums: [...nums], queue: heapValues(), result: [...output], k },
+      highlights: [i],
+      pointers: { left: Math.max(0, i - k + 1), right: i },
+      message: `Push (${nums[i]}, index ${i}) into the heap — it sifts to its place by value. Heap (by priority): [${heapValues().join(', ')}]`,
+      codeLine: 8,
+      action: 'push',
+    });
+
+    if (i >= k - 1) {
+      while (heap[0][1] <= i - k) {
+        const [staleVal, staleIdx] = heap[0];
+        heap.shift();
+
+        steps.push({
+          state: { nums: [...nums], queue: heapValues(), result: [...output], k },
+          highlights: [staleIdx],
+          pointers: { left: i - k + 1, right: i },
+          message: `Top of heap is ${staleVal} from index ${staleIdx} — it slid out of window [${i - k + 1}, ${i}]. Lazily pop it NOW, only because it reached the top`,
+          codeLine: 11,
+          action: 'pop',
+        });
+      }
+
+      const windowStart = i - k + 1;
+      const maxVal = heap[0][0];
+      output.push(maxVal);
+
+      steps.push({
+        state: { nums: [...nums], queue: heapValues(), result: [...output], k },
+        highlights: Array.from({ length: k }, (_, idx) => windowStart + idx),
+        secondary: [heap[0][1]],
+        pointers: { left: windowStart, right: i },
+        message: `Window [${windowStart}..${i}]: heap top ${maxVal} is in-window, so it is the max. Stale entries deeper in the heap can wait. Output: [${output.join(', ')}]`,
+        codeLine: 12,
+        action: 'found',
+      });
+    } else {
+      steps.push({
+        state: { nums: [...nums], queue: heapValues(), result: [...output], k },
+        highlights: Array.from({ length: i + 1 }, (_, idx) => idx),
+        pointers: { right: i },
+        message: `Building initial window: ${i + 1}/${k} elements pushed so far`,
+        codeLine: 9,
+        action: 'visit',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], queue: heapValues(), result: [...output], k },
+    highlights: [],
+    message: `Sliding window maximums: [${output.join(', ')}]. O(n log n) vs the deque's O(n) — but the heap idea generalizes to any "max/min over a moving set" problem`,
+    codeLine: 14,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const slidingWindowMaximum: Algorithm = {
   id: 'sliding-window-maximum',
   name: 'Sliding Window Maximum',
@@ -210,6 +290,110 @@ export const slidingWindowMaximum: Algorithm = {
   },
   defaultInput: { nums: [1, 3, -1, -3, 5, 3, 6, 7], k: 3 },
   run: runSlidingWindowMaximum,
+  optimalApproachName: 'Monotonic Deque',
+  approaches: [
+    {
+      id: 'max-heap-lazy-removal',
+      name: 'Max-Heap (Lazy Removal)',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of a monotonic deque, keep every element in a max-heap and lazily discard stale maxes only when they surface at the top outside the window — simpler invariant, extra log factor.',
+      code: {
+        python: `import heapq
+
+def maxSlidingWindow(nums, k):
+    output = []
+    heap = []  # (-value, index)
+
+    for i in range(len(nums)):
+        heapq.heappush(heap, (-nums[i], i))
+        if i >= k - 1:
+            while heap[0][1] <= i - k:
+                heapq.heappop(heap)
+            output.append(-heap[0][0])
+
+    return output`,
+        javascript: `function maxSlidingWindow(nums, k) {
+    // MaxPriorityQueue from datastructures-js (built into LeetCode)
+    const heap = new MaxPriorityQueue({ priority: (item) => item[0] });
+    const output = [];
+
+    for (let i = 0; i < nums.length; i++) {
+        heap.enqueue([nums[i], i]);
+        if (i >= k - 1) {
+            // lazy removal: discard maxes that slid out of the window
+            while (heap.front().element[1] <= i - k)
+                heap.dequeue();
+            output.push(heap.front().element[0]);
+        }
+    }
+
+    return output;
+}`,
+        java: `public static int[] maxSlidingWindow(int[] nums, int k) {
+    int[] output = new int[nums.length - k + 1];
+    // Max-heap of {value, index}, ordered by value descending
+    PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> b[0] - a[0]);
+
+    for (int i = 0; i < nums.length; i++) {
+        heap.offer(new int[] { nums[i], i });
+        if (i >= k - 1) {
+            while (heap.peek()[1] <= i - k) {
+                heap.poll(); // lazily discard stale entries
+            }
+            output[i - k + 1] = heap.peek()[0];
+        }
+    }
+
+    return output;
+}`,
+      },
+      run: runSlidingWindowMaxHeap,
+      lineExplanations: {
+        python: {
+          1: 'heapq provides a min-heap, so we store negated values',
+          3: 'Define function taking nums array and window size k',
+          4: 'Store the max value for each window position',
+          5: 'Heap of (-value, index): smallest negation = largest value on top',
+          7: 'Iterate through every element in the array',
+          8: 'Push every element — never delete from the middle',
+          9: 'Once the first window is complete',
+          10: 'Is the top of the heap from outside the window?',
+          11: 'Lazily pop it — stale entries only cost us when they surface',
+          12: 'Top is in-window, so it is the current maximum',
+          14: 'Return array of sliding window maximums',
+        },
+        javascript: {
+          1: 'Define function taking nums array and window size k',
+          2: 'LeetCode ships datastructures-js priority queues',
+          3: 'Max-heap of [value, index], prioritized by value',
+          4: 'Store the max value for each window position',
+          6: 'Iterate through every element in the array',
+          7: 'Push every element — never delete from the middle',
+          8: 'Once the first window is complete',
+          9: 'Stale maxes are discarded only when they surface',
+          10: 'Is the top of the heap from outside the window?',
+          11: 'Lazily dequeue the stale entry',
+          12: 'Top is in-window, so it is the current maximum',
+          16: 'Return array of sliding window maximums',
+        },
+        java: {
+          1: 'Define function taking nums array and window size k',
+          2: 'Allocate output array for window maximums',
+          3: 'Comparator puts the largest value at the top',
+          4: 'Max-heap of {value, index} pairs',
+          6: 'Iterate through every element in the array',
+          7: 'Push every element — never delete from the middle',
+          8: 'Once the first window is complete',
+          9: 'Is the top of the heap from outside the window?',
+          10: 'Lazily poll it — stale entries only cost us when they surface',
+          12: 'Top is in-window, so it is the current maximum',
+          16: 'Return array of sliding window maximums',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array and window size k',

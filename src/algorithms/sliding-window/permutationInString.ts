@@ -152,6 +152,127 @@ function runPermutationInString(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runPermutationMatchCounter(input: unknown): AlgorithmStep[] {
+  const { s1, s2 } = input as PermutationInput;
+  const steps: AlgorithmStep[] = [];
+  const chars = s2.split('');
+  const A = 'a'.charCodeAt(0);
+
+  const toRecord = (arr: number[]): Record<string, number> => {
+    const rec: Record<string, number> = {};
+    for (let i = 0; i < 26; i++) {
+      if (arr[i] > 0) rec[String.fromCharCode(A + i)] = arr[i];
+    }
+    return rec;
+  };
+
+  steps.push({
+    state: { chars: [...chars], s1Count: {}, windowCount: {}, result: false },
+    highlights: [],
+    message: `Fixed 26-slot count arrays + a "matches" counter: instead of comparing whole maps every slide, track how many of the 26 letters already agree — a slide only touches 2 letters`,
+    codeLine: 1,
+  });
+
+  if (s1.length > s2.length) {
+    steps.push({
+      state: { chars: [...chars], s1Count: {}, windowCount: {}, result: false },
+      highlights: [],
+      message: `s1 (length ${s1.length}) is longer than s2 (length ${s2.length}) — no permutation can fit`,
+      codeLine: 3,
+    });
+    return steps;
+  }
+
+  const s1Arr = new Array(26).fill(0);
+  const winArr = new Array(26).fill(0);
+
+  for (let i = 0; i < s1.length; i++) {
+    s1Arr[s1.charCodeAt(i) - A]++;
+    winArr[s2.charCodeAt(i) - A]++;
+  }
+
+  steps.push({
+    state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: false },
+    highlights: Array.from({ length: s1.length }, (_, i) => i),
+    pointers: { left: 0, right: s1.length - 1 },
+    message: `Fill both 26-slot arrays: s1 needs ${JSON.stringify(toRecord(s1Arr))}, initial window "${s2.slice(0, s1.length)}" holds ${JSON.stringify(toRecord(winArr))}`,
+    codeLine: 6,
+    action: 'insert',
+  });
+
+  let matches = 0;
+  for (let i = 0; i < 26; i++) {
+    if (s1Arr[i] === winArr[i]) matches++;
+  }
+
+  steps.push({
+    state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: false },
+    highlights: Array.from({ length: s1.length }, (_, i) => i),
+    pointers: { left: 0, right: s1.length - 1 },
+    message: `Count agreeing slots once: matches = ${matches}/26. From now on we never re-scan — each slide adjusts matches for just the 2 letters that change`,
+    codeLine: 10,
+    action: 'compare',
+  });
+
+  for (let right = s1.length; right < s2.length; right++) {
+    if (matches === 26) {
+      steps.push({
+        state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: true },
+        highlights: Array.from({ length: s1.length }, (_, i) => right - s1.length + i),
+        pointers: { left: right - s1.length, right: right - 1 },
+        message: `matches = 26 — every letter slot agrees. Permutation found: "${s2.slice(right - s1.length, right)}"`,
+        codeLine: 14,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    let idx = s2.charCodeAt(right) - A;
+    winArr[idx]++;
+    if (winArr[idx] === s1Arr[idx]) matches++;
+    else if (winArr[idx] === s1Arr[idx] + 1) matches--;
+
+    steps.push({
+      state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: false },
+      highlights: Array.from({ length: s1.length }, (_, i) => right - s1.length + 1 + i),
+      pointers: { left: right - s1.length + 1, right },
+      message: `Add '${s2[right]}' at index ${right}: only slot '${s2[right]}' is re-checked. matches = ${matches}/26`,
+      codeLine: 16,
+      action: 'insert',
+    });
+
+    idx = s2.charCodeAt(right - s1.length) - A;
+    winArr[idx]--;
+    if (winArr[idx] === s1Arr[idx]) matches++;
+    else if (winArr[idx] === s1Arr[idx] - 1) matches--;
+
+    steps.push({
+      state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: false },
+      highlights: Array.from({ length: s1.length }, (_, i) => right - s1.length + 1 + i),
+      pointers: { left: right - s1.length + 1, right },
+      message: `Drop '${s2[right - s1.length]}' at index ${right - s1.length}: only that slot is re-checked. matches = ${matches}/26`,
+      codeLine: 22,
+      action: 'delete',
+    });
+  }
+
+  const found = matches === 26;
+  steps.push({
+    state: { chars: [...chars], s1Count: toRecord(s1Arr), windowCount: toRecord(winArr), result: found },
+    highlights: found
+      ? Array.from({ length: s1.length }, (_, i) => s2.length - s1.length + i)
+      : [],
+    pointers: found ? { left: s2.length - s1.length, right: s2.length - 1 } : undefined,
+    message: found
+      ? `Final window "${s2.slice(s2.length - s1.length)}" has matches = 26 — permutation found!`
+      : `Scanned all windows, matches never reached 26 — no permutation of "${s1}" in "${s2}"`,
+    codeLine: 28,
+    action: found ? 'found' : undefined,
+  });
+
+  return steps;
+}
+
 export const permutationInString: Algorithm = {
   id: 'permutation-in-string',
   name: 'Permutation in String',
@@ -245,6 +366,178 @@ export const permutationInString: Algorithm = {
   },
   defaultInput: { s1: 'ab', s2: 'eidbaooo' },
   run: runPermutationInString,
+  optimalApproachName: 'Sliding Window + Hash Map',
+  approaches: [
+    {
+      id: 'match-counter-array',
+      name: '26-Slot Match Counter',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Replace the full map comparison on every slide with two fixed 26-slot arrays and a running "matches" counter — each slide only re-checks the 2 letter slots that changed, giving true O(1) updates.',
+      code: {
+        python: `def checkInclusion(s1, s2):
+    if len(s1) > len(s2):
+        return False
+    s1_count = [0] * 26
+    window = [0] * 26
+    for i in range(len(s1)):
+        s1_count[ord(s1[i]) - ord('a')] += 1
+        window[ord(s2[i]) - ord('a')] += 1
+
+    matches = sum(1 for i in range(26) if s1_count[i] == window[i])
+
+    for right in range(len(s1), len(s2)):
+        if matches == 26:
+            return True
+        idx = ord(s2[right]) - ord('a')
+        window[idx] += 1
+        if window[idx] == s1_count[idx]:
+            matches += 1
+        elif window[idx] == s1_count[idx] + 1:
+            matches -= 1
+        idx = ord(s2[right - len(s1)]) - ord('a')
+        window[idx] -= 1
+        if window[idx] == s1_count[idx]:
+            matches += 1
+        elif window[idx] == s1_count[idx] - 1:
+            matches -= 1
+
+    return matches == 26`,
+        javascript: `function checkInclusion(s1, s2) {
+    if (s1.length > s2.length) return false;
+    const s1Count = new Array(26).fill(0);
+    const window = new Array(26).fill(0);
+    const a = 'a'.charCodeAt(0);
+    for (let i = 0; i < s1.length; i++) {
+        s1Count[s1.charCodeAt(i) - a]++;
+        window[s2.charCodeAt(i) - a]++;
+    }
+    let matches = 0;
+    for (let i = 0; i < 26; i++)
+        if (s1Count[i] === window[i]) matches++;
+
+    for (let right = s1.length; right < s2.length; right++) {
+        if (matches === 26) return true;
+        let idx = s2.charCodeAt(right) - a;
+        window[idx]++;
+        if (window[idx] === s1Count[idx]) matches++;
+        else if (window[idx] === s1Count[idx] + 1) matches--;
+        idx = s2.charCodeAt(right - s1.length) - a;
+        window[idx]--;
+        if (window[idx] === s1Count[idx]) matches++;
+        else if (window[idx] === s1Count[idx] - 1) matches--;
+    }
+
+    return matches === 26;
+}`,
+        java: `public static boolean checkInclusion(String s1, String s2) {
+    if (s1.length() > s2.length()) return false;
+    int[] s1Count = new int[26];
+    int[] window = new int[26];
+    for (int i = 0; i < s1.length(); i++) {
+        s1Count[s1.charAt(i) - 'a']++;
+        window[s2.charAt(i) - 'a']++;
+    }
+    int matches = 0;
+    for (int i = 0; i < 26; i++) {
+        if (s1Count[i] == window[i]) matches++;
+    }
+
+    for (int right = s1.length(); right < s2.length(); right++) {
+        if (matches == 26) return true;
+        int idx = s2.charAt(right) - 'a';
+        window[idx]++;
+        if (window[idx] == s1Count[idx]) matches++;
+        else if (window[idx] == s1Count[idx] + 1) matches--;
+        idx = s2.charAt(right - s1.length()) - 'a';
+        window[idx]--;
+        if (window[idx] == s1Count[idx]) matches++;
+        else if (window[idx] == s1Count[idx] - 1) matches--;
+    }
+
+    return matches == 26;
+}`,
+      },
+      run: runPermutationMatchCounter,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking s1 and s2',
+          2: 'If s1 is longer than s2, no permutation can fit',
+          3: 'Return false immediately',
+          4: 'Fixed 26-slot count array for s1 (one slot per letter)',
+          5: 'Fixed 26-slot count array for the sliding window',
+          6: 'Build both arrays over the first len(s1) positions',
+          7: 'Count each s1 character in its letter slot',
+          8: 'Count each initial-window character in its slot',
+          10: 'One-time scan: how many of the 26 slots already agree?',
+          12: 'Slide the fixed-size window across the rest of s2',
+          13: 'All 26 slots agree for the previous window?',
+          14: 'That window is a permutation — done',
+          15: 'Slot of the character entering on the right',
+          16: 'Add it to the window count',
+          17: 'Its slot now agrees with s1',
+          18: 'One more matching slot',
+          19: 'Its slot JUST stopped agreeing (went one over)',
+          20: 'One fewer matching slot',
+          21: 'Slot of the character leaving on the left',
+          22: 'Remove it from the window count',
+          23: 'Its slot now agrees with s1',
+          24: 'One more matching slot',
+          25: 'Its slot JUST stopped agreeing (went one under)',
+          26: 'One fewer matching slot',
+          28: 'Check the final window too',
+        },
+        javascript: {
+          1: 'Define function taking s1 and s2',
+          2: 'If s1 is longer than s2, no permutation can fit',
+          3: 'Fixed 26-slot count array for s1 (one slot per letter)',
+          4: 'Fixed 26-slot count array for the sliding window',
+          5: 'Char code of lowercase a, for letter-to-slot math',
+          6: 'Build both arrays over the first s1.length positions',
+          7: 'Count each s1 character in its letter slot',
+          8: 'Count each initial-window character in its slot',
+          10: 'Running counter of agreeing slots',
+          11: 'One-time scan across all 26 slots',
+          12: 'Slot agrees — count it',
+          14: 'Slide the fixed-size window across the rest of s2',
+          15: 'All 26 slots agree for the previous window? Permutation found',
+          16: 'Slot of the character entering on the right',
+          17: 'Add it to the window count',
+          18: 'Slot now agrees — one more match',
+          19: 'Slot just stopped agreeing (one over) — one fewer match',
+          20: 'Slot of the character leaving on the left',
+          21: 'Remove it from the window count',
+          22: 'Slot now agrees — one more match',
+          23: 'Slot just stopped agreeing (one under) — one fewer match',
+          26: 'Check the final window too',
+        },
+        java: {
+          1: 'Define function taking s1 and s2',
+          2: 'If s1 is longer than s2, no permutation can fit',
+          3: 'Fixed 26-slot count array for s1 (one slot per letter)',
+          4: 'Fixed 26-slot count array for the sliding window',
+          5: 'Build both arrays over the first s1.length() positions',
+          6: 'Count each s1 character in its letter slot',
+          7: 'Count each initial-window character in its slot',
+          9: 'Running counter of agreeing slots',
+          10: 'One-time scan across all 26 slots',
+          11: 'Slot agrees — count it',
+          14: 'Slide the fixed-size window across the rest of s2',
+          15: 'All 26 slots agree for the previous window? Permutation found',
+          16: 'Slot of the character entering on the right',
+          17: 'Add it to the window count',
+          18: 'Slot now agrees — one more match',
+          19: 'Slot just stopped agreeing (one over) — one fewer match',
+          20: 'Slot of the character leaving on the left',
+          21: 'Remove it from the window count',
+          22: 'Slot now agrees — one more match',
+          23: 'Slot just stopped agreeing (one under) — one fewer match',
+          26: 'Check the final window too',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking s1 and s2',

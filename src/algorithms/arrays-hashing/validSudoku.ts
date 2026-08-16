@@ -1,5 +1,140 @@
 import type { Algorithm, AlgorithmStep } from '../../types/algorithm';
 
+function runValidSudokuBitmask(input: unknown): AlgorithmStep[] {
+  const board = input as string[][];
+  const steps: AlgorithmStep[] = [];
+
+  const rows = new Array(9).fill(0);
+  const cols = new Array(9).fill(0);
+  const boxes = new Array(9).fill(0);
+
+  const boardCopy = () => board.map((row) => [...row]);
+
+  // Show only the non-zero masks as 9-bit binary strings (digit 9 on the left, digit 1 on the right)
+  const maskSnapshot = (): Record<string, string> => {
+    const snapshot: Record<string, string> = {};
+    for (let i = 0; i < 9; i++) {
+      if (rows[i] !== 0) snapshot[`row${i}`] = rows[i].toString(2).padStart(9, '0');
+    }
+    for (let i = 0; i < 9; i++) {
+      if (cols[i] !== 0) snapshot[`col${i}`] = cols[i].toString(2).padStart(9, '0');
+    }
+    for (let i = 0; i < 9; i++) {
+      if (boxes[i] !== 0) snapshot[`box${i}`] = boxes[i].toString(2).padStart(9, '0');
+    }
+    return snapshot;
+  };
+
+  steps.push({
+    state: { matrix: boardCopy(), matrixHighlights: [], hashMap: {} },
+    highlights: [],
+    message:
+      'Bitmask version: each row/col/box is a single 9-bit integer — digit d occupies bit d-1. Duplicate check is one AND, marking is one OR',
+    codeLine: 1,
+  });
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const val = board[r][c];
+      if (val === '.') continue;
+
+      const bit = 1 << (Number(val) - 1);
+      const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+
+      steps.push({
+        state: {
+          matrix: boardCopy(),
+          matrixHighlights: [{ row: r, col: c }],
+          hashMap: maskSnapshot(),
+        },
+        highlights: [],
+        pointers: { row: r, col: c },
+        message: `Cell (${r}, ${c}) = "${val}" → bit = 1 << ${Number(val) - 1} = ${bit.toString(2).padStart(9, '0')} | box ${b}`,
+        codeLine: 9,
+        action: 'visit',
+      });
+
+      if (rows[r] & bit) {
+        steps.push({
+          state: {
+            matrix: boardCopy(),
+            matrixHighlights: [{ row: r, col: c }],
+            hashMap: maskSnapshot(),
+            result: false,
+          },
+          highlights: [],
+          message: `row${r} mask ${rows[r].toString(2).padStart(9, '0')} AND ${bit.toString(2).padStart(9, '0')} ≠ 0 — digit ${val} already in row ${r}. INVALID`,
+          codeLine: 14,
+          action: 'found',
+        });
+        return steps;
+      }
+      if (cols[c] & bit) {
+        steps.push({
+          state: {
+            matrix: boardCopy(),
+            matrixHighlights: [{ row: r, col: c }],
+            hashMap: maskSnapshot(),
+            result: false,
+          },
+          highlights: [],
+          message: `col${c} mask ${cols[c].toString(2).padStart(9, '0')} AND ${bit.toString(2).padStart(9, '0')} ≠ 0 — digit ${val} already in column ${c}. INVALID`,
+          codeLine: 14,
+          action: 'found',
+        });
+        return steps;
+      }
+      if (boxes[b] & bit) {
+        steps.push({
+          state: {
+            matrix: boardCopy(),
+            matrixHighlights: [{ row: r, col: c }],
+            hashMap: maskSnapshot(),
+            result: false,
+          },
+          highlights: [],
+          message: `box${b} mask ${boxes[b].toString(2).padStart(9, '0')} AND ${bit.toString(2).padStart(9, '0')} ≠ 0 — digit ${val} already in box ${b}. INVALID`,
+          codeLine: 14,
+          action: 'found',
+        });
+        return steps;
+      }
+
+      rows[r] |= bit;
+      cols[c] |= bit;
+      boxes[b] |= bit;
+
+      steps.push({
+        state: {
+          matrix: boardCopy(),
+          matrixHighlights: [{ row: r, col: c }],
+          hashMap: maskSnapshot(),
+        },
+        highlights: [],
+        pointers: { row: r, col: c },
+        message: `No collision — OR the bit in: row${r}=${rows[r].toString(2).padStart(9, '0')}, col${c}=${cols[c].toString(2).padStart(9, '0')}, box${b}=${boxes[b].toString(2).padStart(9, '0')}`,
+        codeLine: 15,
+        action: 'insert',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: boardCopy(),
+      matrixHighlights: [],
+      hashMap: maskSnapshot(),
+      result: true,
+    },
+    highlights: [],
+    message: 'Every digit set its bit without a collision — board is VALID (27 ints instead of 27 hash sets)',
+    codeLine: 18,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 function runValidSudoku(input: unknown): AlgorithmStep[] {
   const board = input as string[][];
   const steps: AlgorithmStep[] = [];
@@ -249,6 +384,140 @@ export const validSudoku: Algorithm = {
     ['.', '.', '.', '.', '8', '.', '.', '7', '9'],
   ],
   run: runValidSudoku,
+  optimalApproachName: 'Hash Sets',
+  approaches: [
+    {
+      id: 'bitmask',
+      name: 'Bitmask',
+      timeComplexity: 'O(1)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Replaces the 27 hash sets with 27 plain integers: digit d flips bit d-1, so a duplicate check is a single AND and marking a digit is a single OR.',
+      code: {
+        python: `def isValidSudoku(board):
+    rows = [0] * 9
+    cols = [0] * 9
+    boxes = [0] * 9
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] == ".":
+                continue
+            bit = 1 << (int(board[r][c]) - 1)
+            b = (r // 3) * 3 + c // 3
+            if (rows[r] & bit or
+                cols[c] & bit or
+                boxes[b] & bit):
+                return False
+            rows[r] |= bit
+            cols[c] |= bit
+            boxes[b] |= bit
+    return True`,
+        javascript: `function isValidSudoku(board) {
+    const rows = new Array(9).fill(0);
+    const cols = new Array(9).fill(0);
+    const boxes = new Array(9).fill(0);
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            if (board[r][c] === ".") continue;
+            const bit = 1 << (Number(board[r][c]) - 1);
+            const b = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+            if ((rows[r] & bit) ||
+                (cols[c] & bit) ||
+                (boxes[b] & bit)) {
+                return false;
+            }
+            rows[r] |= bit;
+            cols[c] |= bit;
+            boxes[b] |= bit;
+        }
+    }
+    return true;
+}`,
+        java: `public static boolean isValidSudoku(char[][] board) {
+    int[] rows = new int[9];
+    int[] cols = new int[9];
+    int[] boxes = new int[9];
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            if (board[r][c] == '.') continue;
+            int bit = 1 << (board[r][c] - '1');
+            int b = (r / 3) * 3 + c / 3;
+            if ((rows[r] & bit) != 0 ||
+                (cols[c] & bit) != 0 ||
+                (boxes[b] & bit) != 0) {
+                return false;
+            }
+            rows[r] |= bit;
+            cols[c] |= bit;
+            boxes[b] |= bit;
+        }
+    }
+    return true;
+}`,
+      },
+      run: runValidSudokuBitmask,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking 9x9 board',
+          2: 'One integer per row — 9 bits track which digits appeared',
+          3: 'One integer per column',
+          4: 'One integer per 3x3 box',
+          5: 'Loop through each row index 0-8',
+          6: 'Loop through each column index 0-8',
+          7: 'Skip empty cells marked with "."',
+          8: 'Skip to next iteration for empty cells',
+          9: 'Digit d maps to bit d-1 (e.g. "5" → 000010000)',
+          10: 'Flatten (row÷3, col÷3) into a single box index 0-8',
+          11: 'AND the bit against the row mask,',
+          12: 'the column mask,',
+          13: 'and the box mask — any nonzero AND means the digit repeats',
+          14: 'Duplicate bit already set — board is invalid',
+          15: 'OR the bit into the row mask to mark the digit',
+          16: 'OR the bit into the column mask',
+          17: 'OR the bit into the box mask',
+          18: 'All 81 cells passed — board is valid',
+        },
+        javascript: {
+          1: 'Define function taking 9x9 board',
+          2: 'One integer per row — 9 bits track which digits appeared',
+          3: 'One integer per column',
+          4: 'One integer per 3x3 box',
+          5: 'Loop through each row index 0-8',
+          6: 'Loop through each column index 0-8',
+          7: 'Skip empty cells marked with "."',
+          8: 'Digit d maps to bit d-1 (e.g. "5" → 000010000)',
+          9: 'Flatten (row÷3, col÷3) into a single box index 0-8',
+          10: 'AND the bit against the row mask,',
+          11: 'the column mask,',
+          12: 'and the box mask — any nonzero AND means the digit repeats',
+          13: 'Duplicate bit already set — board is invalid',
+          15: 'OR the bit into the row mask to mark the digit',
+          16: 'OR the bit into the column mask',
+          17: 'OR the bit into the box mask',
+          20: 'All 81 cells passed — board is valid',
+        },
+        java: {
+          1: 'Define function taking char 2D array',
+          2: 'One integer per row — 9 bits track which digits appeared',
+          3: 'One integer per column',
+          4: 'One integer per 3x3 box',
+          5: 'Loop through each row index 0-8',
+          6: 'Loop through each column index 0-8',
+          7: 'Skip empty cells marked with "."',
+          8: "Digit d maps to bit d-1 (char minus '1' gives 0-8)",
+          9: 'Flatten (row÷3, col÷3) into a single box index 0-8',
+          10: 'AND the bit against the row mask,',
+          11: 'the column mask,',
+          12: 'and the box mask — any nonzero AND means the digit repeats',
+          13: 'Duplicate bit already set — board is invalid',
+          15: 'OR the bit into the row mask to mark the digit',
+          16: 'OR the bit into the column mask',
+          17: 'OR the bit into the box mask',
+          20: 'All 81 cells passed — board is valid',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking 9x9 board',

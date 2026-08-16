@@ -181,6 +181,152 @@ function runTimeBasedKeyValue(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runTimeBasedKeyValueLinearScan(input: unknown): AlgorithmStep[] {
+  const operations = input as Operation[];
+  const steps: AlgorithmStep[] = [];
+
+  const store: Record<string, [string, number][]> = {};
+
+  const copyStore = (): Record<string, unknown> => {
+    const result: Record<string, unknown> = {};
+    for (const key of Object.keys(store)) {
+      result[key] = store[key].map(([v, t]) => `${v} (t=${t})`);
+    }
+    return result;
+  };
+
+  steps.push({
+    state: { hashMap: {} },
+    highlights: [],
+    message: `Initialize TimeMap — get() will scan timestamps newest-to-oldest instead of binary searching. Processing ${operations.length} operations`,
+    codeLine: 1,
+  });
+
+  for (let i = 0; i < operations.length; i++) {
+    const op = operations[i];
+
+    if (op[0] === 'set') {
+      const key = op[1];
+      const value = op[2];
+      const timestamp = Number(op[3]);
+
+      steps.push({
+        state: { hashMap: copyStore(), operation: `set("${key}", "${value}", ${timestamp})` },
+        highlights: [],
+        message: `Operation ${i + 1}: set("${key}", "${value}", ${timestamp})`,
+        codeLine: 5,
+        action: 'visit',
+      });
+
+      if (!store[key]) {
+        store[key] = [];
+      }
+      store[key].push([value, timestamp]);
+
+      steps.push({
+        state: { hashMap: copyStore(), operation: `set("${key}", "${value}", ${timestamp})` },
+        highlights: [],
+        message: `Stored: ${key} -> "${value}" at timestamp ${timestamp} (timestamps arrive in increasing order)`,
+        codeLine: 8,
+        action: 'insert',
+      });
+    } else if (op[0] === 'get') {
+      const key = op[1];
+      const timestamp = Number(op[2]);
+
+      steps.push({
+        state: { hashMap: copyStore(), operation: `get("${key}", ${timestamp})` },
+        highlights: [],
+        message: `Operation ${i + 1}: get("${key}", ${timestamp})`,
+        codeLine: 10,
+        action: 'visit',
+      });
+
+      const values = store[key] || [];
+
+      if (values.length === 0) {
+        steps.push({
+          state: { hashMap: copyStore(), operation: `get("${key}", ${timestamp})`, result: '' },
+          highlights: [],
+          message: `Key "${key}" not found — return ""`,
+          codeLine: 15,
+        });
+        continue;
+      }
+
+      steps.push({
+        state: {
+          hashMap: copyStore(),
+          operation: `get("${key}", ${timestamp})`,
+          searchValues: values.map(([v, t]) => `"${v}" (t=${t})`),
+        },
+        highlights: [],
+        message: `Scan ${key}'s ${values.length} entries from newest to oldest for the first timestamp <= ${timestamp}`,
+        codeLine: 11,
+      });
+
+      let resultValue = '';
+      let found = false;
+
+      for (let idx = values.length - 1; idx >= 0; idx--) {
+        const [val, ts] = values[idx];
+
+        steps.push({
+          state: {
+            hashMap: copyStore(),
+            operation: `get("${key}", ${timestamp})`,
+            searchValues: values.map(([v, t]) => `"${v}" (t=${t})`),
+          },
+          highlights: [idx],
+          pointers: { i: idx },
+          message: `Entry ${idx}: "${val}" at t=${ts} — is ${ts} <= ${timestamp}?`,
+          codeLine: 13,
+          action: 'compare',
+        });
+
+        if (ts <= timestamp) {
+          resultValue = val;
+          found = true;
+
+          steps.push({
+            state: {
+              hashMap: copyStore(),
+              operation: `get("${key}", ${timestamp})`,
+              searchValues: values.map(([v, t]) => `"${v}" (t=${t})`),
+              result: resultValue,
+            },
+            highlights: [idx],
+            pointers: { i: idx },
+            message: `t=${ts} <= ${timestamp} — newest valid entry, since we scan newest-first. get("${key}", ${timestamp}) = "${resultValue}"`,
+            codeLine: 14,
+            action: 'found',
+          });
+          break;
+        }
+      }
+
+      if (!found) {
+        steps.push({
+          state: { hashMap: copyStore(), operation: `get("${key}", ${timestamp})`, result: '' },
+          highlights: [],
+          message: `Every stored timestamp is newer than ${timestamp} — return ""`,
+          codeLine: 15,
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: { hashMap: copyStore() },
+    highlights: [],
+    message: `All operations complete. Linear scan makes get() O(n) per call — binary search exploits the sorted timestamps for O(log n)`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const timeBasedKeyValue: Algorithm = {
   id: 'time-based-key-value',
   name: 'Time Based Key-Value Store',
@@ -299,6 +445,147 @@ export const timeBasedKeyValue: Algorithm = {
     ['get', 'foo', '5'],
   ],
   run: runTimeBasedKeyValue,
+  optimalApproachName: 'Binary Search',
+  approaches: [
+    {
+      id: 'linear-scan-timestamps',
+      name: 'Linear Scan of Timestamps',
+      timeComplexity: 'O(n) per get',
+      spaceComplexity: 'O(n)',
+      description:
+        'Scan a key\'s entries from newest to oldest and return the first timestamp <= the query — an O(n) walk that ignores the sorted order binary search exploits for O(log n).',
+      code: {
+        python: `class TimeMap:
+    def __init__(self):
+        self.store = {}  # key: [(value, timestamp)]
+
+    def set(self, key, value, timestamp):
+        if key not in self.store:
+            self.store[key] = []
+        self.store[key].append((value, timestamp))
+
+    def get(self, key, timestamp):
+        values = self.store.get(key, [])
+        for value, ts in reversed(values):
+            if ts <= timestamp:
+                return value
+        return ""`,
+        javascript: `class TimeMap {
+    constructor() {
+        this.store = {}; // key: [[value, timestamp]]
+    }
+
+    set(key, value, timestamp) {
+        if (!this.store[key]) {
+            this.store[key] = [];
+        }
+        this.store[key].push([value, timestamp]);
+    }
+
+    get(key, timestamp) {
+        const values = this.store[key] || [];
+        for (let i = values.length - 1; i >= 0; i--) {
+            if (values[i][1] <= timestamp) {
+                return values[i][0];
+            }
+        }
+        return "";
+    }
+}`,
+        java: `class TimeMap {
+    private Map<String, List<Pair<String, Integer>>> store;
+
+    public TimeMap() {
+        store = new HashMap<>();
+    }
+
+    public void set(String key, String value, int timestamp) {
+        store.putIfAbsent(key, new ArrayList<>());
+        store.get(key).add(new Pair<>(value, timestamp));
+    }
+
+    public String get(String key, int timestamp) {
+        List<Pair<String, Integer>> values = store.getOrDefault(key, new ArrayList<>());
+        for (int i = values.size() - 1; i >= 0; i--) {
+            if (values.get(i).getValue() <= timestamp) {
+                return values.get(i).getKey();
+            }
+        }
+        return "";
+    }
+
+    static class Pair<K, V> {
+        private K key;
+        private V value;
+
+        public Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() { return key; }
+        public V getValue() { return value; }
+    }
+}`,
+      },
+      run: runTimeBasedKeyValueLinearScan,
+      lineExplanations: {
+        python: {
+          1: 'Define TimeMap class',
+          2: 'Constructor initializes the store',
+          3: 'Dict mapping key to list of (value, timestamp)',
+          5: 'Define set method with key, value, timestamp',
+          6: 'If key not yet in store, create empty list',
+          7: 'Initialize empty list for new key',
+          8: 'Append (value, timestamp) — timestamps arrive in increasing order',
+          10: 'Define get method with key and timestamp',
+          11: 'Get the list for key, or empty list',
+          12: 'Walk entries newest-to-oldest so the first hit is the best one',
+          13: 'Is this entry old enough (ts <= query timestamp)?',
+          14: 'First valid entry seen is the newest valid one — return it',
+          15: 'Every entry is too new (or key missing) — return empty string',
+        },
+        javascript: {
+          1: 'Define TimeMap class',
+          2: 'Constructor initializes the store',
+          3: 'Object mapping key to array of [value, ts]',
+          6: 'Define set method with key, value, timestamp',
+          7: 'If key not yet in store, create empty array',
+          8: 'Initialize empty array for new key',
+          10: 'Append [value, timestamp] — timestamps arrive in increasing order',
+          13: 'Define get method with key and timestamp',
+          14: 'Get the array for key, or empty array',
+          15: 'Walk entries newest-to-oldest so the first hit is the best one',
+          16: 'Is this entry old enough (ts <= query timestamp)?',
+          17: 'First valid entry seen is the newest valid one — return it',
+          20: 'Every entry is too new (or key missing) — return empty string',
+        },
+        java: {
+          1: 'Define TimeMap class',
+          2: 'Map storing key to list of (value, timestamp)',
+          4: 'Constructor initializes the store',
+          5: 'Create new HashMap',
+          8: 'Define set method with key, value, timestamp',
+          9: 'Create list for key if absent',
+          10: 'Append (value, timestamp) — timestamps arrive in increasing order',
+          13: 'Define get method with key and timestamp',
+          14: 'Get list for key, or empty list',
+          15: 'Walk entries newest-to-oldest so the first hit is the best one',
+          16: 'Is this entry old enough (ts <= query timestamp)?',
+          17: 'First valid entry seen is the newest valid one — return it',
+          20: 'Every entry is too new (or key missing) — return empty string',
+          23: 'Inner Pair class for storing key-value pairs',
+          24: 'First element (the value string)',
+          25: 'Second element (the timestamp)',
+          27: 'Pair constructor',
+          28: 'Set the key field',
+          29: 'Set the value field',
+          32: 'Getter for key',
+          33: 'Getter for value',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define TimeMap class',

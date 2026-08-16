@@ -91,6 +91,62 @@ function runBinarySearch(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runBinarySearchLinearScan(input: unknown): AlgorithmStep[] {
+  const { nums, target } = input as BinarySearchInput;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: { nums: [...nums], target },
+    highlights: [],
+    message: `Linear scan: walk left to right until we find ${target} or pass the spot where it would be`,
+    codeLine: 1,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    steps.push({
+      state: { nums: [...nums], target, i },
+      highlights: [i],
+      pointers: { i },
+      message: `Check nums[${i}] = ${nums[i]} — is it ${target}?`,
+      codeLine: 3,
+      action: 'compare',
+    });
+
+    if (nums[i] === target) {
+      steps.push({
+        state: { nums: [...nums], target, result: i },
+        highlights: [i],
+        pointers: { i },
+        message: `Found! nums[${i}] = ${target} after ${i + 1} comparisons — binary search would need at most ${Math.ceil(Math.log2(nums.length + 1))}`,
+        codeLine: 4,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    if (nums[i] > target) {
+      steps.push({
+        state: { nums: [...nums], target, i },
+        highlights: [i],
+        pointers: { i },
+        message: `nums[${i}] = ${nums[i]} > ${target} — the array is sorted, so ${target} can't appear later. Stop early`,
+        codeLine: 6,
+        action: 'compare',
+      });
+      break;
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], target, result: -1 },
+    highlights: [],
+    message: `${target} not found — return -1. Linear scan is O(n); sortedness lets binary search do O(log n)`,
+    codeLine: 7,
+  });
+
+  return steps;
+}
+
 export const binarySearch: Algorithm = {
   id: 'binary-search',
   name: 'Binary Search',
@@ -156,6 +212,78 @@ export const binarySearch: Algorithm = {
   },
   defaultInput: { nums: [-1, 0, 3, 5, 9, 12], target: 9 },
   run: runBinarySearch,
+  optimalApproachName: 'Binary Search',
+  approaches: [
+    {
+      id: 'linear-scan',
+      name: 'Linear Scan',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Check every element left to right (stopping early once values exceed the target) instead of halving the search space — simple, but O(n) versus binary search\'s O(log n).',
+      code: {
+        python: `def search(nums, target):
+    for i in range(len(nums)):
+        if nums[i] == target:
+            return i
+        if nums[i] > target:
+            break
+    return -1`,
+        javascript: `function search(nums, target) {
+    for (let i = 0; i < nums.length; i++) {
+        if (nums[i] === target) {
+            return i;
+        }
+        if (nums[i] > target) {
+            break;
+        }
+    }
+    return -1;
+}`,
+        java: `public static int search(int[] nums, int target) {
+    for (int i = 0; i < nums.length; i++) {
+        if (nums[i] == target) {
+            return i;
+        }
+        if (nums[i] > target) {
+            break;
+        }
+    }
+    return -1;
+}`,
+      },
+      run: runBinarySearchLinearScan,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking sorted array and target value',
+          2: 'Walk through every index from left to right',
+          3: 'Does the current element equal the target?',
+          4: 'Found it — return the index',
+          5: 'Sorted array: once values exceed the target, it cannot appear later',
+          6: 'Stop scanning early',
+          7: 'Target not in array — return -1',
+        },
+        javascript: {
+          1: 'Define function taking sorted array and target value',
+          2: 'Walk through every index from left to right',
+          3: 'Does the current element equal the target?',
+          4: 'Found it — return the index',
+          6: 'Sorted array: once values exceed the target, it cannot appear later',
+          7: 'Stop scanning early',
+          10: 'Target not in array — return -1',
+        },
+        java: {
+          1: 'Define method taking sorted array and target value',
+          2: 'Walk through every index from left to right',
+          3: 'Does the current element equal the target?',
+          4: 'Found it — return the index',
+          6: 'Sorted array: once values exceed the target, it cannot appear later',
+          7: 'Stop scanning early',
+          10: 'Target not in array — return -1',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking sorted array and target value',

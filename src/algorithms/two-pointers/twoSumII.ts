@@ -106,6 +106,104 @@ function runTwoSumII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runTwoSumIIBinarySearch(input: unknown): AlgorithmStep[] {
+  const { nums, target } = input as TwoSumIIInput;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: { nums: [...nums], target },
+    highlights: [],
+    message: `The array is sorted — so for each number, binary search the remainder for its complement (target = ${target})`,
+    codeLine: 1,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+
+    steps.push({
+      state: { nums: [...nums], target },
+      highlights: [i],
+      pointers: { i },
+      message: `Fix nums[${i}] = ${nums[i]}. Its complement is ${target} - ${nums[i]} = ${complement}`,
+      codeLine: 3,
+      action: 'visit',
+    });
+
+    let lo = i + 1;
+    let hi = nums.length - 1;
+
+    if (lo <= hi) {
+      steps.push({
+        state: { nums: [...nums], target },
+        highlights: [i],
+        secondary: [lo, hi],
+        pointers: { i, lo, hi },
+        message: `Binary search window: indices ${lo}..${hi} (only to the right of i, so we never reuse the same element)`,
+        codeLine: 4,
+      });
+    }
+
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+
+      steps.push({
+        state: { nums: [...nums], target },
+        highlights: [i, mid],
+        secondary: [lo, hi],
+        pointers: { i, lo, hi, mid },
+        message: `Probe the middle: mid=${mid}, nums[${mid}] = ${nums[mid]}. Compare against complement ${complement}`,
+        codeLine: 6,
+        action: 'compare',
+      });
+
+      if (nums[mid] === complement) {
+        steps.push({
+          state: { nums: [...nums], target, sum: nums[i] + nums[mid], result: [i + 1, mid + 1] },
+          highlights: [i, mid],
+          pointers: { i, mid },
+          message: `Found! nums[${i}] + nums[${mid}] = ${nums[i]} + ${nums[mid]} = ${target}. Return [${i + 1}, ${mid + 1}] (1-indexed)`,
+          codeLine: 8,
+          action: 'found',
+        });
+        return steps;
+      }
+
+      if (nums[mid] < complement) {
+        steps.push({
+          state: { nums: [...nums], target },
+          highlights: [mid],
+          secondary: [i],
+          pointers: { i, lo, hi, mid },
+          message: `${nums[mid]} < ${complement} — the complement can only be right of mid. Discard the left half: lo = ${mid + 1}`,
+          codeLine: 10,
+          action: 'compare',
+        });
+        lo = mid + 1;
+      } else {
+        steps.push({
+          state: { nums: [...nums], target },
+          highlights: [mid],
+          secondary: [i],
+          pointers: { i, lo, hi, mid },
+          message: `${nums[mid]} > ${complement} — the complement can only be left of mid. Discard the right half: hi = ${mid - 1}`,
+          codeLine: 12,
+          action: 'compare',
+        });
+        hi = mid - 1;
+      }
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], target, result: [] },
+    highlights: [],
+    message: 'No pair found',
+    codeLine: 13,
+  });
+
+  return steps;
+}
+
 export const twoSumII: Algorithm = {
   id: 'two-sum-ii',
   name: 'Two Sum II - Input Array Is Sorted',
@@ -166,6 +264,120 @@ export const twoSumII: Algorithm = {
   },
   defaultInput: { nums: [2, 7, 11, 15], target: 9 },
   run: runTwoSumII,
+  optimalApproachName: 'Two Pointers',
+  approaches: [
+    {
+      id: 'binary-search',
+      name: 'Binary Search',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Fix each number and binary search the rest of the sorted array for its complement — exploits the sorted order per-element instead of squeezing from both ends.',
+      code: {
+        python: `def twoSum(numbers, target):
+    for i in range(len(numbers)):
+        complement = target - numbers[i]
+        lo, hi = i + 1, len(numbers) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if numbers[mid] == complement:
+                return [i + 1, mid + 1]
+            if numbers[mid] < complement:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+    return []`,
+        javascript: `function twoSum(numbers, target) {
+    for (let i = 0; i < numbers.length; i++) {
+        const complement = target - numbers[i];
+        let lo = i + 1;
+        let hi = numbers.length - 1;
+        while (lo <= hi) {
+            const mid = Math.floor((lo + hi) / 2);
+            if (numbers[mid] === complement) {
+                return [i + 1, mid + 1];
+            }
+            if (numbers[mid] < complement) {
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+    }
+    return [];
+}`,
+        java: `public static int[] twoSum(int[] numbers, int target) {
+    for (int i = 0; i < numbers.length; i++) {
+        int complement = target - numbers[i];
+        int lo = i + 1;
+        int hi = numbers.length - 1;
+        while (lo <= hi) {
+            int mid = (lo + hi) / 2;
+            if (numbers[mid] == complement) {
+                return new int[] { i + 1, mid + 1 };
+            }
+            if (numbers[mid] < complement) {
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+    }
+    return new int[] {};
+}`,
+      },
+      run: runTwoSumIIBinarySearch,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking sorted array and target',
+          2: 'Fix each element in turn as the first number of the pair',
+          3: 'The value that would complete the pair',
+          4: 'Binary search window: only indices right of i (no element reuse)',
+          5: 'Standard binary search loop',
+          6: 'Probe the middle of the window',
+          7: 'Is the middle element exactly the complement?',
+          8: 'Found the pair — return 1-indexed positions',
+          9: 'Middle too small — complement must lie right of mid',
+          10: 'Discard the left half of the window',
+          11: 'Middle too big — complement must lie left of mid',
+          12: 'Discard the right half of the window',
+          13: 'No pair found (problem guarantees this never happens)',
+        },
+        javascript: {
+          1: 'Define function taking sorted array and target',
+          2: 'Fix each element in turn as the first number of the pair',
+          3: 'The value that would complete the pair',
+          4: 'Search window starts just right of i (no element reuse)',
+          5: 'Search window ends at the last index',
+          6: 'Standard binary search loop',
+          7: 'Probe the middle of the window',
+          8: 'Is the middle element exactly the complement?',
+          9: 'Found the pair — return 1-indexed positions',
+          11: 'Middle too small — complement must lie right of mid',
+          12: 'Discard the left half of the window',
+          13: 'Middle too big — complement must lie left of mid',
+          14: 'Discard the right half of the window',
+          18: 'No pair found (problem guarantees this never happens)',
+        },
+        java: {
+          1: 'Define function taking sorted array and target',
+          2: 'Fix each element in turn as the first number of the pair',
+          3: 'The value that would complete the pair',
+          4: 'Search window starts just right of i (no element reuse)',
+          5: 'Search window ends at the last index',
+          6: 'Standard binary search loop',
+          7: 'Probe the middle of the window',
+          8: 'Is the middle element exactly the complement?',
+          9: 'Found the pair — return 1-indexed positions',
+          11: 'Middle too small — complement must lie right of mid',
+          12: 'Discard the left half of the window',
+          13: 'Middle too big — complement must lie left of mid',
+          14: 'Discard the right half of the window',
+          18: 'No pair found (problem guarantees this never happens)',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking sorted array and target',

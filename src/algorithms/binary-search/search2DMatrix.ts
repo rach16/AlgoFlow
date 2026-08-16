@@ -163,6 +163,100 @@ function runSearch2DMatrix(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSearch2DMatrixStaircase(input: unknown): AlgorithmStep[] {
+  const { matrix, target } = input as Search2DMatrixInput;
+  const steps: AlgorithmStep[] = [];
+  const rows = matrix.length;
+  const cols = rows > 0 ? matrix[0].length : 0;
+
+  const copyMatrix = () => matrix.map(r => [...r]);
+
+  steps.push({
+    state: { matrix: copyMatrix(), target },
+    highlights: [],
+    message: `Staircase search: start at the top-right corner of the ${rows}x${cols} matrix and eliminate a full row or column each step`,
+    codeLine: 1,
+  });
+
+  if (rows === 0 || cols === 0) {
+    steps.push({
+      state: { matrix: copyMatrix(), target, result: false },
+      highlights: [],
+      message: `Empty matrix — target not found`,
+      codeLine: 13,
+    });
+    return steps;
+  }
+
+  let row = 0;
+  let col = cols - 1;
+
+  steps.push({
+    state: { matrix: copyMatrix(), target, row, col, matrixHighlights: [[row, col]] as [number, number][] },
+    highlights: [],
+    pointers: { row, col },
+    message: `Start at matrix[${row}][${col}] = ${matrix[row][col]} — everything left is smaller, everything below is bigger`,
+    codeLine: 3,
+    action: 'visit',
+  });
+
+  while (row < rows && col >= 0) {
+    const val = matrix[row][col];
+
+    steps.push({
+      state: { matrix: copyMatrix(), target, row, col, matrixHighlights: [[row, col]] as [number, number][] },
+      highlights: [],
+      pointers: { row, col },
+      message: `Compare matrix[${row}][${col}] = ${val} with target ${target}`,
+      codeLine: 6,
+      action: 'compare',
+    });
+
+    if (val === target) {
+      steps.push({
+        state: { matrix: copyMatrix(), target, result: true, row, col, matrixHighlights: [[row, col]] as [number, number][] },
+        highlights: [],
+        pointers: { row, col },
+        message: `Found! matrix[${row}][${col}] = ${target}`,
+        codeLine: 7,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    if (val > target) {
+      steps.push({
+        state: { matrix: copyMatrix(), target, row, col, matrixHighlights: Array.from({ length: row + 1 }, (_, r): [number, number] => [r, col]) },
+        highlights: [],
+        pointers: { row, col },
+        message: `${val} > ${target} — everything below in column ${col} is even bigger. Eliminate the column, step left`,
+        codeLine: 9,
+        action: 'compare',
+      });
+      col--;
+    } else {
+      steps.push({
+        state: { matrix: copyMatrix(), target, row, col, matrixHighlights: Array.from({ length: col + 1 }, (_, c): [number, number] => [row, c]) },
+        highlights: [],
+        pointers: { row, col },
+        message: `${val} < ${target} — everything left in row ${row} is even smaller. Eliminate the row, step down`,
+        codeLine: 11,
+        action: 'compare',
+      });
+      row++;
+    }
+  }
+
+  steps.push({
+    state: { matrix: copyMatrix(), target, result: false },
+    highlights: [],
+    message: `Walked off the matrix — ${target} is not present. Staircase visits at most ${rows} + ${cols} cells`,
+    codeLine: 13,
+  });
+
+  return steps;
+}
+
 export const search2DMatrix: Algorithm = {
   id: 'search-2d-matrix',
   name: 'Search a 2D Matrix',
@@ -282,6 +376,112 @@ export const search2DMatrix: Algorithm = {
     target: 3,
   },
   run: runSearch2DMatrix,
+  optimalApproachName: 'Double Binary Search',
+  approaches: [
+    {
+      id: 'staircase-search',
+      name: 'Staircase Search',
+      timeComplexity: 'O(m + n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Start at the top-right corner and eliminate one row or column per step — a simpler O(m+n) walk instead of the O(log(m·n)) double binary search.',
+      code: {
+        python: `def searchMatrix(matrix, target):
+    ROWS, COLS = len(matrix), len(matrix[0])
+    row, col = 0, COLS - 1
+
+    while row < ROWS and col >= 0:
+        if matrix[row][col] == target:
+            return True
+        if matrix[row][col] > target:
+            col -= 1
+        else:
+            row += 1
+
+    return False`,
+        javascript: `function searchMatrix(matrix, target) {
+    const ROWS = matrix.length;
+    const COLS = matrix[0].length;
+    let row = 0, col = COLS - 1;
+
+    while (row < ROWS && col >= 0) {
+        if (matrix[row][col] === target) {
+            return true;
+        }
+        if (matrix[row][col] > target) {
+            col--;
+        } else {
+            row++;
+        }
+    }
+
+    return false;
+}`,
+        java: `public static boolean searchMatrix(int[][] matrix, int target) {
+    int ROWS = matrix.length;
+    int COLS = matrix[0].length;
+    int row = 0, col = COLS - 1;
+
+    while (row < ROWS && col >= 0) {
+        if (matrix[row][col] == target) {
+            return true;
+        }
+        if (matrix[row][col] > target) {
+            col--;
+        } else {
+            row++;
+        }
+    }
+
+    return false;
+}`,
+      },
+      run: runSearch2DMatrixStaircase,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking matrix and target',
+          2: 'Get number of rows and columns',
+          3: 'Start at the top-right corner cell',
+          5: 'Keep walking while still inside the matrix',
+          6: 'Does the current cell equal the target?',
+          7: 'Found it — return True',
+          8: 'Cell too big: everything below in this column is bigger',
+          9: 'Eliminate the column — step left',
+          10: 'Cell too small: everything left in this row is smaller',
+          11: 'Eliminate the row — step down',
+          13: 'Walked off the matrix — target absent',
+        },
+        javascript: {
+          1: 'Define function taking matrix and target',
+          2: 'Get number of rows',
+          3: 'Get number of columns',
+          4: 'Start at the top-right corner cell',
+          6: 'Keep walking while still inside the matrix',
+          7: 'Does the current cell equal the target?',
+          8: 'Found it — return true',
+          10: 'Cell too big: everything below in this column is bigger',
+          11: 'Eliminate the column — step left',
+          12: 'Cell too small: everything left in this row is smaller',
+          13: 'Eliminate the row — step down',
+          17: 'Walked off the matrix — target absent',
+        },
+        java: {
+          1: 'Define method taking matrix and target',
+          2: 'Get number of rows',
+          3: 'Get number of columns',
+          4: 'Start at the top-right corner cell',
+          6: 'Keep walking while still inside the matrix',
+          7: 'Does the current cell equal the target?',
+          8: 'Found it — return true',
+          10: 'Cell too big: everything below in this column is bigger',
+          11: 'Eliminate the column — step left',
+          12: 'Cell too small: everything left in this row is smaller',
+          13: 'Eliminate the row — step down',
+          17: 'Walked off the matrix — target absent',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking matrix and target',

@@ -145,6 +145,59 @@ function runContainerWithMostWater(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runContainerWithMostWaterBruteForce(input: unknown): AlgorithmStep[] {
+  const height = input as number[];
+  const steps: AlgorithmStep[] = [];
+  let maxArea = 0;
+
+  const totalPairs = (height.length * (height.length - 1)) / 2;
+  steps.push({
+    state: { nums: [...height], maxArea: 0 },
+    highlights: [],
+    message: `Try every pair of lines and keep the biggest area — ${height.length} lines means ${totalPairs} pairs to check`,
+    codeLine: 2,
+  });
+
+  for (let l = 0; l < height.length; l++) {
+    for (let r = l + 1; r < height.length; r++) {
+      const width = r - l;
+      const minHeight = Math.min(height[l], height[r]);
+      const area = width * minHeight;
+
+      steps.push({
+        state: { nums: [...height], maxArea, area, width, minHeight },
+        highlights: [l, r],
+        pointers: { left: l, right: r },
+        message: `Pair (${l}, ${r}): area = (${r} - ${l}) * min(${height[l]}, ${height[r]}) = ${width} * ${minHeight} = ${area}`,
+        codeLine: 5,
+        action: 'compare',
+      });
+
+      if (area > maxArea) {
+        maxArea = area;
+        steps.push({
+          state: { nums: [...height], maxArea, area },
+          highlights: [l, r],
+          pointers: { left: l, right: r },
+          message: `New max area! ${area} beats the previous best. maxArea = ${maxArea}`,
+          codeLine: 6,
+          action: 'found',
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: { nums: [...height], maxArea, result: maxArea },
+    highlights: [],
+    message: `Checked all ${totalPairs} pairs. Maximum water area = ${maxArea} — same answer as two pointers, but in O(n²) instead of O(n)`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const containerWithMostWater: Algorithm = {
   id: 'container-with-most-water',
   name: 'Container With Most Water',
@@ -219,6 +272,76 @@ export const containerWithMostWater: Algorithm = {
   },
   defaultInput: [1, 8, 6, 2, 5, 4, 8, 3, 7],
   run: runContainerWithMostWater,
+  optimalApproachName: 'Two Pointers',
+  approaches: [
+    {
+      id: 'brute-force-pairs',
+      name: 'Brute Force Pairs',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Check every possible pair of lines and keep the largest area — guaranteed correct but quadratic, where two pointers prunes hopeless pairs in linear time.',
+      code: {
+        python: `def maxArea(height):
+    res = 0
+    for l in range(len(height)):
+        for r in range(l + 1, len(height)):
+            area = (r - l) * min(height[l], height[r])
+            res = max(res, area)
+    return res`,
+        javascript: `function maxArea(height) {
+    let res = 0;
+    for (let l = 0; l < height.length; l++) {
+        for (let r = l + 1; r < height.length; r++) {
+            const area = (r - l) * Math.min(height[l], height[r]);
+            res = Math.max(res, area);
+        }
+    }
+    return res;
+}`,
+        java: `public static int maxArea(int[] height) {
+    int res = 0;
+    for (int l = 0; l < height.length; l++) {
+        for (int r = l + 1; r < height.length; r++) {
+            int area = (r - l) * Math.min(height[l], height[r]);
+            res = Math.max(res, area);
+        }
+    }
+    return res;
+}`,
+      },
+      run: runContainerWithMostWaterBruteForce,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking height array',
+          2: 'Track the maximum area found so far',
+          3: 'Left line: every index in turn',
+          4: 'Right line: every index after the left one',
+          5: 'Area = width between lines * the shorter line (water spills over it)',
+          6: 'Keep whichever area is bigger',
+          7: 'Return the best area over all pairs',
+        },
+        javascript: {
+          1: 'Define function taking height array',
+          2: 'Track the maximum area found so far',
+          3: 'Left line: every index in turn',
+          4: 'Right line: every index after the left one',
+          5: 'Area = width between lines * the shorter line (water spills over it)',
+          6: 'Keep whichever area is bigger',
+          9: 'Return the best area over all pairs',
+        },
+        java: {
+          1: 'Define function taking height array',
+          2: 'Track the maximum area found so far',
+          3: 'Left line: every index in turn',
+          4: 'Right line: every index after the left one',
+          5: 'Area = width between lines * the shorter line (water spills over it)',
+          6: 'Keep whichever area is bigger',
+          9: 'Return the best area over all pairs',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking height array',

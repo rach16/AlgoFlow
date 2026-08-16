@@ -153,6 +153,109 @@ function runTrappingRainWater(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runTrappingRainWaterPrefixMax(input: unknown): AlgorithmStep[] {
+  const height = input as number[];
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: { nums: [...height], totalWater: 0 },
+    highlights: [],
+    message: `Water above each bar = min(tallest wall to its left, tallest wall to its right) - its own height. Precompute both walls for every bar`,
+    codeLine: 1,
+  });
+
+  if (height.length === 0) {
+    steps.push({
+      state: { nums: [], totalWater: 0, result: 0 },
+      highlights: [],
+      message: 'Empty array, no water can be trapped. Return 0.',
+      codeLine: 3,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const n = height.length;
+  const leftMaxArr = new Array<number>(n).fill(0);
+  const rightMaxArr = new Array<number>(n).fill(0);
+
+  leftMaxArr[0] = height[0];
+  steps.push({
+    state: { nums: [...height], totalWater: 0, leftMax: leftMaxArr[0] },
+    highlights: [0],
+    pointers: { i: 0 },
+    message: `Left-to-right pass: leftMax[0] = height[0] = ${height[0]}`,
+    codeLine: 7,
+    action: 'visit',
+  });
+
+  for (let i = 1; i < n; i++) {
+    const prev = leftMaxArr[i - 1];
+    leftMaxArr[i] = Math.max(prev, height[i]);
+    steps.push({
+      state: { nums: [...height], totalWater: 0, leftMax: leftMaxArr[i] },
+      highlights: [i],
+      pointers: { i },
+      message: `leftMax[${i}] = max(${prev}, ${height[i]}) = ${leftMaxArr[i]} — the tallest wall at or left of index ${i}`,
+      codeLine: 9,
+      action: 'visit',
+    });
+  }
+
+  rightMaxArr[n - 1] = height[n - 1];
+  steps.push({
+    state: { nums: [...height], totalWater: 0, rightMax: rightMaxArr[n - 1] },
+    highlights: [n - 1],
+    pointers: { i: n - 1 },
+    message: `Right-to-left pass: rightMax[${n - 1}] = height[${n - 1}] = ${height[n - 1]}`,
+    codeLine: 10,
+    action: 'visit',
+  });
+
+  for (let i = n - 2; i >= 0; i--) {
+    const prev = rightMaxArr[i + 1];
+    rightMaxArr[i] = Math.max(prev, height[i]);
+    steps.push({
+      state: { nums: [...height], totalWater: 0, rightMax: rightMaxArr[i] },
+      highlights: [i],
+      pointers: { i },
+      message: `rightMax[${i}] = max(${prev}, ${height[i]}) = ${rightMaxArr[i]} — the tallest wall at or right of index ${i}`,
+      codeLine: 12,
+      action: 'visit',
+    });
+  }
+
+  let totalWater = 0;
+  for (let i = 0; i < n; i++) {
+    const water = Math.min(leftMaxArr[i], rightMaxArr[i]) - height[i];
+    totalWater += water;
+    steps.push({
+      state: {
+        nums: [...height],
+        totalWater,
+        leftMax: leftMaxArr[i],
+        rightMax: rightMaxArr[i],
+        waterAtIndex: water,
+      },
+      highlights: [i],
+      pointers: { i },
+      message: `Index ${i}: min(leftMax ${leftMaxArr[i]}, rightMax ${rightMaxArr[i]}) - height ${height[i]} = ${water} water. Total = ${totalWater}`,
+      codeLine: 15,
+      action: water > 0 ? 'found' : 'visit',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...height], totalWater, result: totalWater },
+    highlights: [],
+    message: `Complete! Total trapped water = ${totalWater} — same O(n) time as two pointers, but O(n) extra space for the two arrays`,
+    codeLine: 16,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const trappingRainWater: Algorithm = {
   id: 'trapping-rain-water',
   name: 'Trapping Rain Water',
@@ -233,6 +336,130 @@ export const trappingRainWater: Algorithm = {
   },
   defaultInput: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
   run: runTrappingRainWater,
+  optimalApproachName: 'Two Pointers',
+  approaches: [
+    {
+      id: 'prefix-max-arrays',
+      name: 'Prefix Max Arrays',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Precompute leftMax and rightMax arrays in two passes, then sum min(leftMax, rightMax) - height per bar — same O(n) time as two pointers but with O(n) extra space.',
+      code: {
+        python: `def trap(height):
+    if not height:
+        return 0
+    n = len(height)
+    leftMax = [0] * n
+    rightMax = [0] * n
+    leftMax[0] = height[0]
+    for i in range(1, n):
+        leftMax[i] = max(leftMax[i - 1], height[i])
+    rightMax[n - 1] = height[n - 1]
+    for i in range(n - 2, -1, -1):
+        rightMax[i] = max(rightMax[i + 1], height[i])
+    res = 0
+    for i in range(n):
+        res += min(leftMax[i], rightMax[i]) - height[i]
+    return res`,
+        javascript: `function trap(height) {
+    if (!height.length) return 0;
+
+    const n = height.length;
+    const leftMax = new Array(n).fill(0);
+    const rightMax = new Array(n).fill(0);
+    leftMax[0] = height[0];
+    for (let i = 1; i < n; i++) {
+        leftMax[i] = Math.max(leftMax[i - 1], height[i]);
+    }
+    rightMax[n - 1] = height[n - 1];
+    for (let i = n - 2; i >= 0; i--) {
+        rightMax[i] = Math.max(rightMax[i + 1], height[i]);
+    }
+    let res = 0;
+    for (let i = 0; i < n; i++) {
+        res += Math.min(leftMax[i], rightMax[i]) - height[i];
+    }
+    return res;
+}`,
+        java: `public static int trap(int[] height) {
+    if (height.length == 0) return 0;
+
+    int n = height.length;
+    int[] leftMax = new int[n];
+    int[] rightMax = new int[n];
+    leftMax[0] = height[0];
+    for (int i = 1; i < n; i++) {
+        leftMax[i] = Math.max(leftMax[i - 1], height[i]);
+    }
+    rightMax[n - 1] = height[n - 1];
+    for (int i = n - 2; i >= 0; i--) {
+        rightMax[i] = Math.max(rightMax[i + 1], height[i]);
+    }
+    int res = 0;
+    for (int i = 0; i < n; i++) {
+        res += Math.min(leftMax[i], rightMax[i]) - height[i];
+    }
+    return res;
+}`,
+      },
+      run: runTrappingRainWaterPrefixMax,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking height array',
+          2: 'Handle empty array edge case',
+          3: 'Return 0 if no bars exist',
+          4: 'Number of bars',
+          5: 'leftMax[i] will hold the tallest wall at or left of i',
+          6: 'rightMax[i] will hold the tallest wall at or right of i',
+          7: 'First bar: its left wall is itself',
+          8: 'Left-to-right pass',
+          9: 'Carry the running max from the left',
+          10: 'Last bar: its right wall is itself',
+          11: 'Right-to-left pass',
+          12: 'Carry the running max from the right',
+          13: 'Accumulator for total trapped water',
+          14: 'Final pass over every bar',
+          15: 'Water above bar i = shorter surrounding wall minus bar height',
+          16: 'Return total trapped water',
+        },
+        javascript: {
+          1: 'Define function taking height array',
+          2: 'Return 0 if array is empty',
+          4: 'Number of bars',
+          5: 'leftMax[i] will hold the tallest wall at or left of i',
+          6: 'rightMax[i] will hold the tallest wall at or right of i',
+          7: 'First bar: its left wall is itself',
+          8: 'Left-to-right pass',
+          9: 'Carry the running max from the left',
+          11: 'Last bar: its right wall is itself',
+          12: 'Right-to-left pass',
+          13: 'Carry the running max from the right',
+          15: 'Accumulator for total trapped water',
+          16: 'Final pass over every bar',
+          17: 'Water above bar i = shorter surrounding wall minus bar height',
+          19: 'Return total trapped water',
+        },
+        java: {
+          1: 'Define function taking height array',
+          2: 'Return 0 if array is empty',
+          4: 'Number of bars',
+          5: 'leftMax[i] will hold the tallest wall at or left of i',
+          6: 'rightMax[i] will hold the tallest wall at or right of i',
+          7: 'First bar: its left wall is itself',
+          8: 'Left-to-right pass',
+          9: 'Carry the running max from the left',
+          11: 'Last bar: its right wall is itself',
+          12: 'Right-to-left pass',
+          13: 'Carry the running max from the right',
+          15: 'Accumulator for total trapped water',
+          16: 'Final pass over every bar',
+          17: 'Water above bar i = shorter surrounding wall minus bar height',
+          19: 'Return total trapped water',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking height array',

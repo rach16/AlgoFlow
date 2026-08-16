@@ -158,6 +158,108 @@ function runThreeSum(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runThreeSumHashSet(input: unknown): AlgorithmStep[] {
+  const nums = [...(input as number[])];
+  const steps: AlgorithmStep[] = [];
+  const result: number[][] = [];
+
+  steps.push({
+    state: { nums: [...nums], result: [] },
+    highlights: [],
+    message: `Find all triplets summing to 0 — fix one number, then use a hash set (instead of two pointers) to find the pair`,
+    codeLine: 1,
+  });
+
+  nums.sort((a, b) => a - b);
+  steps.push({
+    state: { nums: [...nums], result: [] },
+    highlights: Array.from({ length: nums.length }, (_, k) => k),
+    message: `Sort array: [${nums.join(', ')}]. Sorting groups duplicates together so they are easy to skip`,
+    codeLine: 2,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      steps.push({
+        state: { nums: [...nums], result: [...result] },
+        highlights: [i, i - 1],
+        pointers: { i },
+        message: `nums[${i}] = ${nums[i]} repeats the previous first element — skip it to avoid duplicate triplets`,
+        codeLine: 5,
+        action: 'compare',
+      });
+      continue;
+    }
+
+    steps.push({
+      state: { nums: [...nums], result: [...result] },
+      highlights: [i],
+      pointers: { i },
+      message: `Fix i=${i} (value ${nums[i]}). Scan the rest with a fresh hash set, looking for two values that sum to ${-nums[i]}`,
+      codeLine: 7,
+      action: 'visit',
+    });
+
+    const seen = new Set<number>();
+    for (let j = i + 1; j < nums.length; j++) {
+      const complement = -nums[i] - nums[j];
+
+      steps.push({
+        state: { nums: [...nums], result: [...result], sum: nums[i] + nums[j] },
+        highlights: [i, j],
+        pointers: { i, j },
+        message: `j=${j}: to complete (${nums[i]}) + (${nums[j]}) we need ${complement}. Seen so far: {${[...seen].join(', ')}}`,
+        codeLine: 10,
+        action: 'compare',
+      });
+
+      if (seen.has(complement)) {
+        const triplet = [nums[i], complement, nums[j]];
+        result.push(triplet);
+        steps.push({
+          state: { nums: [...nums], result: [...result], sum: 0 },
+          highlights: [i, j],
+          pointers: { i, j },
+          message: `${complement} was seen earlier — triplet [${triplet.join(', ')}] sums to 0! Add to result`,
+          codeLine: 12,
+          action: 'found',
+        });
+
+        while (j + 1 < nums.length && nums[j] === nums[j + 1]) {
+          steps.push({
+            state: { nums: [...nums], result: [...result] },
+            highlights: [j, j + 1],
+            pointers: { i, j },
+            message: `nums[${j + 1}] = ${nums[j + 1]} duplicates nums[${j}] — skip ahead to avoid re-adding the same triplet`,
+            codeLine: 13,
+          });
+          j++;
+        }
+      }
+
+      seen.add(nums[j]);
+      steps.push({
+        state: { nums: [...nums], result: [...result] },
+        highlights: [j],
+        pointers: { i, j },
+        message: `Add ${nums[j]} to the seen set so later elements can pair with it`,
+        codeLine: 15,
+        action: 'insert',
+      });
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], result: [...result] },
+    highlights: [],
+    message: `Complete! Found ${result.length} triplet(s): [${result.map((t) => `[${t.join(', ')}]`).join(', ')}]. The hash set trades O(n) space for the pair search`,
+    codeLine: 17,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const threeSum: Algorithm = {
   id: 'three-sum',
   name: '3Sum',
@@ -256,6 +358,122 @@ export const threeSum: Algorithm = {
   },
   defaultInput: [-1, 0, 1, 2, -1, -4],
   run: runThreeSum,
+  optimalApproachName: 'Sort + Two Pointers',
+  approaches: [
+    {
+      id: 'hash-set',
+      name: 'Hash Set',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Fix the first number, then find the remaining pair with a hash set of values seen so far — same O(n²) time as two pointers, but O(n) extra space.',
+      code: {
+        python: `def threeSum(nums):
+    nums.sort()
+    res = []
+    for i in range(len(nums)):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+        seen = set()
+        j = i + 1
+        while j < len(nums):
+            complement = -nums[i] - nums[j]
+            if complement in seen:
+                res.append([nums[i], complement, nums[j]])
+                while j + 1 < len(nums) and nums[j] == nums[j + 1]:
+                    j += 1
+            seen.add(nums[j])
+            j += 1
+    return res`,
+        javascript: `function threeSum(nums) {
+    nums.sort((a, b) => a - b);
+    const res = [];
+    for (let i = 0; i < nums.length; i++) {
+        if (i > 0 && nums[i] === nums[i - 1]) continue;
+        const seen = new Set();
+        for (let j = i + 1; j < nums.length; j++) {
+            const complement = -nums[i] - nums[j];
+            if (seen.has(complement)) {
+                res.push([nums[i], complement, nums[j]]);
+                while (j + 1 < nums.length && nums[j] === nums[j + 1]) j++;
+            }
+            seen.add(nums[j]);
+        }
+    }
+    return res;
+}`,
+        java: `public static List<List<Integer>> threeSum(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> res = new ArrayList<>();
+    for (int i = 0; i < nums.length; i++) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+        Set<Integer> seen = new HashSet<>();
+        for (int j = i + 1; j < nums.length; j++) {
+            int complement = -nums[i] - nums[j];
+            if (seen.contains(complement)) {
+                res.add(Arrays.asList(nums[i], complement, nums[j]));
+                while (j + 1 < nums.length && nums[j] == nums[j + 1]) j++;
+            }
+            seen.add(nums[j]);
+        }
+    }
+    return res;
+}`,
+      },
+      run: runThreeSumHashSet,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Sort so duplicates sit next to each other',
+          3: 'Init empty result list for triplets',
+          4: 'Fix each element as the first number of the triplet',
+          5: 'Skip duplicate first numbers to avoid repeated triplets',
+          6: 'Continue to the next candidate',
+          7: 'Fresh hash set of values seen in this inner scan',
+          8: 'Second number starts just after i',
+          9: 'Scan the rest of the array',
+          10: 'The third value needed so the triplet sums to 0',
+          11: 'Was that value already seen in this scan?',
+          12: 'Yes — record the triplet (seen value sits between i and j)',
+          13: 'Skip duplicate second numbers to avoid repeats',
+          14: 'Keep advancing past duplicates',
+          15: 'Remember the current value for future pairings',
+          16: 'Move to the next second number',
+          17: 'Return all unique triplets found',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Sort so duplicates sit next to each other',
+          3: 'Init empty result array for triplets',
+          4: 'Fix each element as the first number of the triplet',
+          5: 'Skip duplicate first numbers to avoid repeated triplets',
+          6: 'Fresh hash set of values seen in this inner scan',
+          7: 'Scan the rest of the array with j',
+          8: 'The third value needed so the triplet sums to 0',
+          9: 'Was that value already seen in this scan?',
+          10: 'Yes — record the triplet (seen value sits between i and j)',
+          11: 'Skip duplicate second numbers to avoid repeats',
+          13: 'Remember the current value for future pairings',
+          16: 'Return all unique triplets found',
+        },
+        java: {
+          1: 'Define function taking nums array',
+          2: 'Sort so duplicates sit next to each other',
+          3: 'Init empty result list for triplets',
+          4: 'Fix each element as the first number of the triplet',
+          5: 'Skip duplicate first numbers to avoid repeated triplets',
+          6: 'Fresh hash set of values seen in this inner scan',
+          7: 'Scan the rest of the array with j',
+          8: 'The third value needed so the triplet sums to 0',
+          9: 'Was that value already seen in this scan?',
+          10: 'Yes — record the triplet (seen value sits between i and j)',
+          11: 'Skip duplicate second numbers to avoid repeats',
+          13: 'Remember the current value for future pairings',
+          16: 'Return all unique triplets found',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

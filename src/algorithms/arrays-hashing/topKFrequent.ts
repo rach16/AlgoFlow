@@ -5,6 +5,69 @@ interface TopKInput {
   k: number;
 }
 
+function runTopKFrequentSorting(input: unknown): AlgorithmStep[] {
+  const { nums, k } = input as TopKInput;
+  const steps: AlgorithmStep[] = [];
+  const count: Record<number, number> = {};
+
+  steps.push({
+    state: { nums: [...nums], count: {}, k },
+    highlights: [],
+    message: `Count frequencies, then simply SORT the unique values by frequency and take the first ${k}`,
+    codeLine: 1,
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    count[nums[i]] = (count[nums[i]] || 0) + 1;
+    steps.push({
+      state: { nums: [...nums], count: { ...count }, k },
+      highlights: [i],
+      pointers: { i },
+      message: `Count nums[${i}] = ${nums[i]}: frequency is now ${count[nums[i]]}`,
+      codeLine: 4,
+      action: 'visit',
+    });
+  }
+
+  const keys = Object.keys(count).map(Number);
+  keys.sort((a, b) => count[b] - count[a]);
+
+  steps.push({
+    state: { nums: [...nums], count: { ...count }, k },
+    highlights: [],
+    message: `Sort unique values by frequency (descending): ${keys.map((n) => `${n}(×${count[n]})`).join(', ')} — an O(m log m) sort of the m unique values`,
+    codeLine: 5,
+    action: 'swap',
+  });
+
+  const result: number[] = [];
+  for (let j = 0; j < k && j < keys.length; j++) {
+    const num = keys[j];
+    result.push(num);
+    const indices = nums
+      .map((n, idx) => (n === num ? idx : -1))
+      .filter((idx) => idx !== -1);
+
+    steps.push({
+      state: { nums: [...nums], count: { ...count }, k, result: [...result] },
+      highlights: indices,
+      message: `Take #${j + 1} most frequent: ${num} (appears ${count[num]} times) -> result: [${result.join(', ')}]`,
+      codeLine: 6,
+      action: 'found',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], count: { ...count }, k, result: [...result] },
+    highlights: [],
+    message: `Top ${k} frequent elements: [${result.join(', ')}]`,
+    codeLine: 6,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 function runTopKFrequent(input: unknown): AlgorithmStep[] {
   const { nums, k } = input as TopKInput;
   const steps: AlgorithmStep[] = [];
@@ -157,6 +220,79 @@ export const topKFrequent: Algorithm = {
   },
   defaultInput: { nums: [1, 1, 1, 2, 2, 3], k: 2 },
   run: runTopKFrequent,
+  optimalApproachName: 'Bucket Sort',
+  approaches: [
+    {
+      id: 'sort-by-frequency',
+      name: 'Sort by Frequency',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Skips the frequency buckets: count occurrences, then sort the unique values by their count in descending order and take the first k — simpler but O(n log n) instead of O(n).',
+      code: {
+        python: `def topKFrequent(nums, k):
+    count = {}
+    for num in nums:
+        count[num] = count.get(num, 0) + 1
+    keys = sorted(count, key=count.get, reverse=True)
+    return keys[:k]`,
+        javascript: `function topKFrequent(nums, k) {
+    const count = {};
+    for (const num of nums) {
+        count[num] = (count[num] || 0) + 1;
+    }
+    const keys = Object.keys(count).map(Number);
+    keys.sort((a, b) => count[b] - count[a]);
+    return keys.slice(0, k);
+}`,
+        java: `public static int[] topKFrequent(int[] nums, int k) {
+    Map<Integer, Integer> count = new HashMap<>();
+    for (int num : nums) {
+        count.put(num, count.getOrDefault(num, 0) + 1);
+    }
+    List<Integer> keys = new ArrayList<>(count.keySet());
+    keys.sort((a, b) -> count.get(b) - count.get(a));
+    int[] res = new int[k];
+    for (int i = 0; i < k; i++) {
+        res[i] = keys.get(i);
+    }
+    return res;
+}`,
+      },
+      run: runTopKFrequentSorting,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums and k',
+          2: 'Create empty frequency counter dict',
+          3: 'Iterate over each number in array',
+          4: 'Increment count for current number',
+          5: 'Sort unique values by their frequency, highest first',
+          6: 'The k most frequent are simply the first k sorted keys',
+        },
+        javascript: {
+          1: 'Define function taking nums and k',
+          2: 'Create empty frequency counter object',
+          3: 'Iterate over each number in array',
+          4: 'Increment count for current number',
+          6: 'Collect the unique values as numbers',
+          7: 'Sort them by their frequency, highest first',
+          8: 'The k most frequent are simply the first k sorted keys',
+        },
+        java: {
+          1: 'Define function taking nums array and k',
+          2: 'Create HashMap for frequency counting',
+          3: 'Iterate over each number in array',
+          4: 'Increment count for current number',
+          6: 'Collect the unique values into a list',
+          7: 'Sort them by their frequency, highest first',
+          8: 'Result array holds the top k values',
+          9: 'Copy the first k sorted keys',
+          10: 'Each is one of the k most frequent',
+          12: 'Return the top k frequent elements',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums and k',

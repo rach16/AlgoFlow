@@ -1,5 +1,58 @@
 import type { Algorithm, AlgorithmStep } from '../../types/algorithm';
 
+function runContainsDuplicateSorting(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const sorted = [...nums].sort((a, b) => a - b);
+
+  steps.push({
+    state: { nums: [...nums] },
+    highlights: [],
+    message: 'Sort the array first — any duplicates will end up sitting side by side',
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums: [...sorted] },
+    highlights: [],
+    message: `Sorted: [${sorted.join(', ')}]. Now a single scan of adjacent pairs finds any duplicate`,
+    codeLine: 2,
+    action: 'swap',
+  });
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === sorted[i - 1]) {
+      steps.push({
+        state: { nums: [...sorted], duplicate: sorted[i] },
+        highlights: [i - 1, i],
+        pointers: { i },
+        message: `nums[${i - 1}] = nums[${i}] = ${sorted[i]} — sorting placed the duplicates next to each other. Return true`,
+        codeLine: 5,
+        action: 'found',
+      });
+      return steps;
+    }
+    steps.push({
+      state: { nums: [...sorted] },
+      highlights: [i],
+      secondary: [i - 1],
+      pointers: { i },
+      message: `${sorted[i - 1]} ≠ ${sorted[i]} — neighbors differ, no duplicate here yet`,
+      codeLine: 4,
+      action: 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...sorted] },
+    highlights: [],
+    message: 'Every adjacent pair differs — the array has no duplicates',
+    codeLine: 6,
+  });
+
+  return steps;
+}
+
 function runContainsDuplicate(input: unknown): AlgorithmStep[] {
   const nums = input as number[];
   const steps: AlgorithmStep[] = [];
@@ -99,6 +152,70 @@ export const containsDuplicate: Algorithm = {
   },
   defaultInput: [1, 2, 3, 1],
   run: runContainsDuplicate,
+  optimalApproachName: 'Hash Set',
+  approaches: [
+    {
+      id: 'sorting',
+      name: 'Sorting',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of remembering every value in a hash set, sort the array so duplicates become adjacent — trading O(n) extra memory for an O(n log n) sort.',
+      code: {
+        python: `def containsDuplicate(nums):
+    nums.sort()
+    for i in range(1, len(nums)):
+        if nums[i] == nums[i - 1]:
+            return True
+    return False`,
+        javascript: `function containsDuplicate(nums) {
+    nums.sort((a, b) => a - b);
+    for (let i = 1; i < nums.length; i++) {
+        if (nums[i] === nums[i - 1]) {
+            return true;
+        }
+    }
+    return false;
+}`,
+        java: `public static boolean containsDuplicate(int[] nums) {
+    Arrays.sort(nums);
+    for (int i = 1; i < nums.length; i++) {
+        if (nums[i] == nums[i - 1]) {
+            return true;
+        }
+    }
+    return false;
+}`,
+      },
+      run: runContainsDuplicateSorting,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Sort in place — duplicates become neighbors',
+          3: 'Scan the array starting from the second element',
+          4: 'Compare each element with its left neighbor',
+          5: 'Equal neighbors means a duplicate — return True',
+          6: 'No adjacent pair matched — all elements unique',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Sort numerically — duplicates become neighbors',
+          3: 'Scan the array starting from the second element',
+          4: 'Compare each element with its left neighbor',
+          5: 'Equal neighbors means a duplicate — return true',
+          8: 'No adjacent pair matched — all elements unique',
+        },
+        java: {
+          1: 'Define function taking nums array',
+          2: 'Sort in place — duplicates become neighbors',
+          3: 'Scan the array starting from the second element',
+          4: 'Compare each element with its left neighbor',
+          5: 'Equal neighbors means a duplicate — return true',
+          8: 'No adjacent pair matched — all elements unique',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

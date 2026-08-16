@@ -124,6 +124,70 @@ function runLargestRectHistogram(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLargestRectDivideConquer(input: unknown): AlgorithmStep[] {
+  const heights = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = heights.length;
+  let maxArea = 0;
+
+  steps.push({
+    state: { nums: [...heights], maxArea: 0 },
+    highlights: [],
+    message: `Divide & conquer: in any range, the best rectangle either spans the FULL width at the shortest bar's height, or avoids the shortest bar entirely (left or right of it)`,
+    codeLine: 1,
+  });
+
+  function solve(lo: number, hi: number): number {
+    if (lo > hi) return 0;
+
+    let minIdx = lo;
+    for (let i = lo; i <= hi; i++) {
+      if (heights[i] < heights[minIdx]) minIdx = i;
+    }
+
+    const range = Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);
+
+    steps.push({
+      state: { nums: [...heights], maxArea },
+      highlights: range,
+      secondary: [minIdx],
+      pointers: { lo, hi, minIdx },
+      message: `Range [${lo}..${hi}]: shortest bar is height ${heights[minIdx]} at index ${minIdx} — it limits any rectangle spanning this whole range`,
+      codeLine: 7,
+      action: 'visit',
+    });
+
+    const area = heights[minIdx] * (hi - lo + 1);
+    if (area > maxArea) maxArea = area;
+
+    steps.push({
+      state: { nums: [...heights], maxArea },
+      highlights: range,
+      pointers: { lo, hi, minIdx },
+      message: `Full-width rectangle here: ${heights[minIdx]} × ${hi - lo + 1} = ${area}. Max so far: ${maxArea}. Taller rectangles must avoid index ${minIdx} — recurse on both sides.`,
+      codeLine: 9,
+      action: 'compare',
+    });
+
+    const left = solve(lo, minIdx - 1);
+    const right = solve(minIdx + 1, hi);
+
+    return Math.max(area, Math.max(left, right));
+  }
+
+  const result = solve(0, n - 1);
+
+  steps.push({
+    state: { nums: [...heights], maxArea: result, result },
+    highlights: [],
+    message: `Done! Largest rectangle area: ${result}`,
+    codeLine: 12,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const largestRectHistogram: Algorithm = {
   id: 'largest-rectangle-in-histogram',
   name: 'Largest Rectangle in Histogram',
@@ -200,6 +264,99 @@ export const largestRectHistogram: Algorithm = {
   },
   defaultInput: [2, 1, 5, 6, 2, 3],
   run: runLargestRectHistogram,
+  optimalApproachName: 'Monotonic Stack',
+  approaches: [
+    {
+      id: 'divide-and-conquer',
+      name: 'Divide & Conquer',
+      timeComplexity: 'O(n log n) avg, O(n²) worst',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of a stack, recursively split at the shortest bar: the answer is the best of the full-width rectangle through it, the sub-histogram to its left, and the one to its right.',
+      code: {
+        python: `def largestRectangleArea(heights):
+    def solve(lo, hi):
+        if lo > hi:
+            return 0
+        minIdx = lo
+        for i in range(lo, hi + 1):
+            if heights[i] < heights[minIdx]:
+                minIdx = i
+        area = heights[minIdx] * (hi - lo + 1)
+        return max(area, solve(lo, minIdx - 1), solve(minIdx + 1, hi))
+
+    return solve(0, len(heights) - 1)`,
+        javascript: `function largestRectangleArea(heights) {
+    function solve(lo, hi) {
+        if (lo > hi) return 0;
+        let minIdx = lo;
+        for (let i = lo; i <= hi; i++) {
+            if (heights[i] < heights[minIdx]) minIdx = i;
+        }
+        const area = heights[minIdx] * (hi - lo + 1);
+        return Math.max(area, solve(lo, minIdx - 1), solve(minIdx + 1, hi));
+    }
+
+    return solve(0, heights.length - 1);
+}`,
+        java: `public static int largestRectangleArea(int[] heights) {
+    return solve(heights, 0, heights.length - 1);
+}
+
+private static int solve(int[] heights, int lo, int hi) {
+    if (lo > hi) return 0;
+    int minIdx = lo;
+    for (int i = lo; i <= hi; i++) {
+        if (heights[i] < heights[minIdx]) minIdx = i;
+    }
+    int area = heights[minIdx] * (hi - lo + 1);
+    int left = solve(heights, lo, minIdx - 1);
+    int right = solve(heights, minIdx + 1, hi);
+    return Math.max(area, Math.max(left, right));
+}`,
+      },
+      run: runLargestRectDivideConquer,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking heights array',
+          2: 'Recursive helper solving one range [lo, hi]',
+          3: 'Empty range?',
+          4: 'An empty range contributes no area',
+          5: 'Assume the first bar is the shortest',
+          6: 'Scan the range for the true shortest bar',
+          7: 'Found a shorter bar?',
+          8: 'Remember its index — it caps full-width rectangles',
+          9: 'Best rectangle THROUGH the shortest bar spans the full range',
+          10: 'Answer is the best of: through-min, left side, right side',
+          12: 'Solve the entire histogram',
+        },
+        javascript: {
+          1: 'Define function taking heights array',
+          2: 'Recursive helper solving one range [lo, hi]',
+          3: 'Empty range contributes no area',
+          4: 'Assume the first bar is the shortest',
+          5: 'Scan the range for the true shortest bar',
+          6: 'Remember a shorter bar — it caps full-width rectangles',
+          8: 'Best rectangle THROUGH the shortest bar spans the full range',
+          9: 'Answer is the best of: through-min, left side, right side',
+          12: 'Solve the entire histogram',
+        },
+        java: {
+          1: 'Define method taking heights array',
+          2: 'Solve the entire histogram',
+          5: 'Recursive helper solving one range [lo, hi]',
+          6: 'Empty range contributes no area',
+          7: 'Assume the first bar is the shortest',
+          8: 'Scan the range for the true shortest bar',
+          9: 'Remember a shorter bar — it caps full-width rectangles',
+          11: 'Best rectangle THROUGH the shortest bar spans the full range',
+          12: 'Best area entirely left of the shortest bar',
+          13: 'Best area entirely right of the shortest bar',
+          14: 'Answer is the best of the three candidates',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking heights array',

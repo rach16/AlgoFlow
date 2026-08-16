@@ -199,6 +199,87 @@ function runMedianTwoSortedArrays(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMedianTwoSortedArraysMerge(input: unknown): AlgorithmStep[] {
+  const { nums1, nums2 } = input as MedianInput;
+  const steps: AlgorithmStep[] = [];
+
+  const total = nums1.length + nums2.length;
+  const half = Math.floor(total / 2);
+
+  steps.push({
+    state: { nums1: [...nums1], nums2: [...nums2] },
+    highlights: [],
+    message: `Merge-count: walk both sorted arrays in order, but only until we reach the middle of the combined ${total} elements`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums1: [...nums1], nums2: [...nums2], total, half },
+    highlights: [],
+    message: `Total = ${total}, so the median sits at merged position ${half}${total % 2 === 0 ? ` (averaged with position ${half - 1})` : ''}. We need ${half + 1} merge steps`,
+    codeLine: 3,
+  });
+
+  let i = 0;
+  let j = 0;
+  let prev = 0;
+  let curr = 0;
+
+  for (let count = 0; count <= half; count++) {
+    prev = curr;
+
+    const takeFromA = i < nums1.length && (j >= nums2.length || nums1[i] <= nums2[j]);
+
+    if (takeFromA) {
+      curr = nums1[i];
+      steps.push({
+        state: { nums1: [...nums1], nums2: [...nums2], total, half, prev: count > 0 ? prev : '-', curr },
+        highlights: [i],
+        pointers: { i, j },
+        message: `Merge step ${count + 1}/${half + 1}: take nums1[${i}] = ${nums1[i]}${j < nums2.length ? ` (<= nums2[${j}] = ${nums2[j]})` : ' (nums2 exhausted)'}`,
+        codeLine: 10,
+        action: 'visit',
+      });
+      i++;
+    } else {
+      curr = nums2[j];
+      steps.push({
+        state: { nums1: [...nums1], nums2: [...nums2], total, half, prev: count > 0 ? prev : '-', curr },
+        highlights: [],
+        secondary: [j],
+        pointers: { i, j },
+        message: `Merge step ${count + 1}/${half + 1}: take nums2[${j}] = ${nums2[j]}${i < nums1.length ? ` (< nums1[${i}] = ${nums1[i]})` : ' (nums1 exhausted)'}`,
+        codeLine: 13,
+        action: 'visit',
+      });
+      j++;
+    }
+  }
+
+  let median: number;
+  if (total % 2 === 1) {
+    median = curr;
+    steps.push({
+      state: { nums1: [...nums1], nums2: [...nums2], result: median },
+      highlights: [],
+      message: `Odd total: the middle element is the last one merged — median = ${median}`,
+      codeLine: 17,
+      action: 'found',
+    });
+  } else {
+    median = (prev + curr) / 2;
+    steps.push({
+      state: { nums1: [...nums1], nums2: [...nums2], result: median },
+      highlights: [],
+      message: `Even total: average the last two merged values — median = (${prev} + ${curr}) / 2 = ${median}`,
+      codeLine: 18,
+      action: 'found',
+    });
+  }
+
+  return steps;
+}
+
 export const medianTwoSortedArrays: Algorithm = {
   id: 'median-two-sorted-arrays',
   name: 'Median of Two Sorted Arrays',
@@ -310,6 +391,136 @@ export const medianTwoSortedArrays: Algorithm = {
   },
   defaultInput: { nums1: [1, 3], nums2: [2] },
   run: runMedianTwoSortedArrays,
+  optimalApproachName: 'Partition Binary Search',
+  approaches: [
+    {
+      id: 'merge-two-pointers',
+      name: 'Two-Pointer Merge',
+      timeComplexity: 'O(m + n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Merge the two sorted arrays with two pointers but stop at the middle element — an intuitive O(m+n) walk versus the O(log(min(m,n))) partition binary search.',
+      code: {
+        python: `def findMedianSortedArrays(nums1, nums2):
+    total = len(nums1) + len(nums2)
+    half = total // 2
+    i = j = 0
+    prev = curr = 0
+
+    for count in range(half + 1):
+        prev = curr
+        if i < len(nums1) and (j >= len(nums2) or nums1[i] <= nums2[j]):
+            curr = nums1[i]
+            i += 1
+        else:
+            curr = nums2[j]
+            j += 1
+
+    if total % 2:
+        return curr
+    return (prev + curr) / 2`,
+        javascript: `function findMedianSortedArrays(nums1, nums2) {
+    const total = nums1.length + nums2.length;
+    const half = Math.floor(total / 2);
+    let i = 0, j = 0;
+    let prev = 0, curr = 0;
+
+    for (let count = 0; count <= half; count++) {
+        prev = curr;
+        if (i < nums1.length && (j >= nums2.length || nums1[i] <= nums2[j])) {
+            curr = nums1[i];
+            i++;
+        } else {
+            curr = nums2[j];
+            j++;
+        }
+    }
+
+    if (total % 2 === 1) {
+        return curr;
+    }
+    return (prev + curr) / 2;
+}`,
+        java: `public static double findMedianSortedArrays(int[] nums1, int[] nums2) {
+    int total = nums1.length + nums2.length;
+    int half = total / 2;
+    int i = 0, j = 0;
+    int prev = 0, curr = 0;
+
+    for (int count = 0; count <= half; count++) {
+        prev = curr;
+        if (i < nums1.length && (j >= nums2.length || nums1[i] <= nums2[j])) {
+            curr = nums1[i];
+            i++;
+        } else {
+            curr = nums2[j];
+            j++;
+        }
+    }
+
+    if (total % 2 == 1) {
+        return curr;
+    }
+    return (prev + curr) / 2.0;
+}`,
+      },
+      run: runMedianTwoSortedArraysMerge,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking two sorted arrays',
+          2: 'Compute total length of both arrays',
+          3: 'The median sits at merged position half (0-indexed)',
+          4: 'Two read pointers, one per array',
+          5: 'Track the last two merged values — enough for any median',
+          7: 'Merge exactly half + 1 elements, no more',
+          8: 'Remember the previous value before overwriting',
+          9: 'Take from nums1 if it has the smaller current element',
+          10: 'Consume the nums1 element',
+          11: 'Advance the nums1 pointer',
+          12: 'Otherwise nums2 has the smaller element',
+          13: 'Consume the nums2 element',
+          14: 'Advance the nums2 pointer',
+          16: 'Odd total: the middle element is the last one merged',
+          17: 'Return it directly',
+          18: 'Even total: average the two middle values',
+        },
+        javascript: {
+          1: 'Define function taking two sorted arrays',
+          2: 'Compute total length of both arrays',
+          3: 'The median sits at merged position half (0-indexed)',
+          4: 'Two read pointers, one per array',
+          5: 'Track the last two merged values — enough for any median',
+          7: 'Merge exactly half + 1 elements, no more',
+          8: 'Remember the previous value before overwriting',
+          9: 'Take from nums1 if it has the smaller current element',
+          10: 'Consume the nums1 element',
+          11: 'Advance the nums1 pointer',
+          13: 'Otherwise nums2 has the smaller element — consume it',
+          14: 'Advance the nums2 pointer',
+          18: 'Odd total: the middle element is the last one merged',
+          19: 'Return it directly',
+          21: 'Even total: average the two middle values',
+        },
+        java: {
+          1: 'Define method taking two sorted arrays',
+          2: 'Compute total length of both arrays',
+          3: 'The median sits at merged position half (0-indexed)',
+          4: 'Two read pointers, one per array',
+          5: 'Track the last two merged values — enough for any median',
+          7: 'Merge exactly half + 1 elements, no more',
+          8: 'Remember the previous value before overwriting',
+          9: 'Take from nums1 if it has the smaller current element',
+          10: 'Consume the nums1 element',
+          11: 'Advance the nums1 pointer',
+          13: 'Otherwise nums2 has the smaller element — consume it',
+          14: 'Advance the nums2 pointer',
+          18: 'Odd total: the middle element is the last one merged',
+          19: 'Return it directly',
+          21: 'Even total: average the two middle values as a double',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking two sorted arrays',

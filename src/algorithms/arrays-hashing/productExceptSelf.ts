@@ -1,5 +1,79 @@
 import type { Algorithm, AlgorithmStep } from '../../types/algorithm';
 
+function runProductExceptSelfPrefixSuffixArrays(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const n = nums.length;
+  const steps: AlgorithmStep[] = [];
+  const prefix = new Array(n).fill(1);
+  const suffix = new Array(n).fill(1);
+
+  const fmt = (arr: number[]) => `[${arr.join(', ')}]`;
+
+  steps.push({
+    state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) } },
+    highlights: [],
+    message: `Store the products in two FULL arrays: prefix[i] = product left of i, suffix[i] = product right of i`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) } },
+    highlights: [],
+    message: 'Allocate prefix and suffix arrays, all 1s — the edges have no neighbors, so they stay 1',
+    codeLine: 3,
+    action: 'insert',
+  });
+
+  for (let i = 1; i < n; i++) {
+    prefix[i] = prefix[i - 1] * nums[i - 1];
+    steps.push({
+      state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) } },
+      highlights: [i],
+      secondary: [i - 1],
+      pointers: { i },
+      message: `prefix[${i}] = prefix[${i - 1}](${prefix[i - 1]}) × nums[${i - 1}](${nums[i - 1]}) = ${prefix[i]} — product of everything left of index ${i}`,
+      codeLine: 6,
+      action: 'visit',
+    });
+  }
+
+  for (let i = n - 2; i >= 0; i--) {
+    suffix[i] = suffix[i + 1] * nums[i + 1];
+    steps.push({
+      state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) } },
+      highlights: [i],
+      secondary: [i + 1],
+      pointers: { i },
+      message: `suffix[${i}] = suffix[${i + 1}](${suffix[i + 1]}) × nums[${i + 1}](${nums[i + 1]}) = ${suffix[i]} — product of everything right of index ${i}`,
+      codeLine: 8,
+      action: 'visit',
+    });
+  }
+
+  const result: number[] = new Array(n).fill(1);
+  for (let i = 0; i < n; i++) {
+    result[i] = prefix[i] * suffix[i];
+    steps.push({
+      state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) }, result: [...result] },
+      highlights: [i],
+      pointers: { i },
+      message: `res[${i}] = prefix[${i}](${prefix[i]}) × suffix[${i}](${suffix[i]}) = ${result[i]} — everything except nums[${i}]`,
+      codeLine: 9,
+      action: 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], hashMap: { prefix: fmt(prefix), suffix: fmt(suffix) }, result: [...result] },
+    highlights: [],
+    message: `Result: [${result.join(', ')}] — same answer, but O(n) extra space for the two arrays`,
+    codeLine: 10,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 function runProductExceptSelf(input: unknown): AlgorithmStep[] {
   const nums = input as number[];
   const n = nums.length;
@@ -159,6 +233,101 @@ export const productExceptSelf: Algorithm = {
   },
   defaultInput: [1, 2, 3, 4],
   run: runProductExceptSelf,
+  optimalApproachName: 'Prefix & Suffix Products',
+  approaches: [
+    {
+      id: 'prefix-suffix-arrays',
+      name: 'Prefix & Suffix Arrays',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'The classic first version of this solution: materialize full prefix and suffix product arrays, then multiply them position-by-position — same idea as the optimal, before the O(1)-space trick of reusing the result array.',
+      code: {
+        python: `def productExceptSelf(nums):
+    n = len(nums)
+    prefix = [1] * n
+    suffix = [1] * n
+    for i in range(1, n):
+        prefix[i] = prefix[i - 1] * nums[i - 1]
+    for i in range(n - 2, -1, -1):
+        suffix[i] = suffix[i + 1] * nums[i + 1]
+    res = [prefix[i] * suffix[i] for i in range(n)]
+    return res`,
+        javascript: `function productExceptSelf(nums) {
+    const n = nums.length;
+    const prefix = new Array(n).fill(1);
+    const suffix = new Array(n).fill(1);
+    for (let i = 1; i < n; i++) {
+        prefix[i] = prefix[i - 1] * nums[i - 1];
+    }
+    for (let i = n - 2; i >= 0; i--) {
+        suffix[i] = suffix[i + 1] * nums[i + 1];
+    }
+    return nums.map((_, i) => prefix[i] * suffix[i]);
+}`,
+        java: `public static int[] productExceptSelf(int[] nums) {
+    int n = nums.length;
+    int[] prefix = new int[n];
+    int[] suffix = new int[n];
+    Arrays.fill(prefix, 1);
+    Arrays.fill(suffix, 1);
+    for (int i = 1; i < n; i++) {
+        prefix[i] = prefix[i - 1] * nums[i - 1];
+    }
+    for (int i = n - 2; i >= 0; i--) {
+        suffix[i] = suffix[i + 1] * nums[i + 1];
+    }
+    int[] res = new int[n];
+    for (int i = 0; i < n; i++) {
+        res[i] = prefix[i] * suffix[i];
+    }
+    return res;
+}`,
+      },
+      run: runProductExceptSelfPrefixSuffixArrays,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Get the length of the array',
+          3: 'Full prefix array — prefix[i] will hold product of everything left of i',
+          4: 'Full suffix array — suffix[i] will hold product of everything right of i',
+          5: 'Forward pass starting at index 1 (index 0 has nothing to its left)',
+          6: 'Each prefix extends the previous one by the element just left of i',
+          7: 'Backward pass starting at n-2 (last index has nothing to its right)',
+          8: 'Each suffix extends the next one by the element just right of i',
+          9: 'Answer at i is (product of left side) × (product of right side)',
+          10: 'Return the product-except-self array',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Get the length of the array',
+          3: 'Full prefix array — prefix[i] will hold product of everything left of i',
+          4: 'Full suffix array — suffix[i] will hold product of everything right of i',
+          5: 'Forward pass starting at index 1 (index 0 has nothing to its left)',
+          6: 'Each prefix extends the previous one by the element just left of i',
+          8: 'Backward pass starting at n-2 (last index has nothing to its right)',
+          9: 'Each suffix extends the next one by the element just right of i',
+          11: 'Answer at i is (product of left side) × (product of right side)',
+        },
+        java: {
+          1: 'Define function taking int array',
+          2: 'Get the length of the array',
+          3: 'Full prefix array — prefix[i] will hold product of everything left of i',
+          4: 'Full suffix array — suffix[i] will hold product of everything right of i',
+          5: 'Initialize prefix products to 1',
+          6: 'Initialize suffix products to 1',
+          7: 'Forward pass starting at index 1 (index 0 has nothing to its left)',
+          8: 'Each prefix extends the previous one by the element just left of i',
+          10: 'Backward pass starting at n-2 (last index has nothing to its right)',
+          11: 'Each suffix extends the next one by the element just right of i',
+          13: 'Result array of size n',
+          14: 'Combine the two arrays position by position',
+          15: 'Answer at i is (product of left side) × (product of right side)',
+          17: 'Return the product-except-self array',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',
