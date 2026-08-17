@@ -31,13 +31,16 @@ export const arraysHashingConfigs = [
   createConfig(t, {
     algorithmId: 'valid-anagram',
     title: 'Valid Anagram',
-    subtitle: 'Check if two strings are anagrams',
+    subtitle: 'One hash map: +1 for s, -1 for t, anagram if all zero',
     codeSnippet: `def isAnagram(s, t):
+    if len(s) != len(t):
+        return False
+
     count = {}
-    for c in s:
-        count[c] = count.get(c, 0) + 1
-    for c in t:
-        count[c] = count.get(c, 0) - 1
+    for i in range(len(s)):
+        count[s[i]] = count.get(s[i], 0) + 1
+        count[t[i]] = count.get(t[i], 0) - 1
+
     return all(v == 0 for v in count.values())`,
   }),
   createConfig(t, {
