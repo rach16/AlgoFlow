@@ -89,7 +89,7 @@ export function Sidebar({ categories, isOpen, onClose }: SidebarProps) {
         {/* Category list */}
         <nav className="flex-1 overflow-y-auto p-4">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            NeetCode 150
+            NeetCode 250
           </h2>
 
           {/* View mode toggle */}

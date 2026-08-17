@@ -2,7 +2,7 @@
 
 # 🌊 AlgoFlow
 
-**Interactive Algorithm Visualizer for NeetCode 150**
+**Interactive Algorithm Visualizer for NeetCode 250**
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge)](https://algoflow.vercel.app)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
@@ -10,7 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
 
-A comprehensive web application that visualizes **150 essential algorithm problems** with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations.
+A comprehensive web application that visualizes **250 essential algorithm problems** with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations. Every problem ships with multiple solution approaches, each independently animated.
 
 [Live Demo](https://algoflow.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
@@ -20,7 +20,8 @@ A comprehensive web application that visualizes **150 essential algorithm proble
 
 ## ✨ Features
 
-- 🎯 **150 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.)
+- 🎯 **250 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.)
+- 🧠 **Multiple approaches per problem** - compare competing solutions side by side, each with its own animation and complexity
 - 🔄 **Step-by-step visualization** with interactive playback controls
 - 💻 **Multi-language support**: Python, JavaScript, and Java
 - 🎨 **Syntax highlighting** with real-time code execution tracking
@@ -105,7 +106,7 @@ npm run build
 
 ```
 src/
-├── algorithms/          # 150 algorithm implementations
+├── algorithms/          # 250 algorithm implementations
 │   ├── arrays-hashing/
 │   ├── two-pointers/
 │   ├── trees/
@@ -158,7 +159,7 @@ This project is open source and available under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- Algorithm problems based on [NeetCode 150](https://neetcode.io/)
+- Algorithm problems based on [NeetCode 250](https://neetcode.io/)
 - Inspired by the need for better algorithm visualization tools
 - Built with help from Claude Sonnet 4.5
 

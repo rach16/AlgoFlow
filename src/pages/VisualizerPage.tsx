@@ -66,7 +66,7 @@ export function VisualizerPage() {
             Select an algorithm from the sidebar to start visualizing
           </p>
           <p className="text-sm text-slate-500">
-            NeetCode 150 • Algorithm Visualizer
+            NeetCode 250 • Algorithm Visualizer
           </p>
         </div>
       </div>
@@ -94,8 +94,19 @@ export function VisualizerPage() {
   const dp2d = state?.dp2d as (number | string)[][] | undefined;
   const intervals = state?.intervals as [number, number][] | undefined;
   const resultIntervals = state?.resultIntervals as [number, number][] | undefined;
-  const bits = state?.bits as { value: number; bits?: number; label?: string } | undefined;
-  const bits2 = state?.bits2 as { value: number; bits?: number; label?: string } | undefined;
+  // Bit-manipulation algorithms emit `bits` as an array of rows ({value, bits: binary
+  // string, label}); a few emit a single row object. Normalize to a row list, and read the
+  // bit width off the binary string when present. In the array form `bitHighlights` selects
+  // which ROW is emphasized rather than which bit position.
+  type BitRow = { value: number; bits?: number | string; label?: string };
+  const toBitRows = (raw: unknown): BitRow[] =>
+    Array.isArray(raw) ? (raw as BitRow[]) : raw ? [raw as BitRow] : [];
+  const bitWidth = (row: BitRow): number =>
+    typeof row.bits === 'string' ? row.bits.length : (row.bits ?? 8);
+
+  const bitRows = toBitRows(state?.bits);
+  const bitRows2 = toBitRows(state?.bits2);
+  const bitsIsRowList = Array.isArray(state?.bits);
   const count = state?.count as Record<string, number> | undefined;
   const queue = state?.queue as (string | number)[] | undefined;
   const result = state?.result;
@@ -304,20 +315,36 @@ export function VisualizerPage() {
           )}
 
           {/* Bits */}
-          {bits && (
-            <BitView
-              value={bits.value}
-              bits={bits.bits}
-              label={bits.label}
-              highlights={bitHighlights}
-              secondary={bitSecondary}
-            />
-          )}
-          {bits2 && (
-            <div className="mt-4">
-              <BitView value={bits2.value} bits={bits2.bits} label={bits2.label} highlights={[]} title="Result" />
+          {bitRows.map((row, i) => (
+            <div
+              key={`bitrow-${i}`}
+              className={`${i > 0 ? 'mt-2' : ''} ${
+                bitsIsRowList && bitHighlights?.includes(i)
+                  ? 'ring-2 ring-indigo-400 rounded-lg'
+                  : ''
+              }`}
+            >
+              <BitView
+                value={row.value}
+                bits={bitWidth(row)}
+                label={row.label}
+                highlights={bitsIsRowList ? [] : bitHighlights}
+                secondary={bitsIsRowList ? [] : bitSecondary}
+                title={i === 0 ? 'Bits' : ''}
+              />
             </div>
-          )}
+          ))}
+          {bitRows2.map((row, i) => (
+            <div key={`bitrow2-${i}`} className="mt-4">
+              <BitView
+                value={row.value}
+                bits={bitWidth(row)}
+                label={row.label}
+                highlights={[]}
+                title={i === 0 ? 'Result' : ''}
+              />
+            </div>
+          ))}
 
           {/* Data structures */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

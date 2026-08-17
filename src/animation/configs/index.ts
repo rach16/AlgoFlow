@@ -35,6 +35,11 @@ import { heapNewConfigs } from './heapNew';
 import { dp1dNewConfigs } from './dp1dNew';
 import { dp2dNewConfigs } from './dp2dNew';
 import { intervalsTriesNewConfigs } from './intervalsTriesNew';
+import { greedyNewConfigs } from './greedyNew';
+import { graphsNewAConfigs } from './graphsNewA';
+import { graphsNewBConfigs } from './graphsNewB';
+import { advancedGraphsNewConfigs } from './advancedGraphsNew';
+import { bitMathNewConfigs } from './bitMathNew';
 
 const allConfigs: AnimationConfig[] = [
   ...arraysHashingConfigs,
@@ -72,6 +77,11 @@ const allConfigs: AnimationConfig[] = [
   ...dp1dNewConfigs,
   ...dp2dNewConfigs,
   ...intervalsTriesNewConfigs,
+  ...greedyNewConfigs,
+  ...graphsNewAConfigs,
+  ...graphsNewBConfigs,
+  ...advancedGraphsNewConfigs,
+  ...bitMathNewConfigs,
 ];
 
 const configMap = new Map<string, AnimationConfig>();

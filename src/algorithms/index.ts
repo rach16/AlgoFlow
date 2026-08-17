@@ -208,6 +208,12 @@ import { handOfStraights } from './greedy/handOfStraights';
 import { mergeTriplets } from './greedy/mergeTriplets';
 import { partitionLabels } from './greedy/partitionLabels';
 import { validParenthesisString } from './greedy/validParenthesisString';
+import { lemonadeChange } from './greedy/lemonadeChange';
+import { maxSumCircularSubarray } from './greedy/maxSumCircularSubarray';
+import { longestTurbulentSubarray } from './greedy/longestTurbulentSubarray';
+import { jumpGameVII } from './greedy/jumpGameVII';
+import { dota2Senate } from './greedy/dota2Senate';
+import { candy } from './greedy/candy';
 
 // Intervals
 import { insertInterval } from './intervals/insertInterval';
@@ -227,6 +233,11 @@ import { plusOne } from './math-geometry/plusOne';
 import { powXN } from './math-geometry/powXN';
 import { multiplyStrings } from './math-geometry/multiplyStrings';
 import { detectSquares } from './math-geometry/detectSquares';
+import { excelSheetColumnTitle } from './math-geometry/excelSheetColumnTitle';
+import { gcdOfStrings } from './math-geometry/gcdOfStrings';
+import { transposeMatrix } from './math-geometry/transposeMatrix';
+import { romanToInteger } from './math-geometry/romanToInteger';
+import { insertGreatestCommonDivisors } from './math-geometry/insertGreatestCommonDivisors';
 
 // Bit Manipulation
 import { singleNumber } from './bit-manipulation/singleNumber';
@@ -236,6 +247,9 @@ import { reverseBits } from './bit-manipulation/reverseBits';
 import { missingNumber } from './bit-manipulation/missingNumber';
 import { sumOfTwoIntegers } from './bit-manipulation/sumOfTwoIntegers';
 import { reverseInteger } from './bit-manipulation/reverseInteger';
+import { bitwiseAndNumbersRange } from './bit-manipulation/bitwiseAndNumbersRange';
+import { addBinary } from './bit-manipulation/addBinary';
+import { minimumArrayEnd } from './bit-manipulation/minimumArrayEnd';
 
 // Graphs
 import { numberOfIslands } from './graphs/numberOfIslands';
@@ -251,6 +265,14 @@ import { graphValidTree } from './graphs/graphValidTree';
 import { connectedComponents } from './graphs/connectedComponents';
 import { redundantConnection } from './graphs/redundantConnection';
 import { wordLadder } from './graphs/wordLadder';
+import { islandPerimeter } from './graphs/islandPerimeter';
+import { verifyingAlienDictionary } from './graphs/verifyingAlienDictionary';
+import { findTownJudge } from './graphs/findTownJudge';
+import { openTheLock } from './graphs/openTheLock';
+import { courseScheduleIV } from './graphs/courseScheduleIV';
+import { accountsMerge } from './graphs/accountsMerge';
+import { evaluateDivision } from './graphs/evaluateDivision';
+import { minimumHeightTrees } from './graphs/minimumHeightTrees';
 
 // Advanced Graphs
 import { reconstructItinerary } from './advanced-graphs/reconstructItinerary';
@@ -259,6 +281,10 @@ import { networkDelayTime } from './advanced-graphs/networkDelayTime';
 import { swimInRisingWater } from './advanced-graphs/swimInRisingWater';
 import { alienDictionary } from './advanced-graphs/alienDictionary';
 import { cheapestFlightsKStops } from './advanced-graphs/cheapestFlightsKStops';
+import { pathWithMinimumEffort } from './advanced-graphs/pathWithMinimumEffort';
+import { criticalPseudoCriticalEdges } from './advanced-graphs/criticalPseudoCriticalEdges';
+import { buildMatrixWithConditions } from './advanced-graphs/buildMatrixWithConditions';
+import { gcdTraversal } from './advanced-graphs/gcdTraversal';
 
 export const categories: Category[] = [
   {
@@ -337,7 +363,7 @@ export const categories: Category[] = [
     id: 'greedy',
     name: 'Greedy',
     icon: '💰',
-    algorithms: [maximumSubarray, jumpGame, jumpGameII, gasStation, handOfStraights, mergeTriplets, partitionLabels, validParenthesisString],
+    algorithms: [maximumSubarray, jumpGame, jumpGameII, gasStation, handOfStraights, mergeTriplets, partitionLabels, validParenthesisString, lemonadeChange, maxSumCircularSubarray, longestTurbulentSubarray, jumpGameVII, dota2Senate, candy],
   },
   {
     id: 'intervals',
@@ -349,25 +375,25 @@ export const categories: Category[] = [
     id: 'math-geometry',
     name: 'Math & Geometry',
     icon: '📐',
-    algorithms: [rotateImage, spiralMatrix, setMatrixZeroes, happyNumber, plusOne, powXN, multiplyStrings, detectSquares],
+    algorithms: [rotateImage, spiralMatrix, setMatrixZeroes, happyNumber, plusOne, powXN, multiplyStrings, detectSquares, excelSheetColumnTitle, gcdOfStrings, transposeMatrix, romanToInteger, insertGreatestCommonDivisors],
   },
   {
     id: 'bit-manipulation',
     name: 'Bit Manipulation',
     icon: '🔢',
-    algorithms: [singleNumber, numberOf1Bits, countingBits, reverseBits, missingNumber, sumOfTwoIntegers, reverseInteger],
+    algorithms: [singleNumber, numberOf1Bits, countingBits, reverseBits, missingNumber, sumOfTwoIntegers, reverseInteger, bitwiseAndNumbersRange, addBinary, minimumArrayEnd],
   },
   {
     id: 'graphs',
     name: 'Graphs',
     icon: '🕸️',
-    algorithms: [numberOfIslands, maxAreaOfIsland, cloneGraph, wallsAndGates, rottingOranges, pacificAtlanticWaterFlow, surroundedRegions, courseSchedule, courseScheduleII, graphValidTree, connectedComponents, redundantConnection, wordLadder],
+    algorithms: [numberOfIslands, maxAreaOfIsland, cloneGraph, wallsAndGates, rottingOranges, pacificAtlanticWaterFlow, surroundedRegions, courseSchedule, courseScheduleII, graphValidTree, connectedComponents, redundantConnection, wordLadder, islandPerimeter, verifyingAlienDictionary, findTownJudge, openTheLock, courseScheduleIV, accountsMerge, evaluateDivision, minimumHeightTrees],
   },
   {
     id: 'advanced-graphs',
     name: 'Advanced Graphs',
     icon: '🗺️',
-    algorithms: [reconstructItinerary, minCostConnectPoints, networkDelayTime, swimInRisingWater, alienDictionary, cheapestFlightsKStops],
+    algorithms: [reconstructItinerary, minCostConnectPoints, networkDelayTime, swimInRisingWater, alienDictionary, cheapestFlightsKStops, pathWithMinimumEffort, criticalPseudoCriticalEdges, buildMatrixWithConditions, gcdTraversal],
   },
 ];
 
