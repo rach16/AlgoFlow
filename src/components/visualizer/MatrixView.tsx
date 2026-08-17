@@ -1,12 +1,31 @@
+/** Cell references are [row, col] tuples, but some algorithms emit {row, col} objects.
+ *  Destructuring an object as an array yields undefined, so those highlights silently
+ *  never match — normalize instead of trusting the caller. */
+type LooseCell = [number, number] | { row: number; col: number };
+
+const toCell = (c: LooseCell): [number, number] =>
+  Array.isArray(c) ? c : [c.row, c.col];
+
 interface MatrixViewProps {
   matrix: (number | string)[][];
-  highlights?: [number, number][];
-  secondary?: [number, number][];
-  pointers?: Record<string, [number, number]>;
+  highlights?: LooseCell[];
+  secondary?: LooseCell[];
+  pointers?: Record<string, LooseCell>;
   title?: string;
 }
 
-export function MatrixView({ matrix, highlights = [], secondary = [], pointers = {}, title = 'Matrix' }: MatrixViewProps) {
+export function MatrixView({
+  matrix,
+  highlights: rawHighlights = [],
+  secondary: rawSecondary = [],
+  pointers: rawPointers = {},
+  title = 'Matrix',
+}: MatrixViewProps) {
+  const highlights = rawHighlights.map(toCell);
+  const secondary = rawSecondary.map(toCell);
+  const pointers = Object.fromEntries(
+    Object.entries(rawPointers).map(([k, v]) => [k, toCell(v)])
+  ) as Record<string, [number, number]>;
   if (matrix.length === 0) {
     return (
       <div className="bg-slate-700/50 rounded-lg p-4">

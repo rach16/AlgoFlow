@@ -134,7 +134,7 @@ function runConnectedComponents(input: unknown): AlgorithmStep[] {
     state: {
       ...buildGraphState(),
       hashMap: Object.fromEntries(
-        Array.from(components.entries()).map(([_root, members], idx) => [
+        Array.from(components.values()).map((members, idx) => [
           `Component ${idx + 1}`,
           `[${members.join(', ')}]`,
         ])

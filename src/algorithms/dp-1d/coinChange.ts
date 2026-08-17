@@ -397,7 +397,6 @@ def coinChange(coins, amount):
       7: 'Take min of current and using this coin',
       8: 'Continue min computation on next line',
       9: 'Return result or -1 if amount unreachable',
-      10: 'Check if infinity means no solution',
     },
     javascript: {
       1: 'Define function taking coins and amount',

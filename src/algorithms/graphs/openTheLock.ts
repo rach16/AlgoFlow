@@ -54,7 +54,7 @@ function runOpenTheLock(input: unknown): AlgorithmStep[] {
     return steps;
   }
 
-  let queue: string[] = ['0000'];
+  const queue: string[] = ['0000'];
   const seen = new Set<string>(['0000']);
   let turns = 0;
   let answer = -1;

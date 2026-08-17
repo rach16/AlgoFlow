@@ -9,9 +9,36 @@ interface GraphEdge {
   weight?: number;
 }
 
+/** Some algorithms emit nodes as bare ids ("MUC", 1) and put edge weights on `label`
+ *  instead of `weight`. Reading `node.id` off a string yields undefined and the graph
+ *  renders empty, so normalize both shapes here rather than trusting every author. */
+type LooseNode = GraphNode | number | string;
+type LooseEdge = GraphEdge & { label?: number | string };
+
+function normalizeNodes(nodes: LooseNode[]): GraphNode[] {
+  return (nodes ?? []).map((n) =>
+    typeof n === 'object' && n !== null
+      ? { id: n.id, label: n.label ?? String(n.id) }
+      : { id: n, label: String(n) }
+  );
+}
+
+function normalizeEdges(edges: LooseEdge[]): GraphEdge[] {
+  return (edges ?? []).map((e) => {
+    if (e.weight !== undefined) return e;
+    if (e.label === undefined) return e;
+    // `label` carries the weight in several files, sometimes decorated ("$100", "1")
+    const numeric = Number(String(e.label).replace(/[^0-9.-]/g, ''));
+    return {
+      ...e,
+      weight: Number.isFinite(numeric) && String(e.label).trim() !== '' ? numeric : undefined,
+    };
+  });
+}
+
 interface GraphViewProps {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
+  nodes: LooseNode[];
+  edges: LooseEdge[];
   highlights?: (number | string)[];
   secondary?: (number | string)[];
   visitedEdges?: [number | string, number | string][];
@@ -20,14 +47,16 @@ interface GraphViewProps {
 }
 
 export function GraphView({
-  nodes,
-  edges,
+  nodes: rawNodes,
+  edges: rawEdges,
   highlights = [],
   secondary = [],
   visitedEdges = [],
   directed = false,
   title = 'Graph',
 }: GraphViewProps) {
+  const nodes = normalizeNodes(rawNodes);
+  const edges = normalizeEdges(rawEdges);
   const width = 400;
   const height = 300;
   const radius = Math.min(width, height) * 0.35;

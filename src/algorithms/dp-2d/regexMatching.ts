@@ -437,10 +437,9 @@ private boolean dfs(String s, String p, int i, int j, Boolean[][] memo) {
       11: 'Zero match: skip X* pair entirely',
       12: 'If current char matches X (or X is .)',
       13: 'One+ match: extend from previous row',
-      14: 'Continuation of or expression',
-      15: 'Direct char match or dot matches any char',
-      16: 'Copy result from diagonal (both advance)',
-      17: 'Return whether full string matches pattern',
+      14: 'Direct char match or dot matches any char',
+      15: 'Copy result from diagonal (both advance)',
+      16: 'Return whether full string matches pattern',
     },
     javascript: {
       1: 'Define function taking string s and pattern p',

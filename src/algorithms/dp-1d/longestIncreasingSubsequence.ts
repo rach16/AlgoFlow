@@ -87,7 +87,7 @@ function runLongestIncreasingSubsequence(input: unknown): AlgorithmStep[] {
     state: { nums: [...nums], dp: [...dp], dpLabels, result: maxLen },
     highlights: [],
     message: `Length of longest increasing subsequence: ${maxLen}`,
-    codeLine: 9,
+    codeLine: 8,
     action: 'found',
   });
 

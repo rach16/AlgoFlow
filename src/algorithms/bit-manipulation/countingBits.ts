@@ -64,7 +64,7 @@ function runCountingBits(input: unknown): AlgorithmStep[] {
     },
     highlights: [],
     message: `Done! Bit counts for 0 to ${n}: [${dp.join(', ')}].`,
-    codeLine: 6,
+    codeLine: 5,
     action: 'found',
   } as AlgorithmStep);
 

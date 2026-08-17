@@ -46,7 +46,7 @@ function runMinIntervalQuery(input: unknown): AlgorithmStep[] {
 
   const result: number[] = new Array(queries.length).fill(-1);
   // Simple priority queue: [size, end]
-  let heap: [number, number][] = [];
+  const heap: [number, number][] = [];
   let i = 0;
 
   for (const query of sortedQueries) {

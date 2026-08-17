@@ -91,7 +91,7 @@ function runMissingNumber(input: unknown): AlgorithmStep[] {
     },
     highlights: [],
     message: `Done! Missing number = ${xorResult}. All paired values cancel out via XOR.`,
-    codeLine: 7,
+    codeLine: 6,
     action: 'found',
   } as AlgorithmStep);
 

@@ -36,7 +36,7 @@ function runTaskScheduler(input: unknown): AlgorithmStep[] {
   });
 
   // Max-heap (simulated with sorted array, descending by count)
-  let maxHeap: { task: string; count: number }[] = Object.entries(freq)
+  const maxHeap: { task: string; count: number }[] = Object.entries(freq)
     .map(([task, count]) => ({ task, count }))
     .sort((a, b) => b.count - a.count);
 

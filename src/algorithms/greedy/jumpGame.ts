@@ -58,7 +58,7 @@ function runJumpGame(input: unknown): AlgorithmStep[] {
     highlights: canReachEnd ? [0, nums.length - 1] : [],
     pointers: { goal },
     message: `Done! Goal = ${goal}. ${canReachEnd ? 'Goal reached index 0, so we can reach the end!' : 'Goal never reached 0, impossible.'}`,
-    codeLine: 7,
+    codeLine: 6,
     action: 'found',
   });
 
