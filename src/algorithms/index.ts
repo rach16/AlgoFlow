@@ -23,6 +23,9 @@ import { buySellStockII } from './arrays-hashing/buySellStockII';
 import { majorityElementII } from './arrays-hashing/majorityElementII';
 import { subarraySumEqualsK } from './arrays-hashing/subarraySumEqualsK';
 import { firstMissingPositive } from './arrays-hashing/firstMissingPositive';
+import { moveZeroes } from './arrays-hashing/moveZeroes';
+import { firstUniqueCharacter } from './arrays-hashing/firstUniqueCharacter';
+import { intersectionOfTwoArrays } from './arrays-hashing/intersectionOfTwoArrays';
 
 // Two Pointers
 import { validPalindrome } from './two-pointers/validPalindrome';
@@ -98,6 +101,7 @@ import { reverseNodesKGroup } from './linked-list/reverseNodesKGroup';
 import { reverseLinkedListII } from './linked-list/reverseLinkedListII';
 import { designCircularQueue } from './linked-list/designCircularQueue';
 import { lfuCache } from './linked-list/lfuCache';
+import { palindromeLinkedList } from './linked-list/palindromeLinkedList';
 
 // Backtracking
 import { subsets } from './backtracking/subsets';
@@ -291,7 +295,7 @@ export const categories: Category[] = [
     id: 'arrays-hashing',
     name: 'Arrays & Hashing',
     icon: '📊',
-    algorithms: [twoSum, containsDuplicate, validAnagram, groupAnagrams, topKFrequent, encodeDecode, productExceptSelf, validSudoku, longestConsecutive, concatenationOfArray, longestCommonPrefix, removeElement, majorityElement, designHashSet, designHashMap, sortColors, sortAnArray, rangeSumQuery2D, buySellStockII, majorityElementII, subarraySumEqualsK, firstMissingPositive],
+    algorithms: [twoSum, containsDuplicate, validAnagram, groupAnagrams, topKFrequent, encodeDecode, productExceptSelf, validSudoku, longestConsecutive, concatenationOfArray, longestCommonPrefix, removeElement, majorityElement, designHashSet, designHashMap, sortColors, sortAnArray, rangeSumQuery2D, buySellStockII, majorityElementII, subarraySumEqualsK, firstMissingPositive, moveZeroes, firstUniqueCharacter, intersectionOfTwoArrays],
   },
   {
     id: 'two-pointers',
@@ -321,7 +325,7 @@ export const categories: Category[] = [
     id: 'linked-list',
     name: 'Linked List',
     icon: '🔗',
-    algorithms: [reverseLinkedList, mergeTwoSortedLists, reorderList, removeNthFromEnd, copyListRandomPointer, addTwoNumbers, linkedListCycle, findDuplicateNumber, lruCache, mergeKSortedLists, reverseNodesKGroup, reverseLinkedListII, designCircularQueue, lfuCache],
+    algorithms: [reverseLinkedList, mergeTwoSortedLists, reorderList, removeNthFromEnd, copyListRandomPointer, addTwoNumbers, linkedListCycle, findDuplicateNumber, lruCache, mergeKSortedLists, reverseNodesKGroup, reverseLinkedListII, designCircularQueue, lfuCache, palindromeLinkedList],
   },
   {
     id: 'backtracking',

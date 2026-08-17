@@ -40,6 +40,7 @@ import { graphsNewAConfigs } from './graphsNewA';
 import { graphsNewBConfigs } from './graphsNewB';
 import { advancedGraphsNewConfigs } from './advancedGraphsNew';
 import { bitMathNewConfigs } from './bitMathNew';
+import { sdetExtrasConfigs } from './sdetExtras';
 
 const allConfigs: AnimationConfig[] = [
   ...arraysHashingConfigs,
@@ -82,6 +83,7 @@ const allConfigs: AnimationConfig[] = [
   ...graphsNewBConfigs,
   ...advancedGraphsNewConfigs,
   ...bitMathNewConfigs,
+  ...sdetExtrasConfigs,
 ];
 
 const configMap = new Map<string, AnimationConfig>();

@@ -10,7 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
 
-A comprehensive web application that visualizes **250 essential algorithm problems** with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations. Every problem ships with multiple solution approaches, each independently animated.
+A comprehensive web application that visualizes **254 algorithm problems** — all of NeetCode 250, plus four extra questions that dominate SDET interviews — with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations. Every problem ships with multiple solution approaches, each independently animated.
 
 [Live Demo](https://algoflow.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
@@ -20,8 +20,9 @@ A comprehensive web application that visualizes **250 essential algorithm proble
 
 ## ✨ Features
 
-- 🎯 **250 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.)
+- 🎯 **254 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.) — all of NeetCode 250 plus 4 SDET staples
 - 🧠 **Multiple approaches per problem** - compare competing solutions side by side, each with its own animation and complexity
+- 🧪 **SDET Prep tab** - the subset of problems that SDET interviews actually ask, tiered by how consistently public interview reports name them, with sources cited
 - 🔄 **Step-by-step visualization** with interactive playback controls
 - 💻 **Multi-language support**: Python, JavaScript, and Java
 - 🎨 **Syntax highlighting** with real-time code execution tracking
@@ -106,7 +107,7 @@ npm run build
 
 ```
 src/
-├── algorithms/          # 250 algorithm implementations
+├── algorithms/          # 254 algorithm implementations
 │   ├── arrays-hashing/
 │   ├── two-pointers/
 │   ├── trees/

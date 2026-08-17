@@ -4,11 +4,20 @@ import { useProgressStore } from '../../store/progressStore';
 import { categories } from '../../algorithms';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 
+type View = 'visualizer' | 'sdet';
+
 interface HeaderProps {
   onMenuClick: () => void;
+  view: View;
+  onViewChange: (view: View) => void;
 }
 
-export function Header({ onMenuClick }: HeaderProps) {
+const TABS: { id: View; label: string }[] = [
+  { id: 'visualizer', label: 'Visualizer' },
+  { id: 'sdet', label: 'SDET Prep' },
+];
+
+export function Header({ onMenuClick, view, onViewChange }: HeaderProps) {
   const { currentAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [showInfo, setShowInfo] = useState(false);
@@ -35,8 +44,23 @@ export function Header({ onMenuClick }: HeaderProps) {
         </h1>
       </div>
 
+      {/* View tabs */}
+      <div className="flex bg-slate-700 rounded-lg p-1 flex-shrink-0">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onViewChange(tab.id)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+              view === tab.id ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Current algorithm — hidden on mobile (info bar shows it) */}
-      {currentAlgorithm && (
+      {currentAlgorithm && view === 'visualizer' && (
         <div className="hidden lg:flex flex-1 items-center gap-3 ml-4">
           <span className="text-slate-400">/</span>
           <span className="text-slate-300 truncate max-w-[150px]">{currentAlgorithm.category}</span>
@@ -68,7 +92,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Mobile info button (when algo selected) */}
-      {currentAlgorithm && (
+      {currentAlgorithm && view === 'visualizer' && (
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="lg:hidden ml-auto p-2 rounded-lg hover:bg-slate-700 transition-colors"
@@ -81,7 +105,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Info modal */}
-      {showInfo && currentAlgorithm && (
+      {showInfo && currentAlgorithm && view === 'visualizer' && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={() => setShowInfo(false)}

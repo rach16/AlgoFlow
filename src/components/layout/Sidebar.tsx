@@ -8,6 +8,8 @@ interface SidebarProps {
   categories: Category[];
   isOpen: boolean;
   onClose: () => void;
+  /** fired after an algorithm is picked, so the shell can switch back to the visualizer */
+  onSelect?: () => void;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -31,7 +33,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'bit-manipulation': '🔢',
 };
 
-export function Sidebar({ categories, isOpen, onClose }: SidebarProps) {
+export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps) {
   const { currentAlgorithm, setCurrentAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
@@ -49,6 +51,7 @@ export function Sidebar({ categories, isOpen, onClose }: SidebarProps) {
 
   const selectAlgorithm = (algorithm: Algorithm) => {
     setCurrentAlgorithm(algorithm);
+    onSelect?.();
     onClose();
   };
 
