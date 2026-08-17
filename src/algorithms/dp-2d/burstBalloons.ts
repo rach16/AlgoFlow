@@ -91,6 +91,91 @@ function runBurstBalloons(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runBurstBalloonsMemo(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const balloons = [1, ...nums, 1];
+  const n = balloons.length;
+  const MAX_STEPS = 75;
+
+  const memoGrid: (number | string)[][] = Array.from({ length: n }, () => new Array(n).fill('·'));
+  const memo = new Map<string, number>();
+
+  steps.push({
+    state: { dp2d: memoGrid.map(r => [...r]), nums: [...balloons], result: null },
+    highlights: [],
+    message: `Top-down: start from the WHOLE range (0, ${n - 1}) and recurse. dfs(l, r) = max coins bursting everything strictly between l and r; memoize each interval`,
+    codeLine: 4,
+  });
+
+  function dfs(l: number, r: number): number {
+    if (l + 1 === r) return 0; // no balloons strictly inside
+    const key = `${l},${r}`;
+    const cached = memo.get(key);
+    if (cached !== undefined) return cached;
+
+    let best = 0;
+    let bestK = -1;
+    for (let k = l + 1; k < r; k++) {
+      const coins = balloons[l] * balloons[k] * balloons[r] + dfs(l, k) + dfs(k, r);
+      if (steps.length < MAX_STEPS) {
+        steps.push({
+          state: {
+            dp2d: memoGrid.map(r2 => [...r2]),
+            matrixHighlights: [[l, k], [k, r]] as [number, number][],
+            matrixSecondary: [[l, r]] as [number, number][],
+            nums: [...balloons], result: null,
+          },
+          highlights: [],
+          pointers: { left: l, right: r, k },
+          message: `dfs(${l}, ${r}): burst balloon ${k} (value ${balloons[k]}) LAST → ${balloons[l]}·${balloons[k]}·${balloons[r]} + dfs(${l},${k}) + dfs(${k},${r}) = ${coins}`,
+          codeLine: 11,
+          action: 'compare',
+        });
+      }
+      if (coins > best) {
+        best = coins;
+        bestK = k;
+      }
+    }
+
+    memo.set(key, best);
+    memoGrid[l][r] = best;
+
+    if (steps.length < MAX_STEPS) {
+      steps.push({
+        state: {
+          dp2d: memoGrid.map(r2 => [...r2]),
+          matrixHighlights: [[l, r]] as [number, number][],
+          nums: [...balloons], result: null,
+        },
+        highlights: [],
+        pointers: { left: l, right: r },
+        message: `memo[${l}][${r}] = ${best} (best last-burst: balloon ${bestK}) — this interval is now solved forever`,
+        codeLine: 14,
+        action: 'insert',
+      });
+    }
+    return best;
+  }
+
+  const result = dfs(0, n - 1);
+
+  steps.push({
+    state: {
+      dp2d: memoGrid.map(r => [...r]),
+      matrixHighlights: [[0, n - 1]] as [number, number][],
+      nums: [...balloons], result,
+    },
+    highlights: [],
+    message: `Maximum coins: dfs(0, ${n - 1}) = ${result} — only the ${memo.size} intervals actually needed were computed`,
+    codeLine: 16,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const burstBalloons: Algorithm = {
   id: 'burst-balloons',
   name: 'Burst Balloons',
@@ -160,6 +245,133 @@ export const burstBalloons: Algorithm = {
   },
   defaultInput: [3, 1, 5, 8],
   run: runBurstBalloons,
+  optimalApproachName: 'Bottom-Up Interval DP',
+  approaches: [
+    {
+      id: 'top-down-memo',
+      name: 'Top-Down Memoization',
+      timeComplexity: 'O(n³)',
+      spaceComplexity: 'O(n²)',
+      description:
+        'Starts from the full range and recurses on sub-intervals instead of building all gap lengths bottom-up — memoization ensures each interval is still solved only once.',
+      code: {
+        python: `def maxCoins(nums):
+    nums = [1] + nums + [1]
+    memo = {}
+    def dfs(l, r):
+        if l + 1 == r:
+            return 0
+        if (l, r) in memo:
+            return memo[(l, r)]
+        best = 0
+        for k in range(l + 1, r):
+            coins = (nums[l] * nums[k] * nums[r]
+                + dfs(l, k) + dfs(k, r))
+            best = max(best, coins)
+        memo[(l, r)] = best
+        return best
+    return dfs(0, len(nums) - 1)`,
+        javascript: `function maxCoins(nums) {
+    nums = [1, ...nums, 1];
+    const memo = new Map();
+    function dfs(l, r) {
+        if (l + 1 === r) return 0;
+        const key = l + ',' + r;
+        if (memo.has(key)) return memo.get(key);
+        let best = 0;
+        for (let k = l + 1; k < r; k++) {
+            const coins = nums[l] * nums[k] * nums[r]
+                + dfs(l, k) + dfs(k, r);
+            best = Math.max(best, coins);
+        }
+        memo.set(key, best);
+        return best;
+    }
+    return dfs(0, nums.length - 1);
+}`,
+        java: `public int maxCoins(int[] nums) {
+    int n = nums.length + 2;
+    int[] arr = new int[n];
+    arr[0] = 1;
+    arr[n - 1] = 1;
+    for (int i = 0; i < nums.length; i++) arr[i + 1] = nums[i];
+    Integer[][] memo = new Integer[n][n];
+    return dfs(arr, 0, n - 1, memo);
+}
+
+private int dfs(int[] arr, int l, int r, Integer[][] memo) {
+    if (l + 1 == r) return 0;
+    if (memo[l][r] != null) return memo[l][r];
+    int best = 0;
+    for (int k = l + 1; k < r; k++) {
+        int coins = arr[l] * arr[k] * arr[r]
+            + dfs(arr, l, k, memo) + dfs(arr, k, r, memo);
+        best = Math.max(best, coins);
+    }
+    memo[l][r] = best;
+    return best;
+}`,
+      },
+      run: runBurstBalloonsMemo,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Pad with boundary balloons of value 1',
+          3: 'Memo dictionary keyed by interval (l, r)',
+          4: 'dfs(l, r) = max coins bursting strictly between l and r',
+          5: 'Base case: no balloons inside the interval',
+          6: 'Empty interval yields 0 coins',
+          7: 'Cache check: interval already solved?',
+          8: 'Return the cached best',
+          9: 'Track the best coin total for this interval',
+          10: 'Try every balloon k as the LAST one burst here',
+          11: 'k last means its neighbors are the boundaries l and r',
+          12: 'Add the best of the two sub-intervals k splits off',
+          13: 'Keep the maximum over all choices of k',
+          14: 'Cache the answer for this interval',
+          15: 'Return the best for (l, r)',
+          16: 'Solve the full range between the padded boundaries',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Pad with boundary balloons of value 1',
+          3: 'Memo map keyed by "l,r" interval',
+          4: 'dfs(l, r) = max coins bursting strictly between l and r',
+          5: 'Base case: no balloons inside — 0 coins',
+          6: 'Build the memo key for this interval',
+          7: 'Return the cached best if already solved',
+          8: 'Track the best coin total for this interval',
+          9: 'Try every balloon k as the LAST one burst here',
+          10: 'k last means its neighbors are the boundaries l and r',
+          11: 'Add the best of the two sub-intervals k splits off',
+          12: 'Keep the maximum over all choices of k',
+          14: 'Cache the answer for this interval',
+          15: 'Return the best for (l, r)',
+          17: 'Solve the full range between the padded boundaries',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'Total length including two boundary balloons',
+          3: 'Allocate the padded array',
+          4: 'Left boundary balloon = 1',
+          5: 'Right boundary balloon = 1',
+          6: 'Copy original balloons into the middle',
+          7: 'Integer[][] memo — null marks unsolved intervals',
+          8: 'Solve the full range between the boundaries',
+          11: 'dfs(l, r) = max coins bursting strictly between l and r',
+          12: 'Base case: no balloons inside — 0 coins',
+          13: 'Return the cached best if already solved',
+          14: 'Track the best coin total for this interval',
+          15: 'Try every balloon k as the LAST one burst here',
+          16: 'k last means its neighbors are the boundaries l and r',
+          17: 'Add the best of the two sub-intervals k splits off',
+          18: 'Keep the maximum over all choices of k',
+          20: 'Cache the answer for this interval',
+          21: 'Return the best for (l, r)',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

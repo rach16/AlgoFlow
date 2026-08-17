@@ -145,6 +145,135 @@ function runMinIntervalQuery(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMinIntervalQueryBruteForce(input: unknown): AlgorithmStep[] {
+  const { intervals, queries } = input as MinIntervalQueryInput;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      intervals: intervals.map(iv => [...iv]),
+      intervalHighlights: [],
+      intervalSecondary: [],
+      nums: [...queries],
+      result: 'Brute force: scan every interval for every query',
+    },
+    highlights: [],
+    message: `Brute force: for each of the ${queries.length} queries, scan all ${intervals.length} intervals and track the smallest one containing it. No sorting, no heap — O(n·q).`,
+    codeLine: 2,
+  } as AlgorithmStep);
+
+  const result: number[] = [];
+
+  for (let qIdx = 0; qIdx < queries.length; qIdx++) {
+    const q = queries[qIdx];
+    let best = -1;
+    let bestIdx = -1;
+
+    steps.push({
+      state: {
+        intervals: intervals.map(iv => [...iv]),
+        intervalHighlights: [],
+        intervalSecondary: [],
+        nums: [...queries],
+        result: `Query ${q}: scanning all intervals, best = -1`,
+      },
+      highlights: [qIdx],
+      message: `Query ${q}: reset best size to -1 and scan every interval from scratch.`,
+      codeLine: 5,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    for (let i = 0; i < intervals.length; i++) {
+      const [l, r] = intervals[i];
+
+      if (l <= q && q <= r) {
+        const size = r - l + 1;
+
+        if (best === -1 || size < best) {
+          best = size;
+          bestIdx = i;
+
+          steps.push({
+            state: {
+              intervals: intervals.map(iv => [...iv]),
+              intervalHighlights: [i],
+              intervalSecondary: [],
+              nums: [...queries],
+              result: `Query ${q}: new best size = ${size}`,
+            },
+            highlights: [qIdx],
+            message: `[${l},${r}] contains ${q} (${l} <= ${q} <= ${r}), size ${size} — new smallest so far.`,
+            codeLine: 10,
+            action: 'found',
+          } as AlgorithmStep);
+        } else {
+          steps.push({
+            state: {
+              intervals: intervals.map(iv => [...iv]),
+              intervalHighlights: [i],
+              intervalSecondary: bestIdx >= 0 ? [bestIdx] : [],
+              nums: [...queries],
+              result: `Query ${q}: size ${size} >= best ${best}, skip`,
+            },
+            highlights: [qIdx],
+            message: `[${l},${r}] contains ${q} but its size ${size} is not smaller than the current best ${best}.`,
+            codeLine: 9,
+            action: 'compare',
+          } as AlgorithmStep);
+        }
+      } else {
+        steps.push({
+          state: {
+            intervals: intervals.map(iv => [...iv]),
+            intervalHighlights: [i],
+            intervalSecondary: [],
+            nums: [...queries],
+            result: `Query ${q}: [${l},${r}] does not contain it`,
+          },
+          highlights: [qIdx],
+          message: `[${l},${r}] does not contain ${q} — skip.`,
+          codeLine: 7,
+          action: 'compare',
+        } as AlgorithmStep);
+      }
+    }
+
+    result.push(best);
+
+    steps.push({
+      state: {
+        intervals: intervals.map(iv => [...iv]),
+        intervalHighlights: bestIdx >= 0 ? [bestIdx] : [],
+        intervalSecondary: [],
+        nums: [...queries],
+        result: `answers[${qIdx}] = ${best}`,
+      },
+      highlights: [qIdx],
+      message: best >= 0
+        ? `Query ${q} done: smallest containing interval has size ${best}.`
+        : `Query ${q} done: no interval contains it, answer -1.`,
+      codeLine: 11,
+      action: best >= 0 ? 'found' : 'delete',
+    } as AlgorithmStep);
+  }
+
+  steps.push({
+    state: {
+      intervals: intervals.map(iv => [...iv]),
+      intervalHighlights: [],
+      intervalSecondary: [],
+      nums: [...queries],
+      result: `Result: [${result.join(', ')}]`,
+    },
+    highlights: [],
+    message: `Done! Answers: [${result.join(', ')}]. Same result as the heap approach, but every query re-scans all n intervals.`,
+    codeLine: 13,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const minIntervalQuery: Algorithm = {
   id: 'min-interval-query',
   name: 'Minimum Interval to Include Each Query',
@@ -230,6 +359,106 @@ export const minIntervalQuery: Algorithm = {
     queries: [2, 3, 4, 5],
   },
   run: runMinIntervalQuery,
+  optimalApproachName: 'Sort + Min-Heap',
+  approaches: [
+    {
+      id: 'brute-force-scan',
+      name: 'Brute Force Scan',
+      timeComplexity: 'O(n · q)',
+      spaceComplexity: 'O(q)',
+      description:
+        'Skips all the sorting and heap machinery: for each query, linearly scan every interval and keep the smallest one that contains it — simple but re-does the work for every query.',
+      code: {
+        python: `def minInterval(intervals, queries):
+    result = []
+
+    for q in queries:
+        best = -1
+        for l, r in intervals:
+            if l <= q <= r:
+                size = r - l + 1
+                if best == -1 or size < best:
+                    best = size
+        result.append(best)
+
+    return result`,
+        javascript: `function minInterval(intervals, queries) {
+    const result = [];
+
+    for (const q of queries) {
+        let best = -1;
+        for (const [l, r] of intervals) {
+            if (l <= q && q <= r) {
+                const size = r - l + 1;
+                if (best === -1 || size < best) best = size;
+            }
+        }
+        result.push(best);
+    }
+
+    return result;
+}`,
+        java: `public static int[] minInterval(int[][] intervals, int[] queries) {
+    int[] result = new int[queries.length];
+
+    for (int j = 0; j < queries.length; j++) {
+        int q = queries[j];
+        int best = -1;
+        for (int[] interval : intervals) {
+            if (interval[0] <= q && q <= interval[1]) {
+                int size = interval[1] - interval[0] + 1;
+                if (best == -1 || size < best) best = size;
+            }
+        }
+        result[j] = best;
+    }
+
+    return result;
+}`,
+      },
+      run: runMinIntervalQueryBruteForce,
+      lineExplanations: {
+        python: {
+          1: 'Define function with intervals and queries',
+          2: 'Answers in query order',
+          4: 'Handle each query independently',
+          5: 'Best (smallest) containing size found so far; -1 = none',
+          6: 'Scan every interval — no sorting, no pruning',
+          7: 'Does this interval contain the query point?',
+          8: 'Size = number of integers the interval covers',
+          9: 'First hit, or smaller than the current best?',
+          10: 'Record the new smallest size',
+          11: 'Store the answer for this query',
+          13: 'Return all answers',
+        },
+        javascript: {
+          1: 'Define function with intervals and queries',
+          2: 'Answers in query order',
+          4: 'Handle each query independently',
+          5: 'Best (smallest) containing size found so far; -1 = none',
+          6: 'Scan every interval — no sorting, no pruning',
+          7: 'Does this interval contain the query point?',
+          8: 'Size = number of integers the interval covers',
+          9: 'Keep it if it is the first hit or the smallest yet',
+          12: 'Store the answer for this query',
+          15: 'Return all answers',
+        },
+        java: {
+          1: 'Define method with intervals and queries',
+          2: 'Answers in query order',
+          4: 'Handle each query independently',
+          5: 'Current query value',
+          6: 'Best (smallest) containing size found so far; -1 = none',
+          7: 'Scan every interval — no sorting, no pruning',
+          8: 'Does this interval contain the query point?',
+          9: 'Size = number of integers the interval covers',
+          10: 'Keep it if it is the first hit or the smallest yet',
+          13: 'Store the answer for this query',
+          16: 'Return all answers',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function with intervals and queries',

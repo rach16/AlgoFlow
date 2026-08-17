@@ -66,6 +66,93 @@ function runReverseBits(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runReverseBitsDivideConquer(input: unknown): AlgorithmStep[] {
+  const original = (input as number) >>> 0;
+  let n = original;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      bits: [{ value: original, bits: toBinary32(original), label: 'input' }],
+      bits2: [{ value: original, bits: toBinary32(original), label: 'working value' }],
+      bitHighlights: [],
+      bitSecondary: [],
+      result: `Reversing bits of ${original}`,
+    },
+    highlights: [],
+    message: `Divide & conquer: swap the two 16-bit halves, then swap bytes inside each half, then nibbles, pairs, and single bits — 5 swaps total instead of a 32-step loop.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const stages: { apply: (v: number) => number; label: string; explain: string; codeLine: number }[] = [
+    {
+      apply: (v) => ((v >>> 16) | (v << 16)) >>> 0,
+      label: 'swap 16-bit halves',
+      explain: 'Swap the top and bottom 16-bit halves',
+      codeLine: 2,
+    },
+    {
+      apply: (v) => ((((v & 0xff00ff00) >>> 8) | ((v & 0x00ff00ff) << 8)) >>> 0),
+      label: 'swap bytes',
+      explain: 'Within each 16-bit half, swap the two bytes',
+      codeLine: 3,
+    },
+    {
+      apply: (v) => ((((v & 0xf0f0f0f0) >>> 4) | ((v & 0x0f0f0f0f) << 4)) >>> 0),
+      label: 'swap nibbles',
+      explain: 'Within each byte, swap the two 4-bit nibbles',
+      codeLine: 4,
+    },
+    {
+      apply: (v) => ((((v & 0xcccccccc) >>> 2) | ((v & 0x33333333) << 2)) >>> 0),
+      label: 'swap bit pairs',
+      explain: 'Within each nibble, swap the two 2-bit pairs',
+      codeLine: 5,
+    },
+    {
+      apply: (v) => ((((v & 0xaaaaaaaa) >>> 1) | ((v & 0x55555555) << 1)) >>> 0),
+      label: 'swap adjacent bits',
+      explain: 'Finally, swap every pair of adjacent bits',
+      codeLine: 6,
+    },
+  ];
+
+  for (let s = 0; s < stages.length; s++) {
+    const before = n;
+    n = stages[s].apply(n);
+
+    steps.push({
+      state: {
+        bits: [{ value: before, bits: toBinary32(before), label: `before: ${stages[s].label}` }],
+        bits2: [{ value: n, bits: toBinary32(n), label: `after: ${stages[s].label}` }],
+        bitHighlights: [0],
+        bitSecondary: [],
+        result: `Stage ${s + 1}/5: ${stages[s].label}`,
+      },
+      highlights: [],
+      message: `Stage ${s + 1}: ${stages[s].explain}. ${toBinary32(before)} -> ${toBinary32(n)}.`,
+      codeLine: stages[s].codeLine,
+      action: 'swap',
+    } as AlgorithmStep);
+  }
+
+  steps.push({
+    state: {
+      bits: [{ value: original, bits: toBinary32(original), label: 'original' }],
+      bits2: [{ value: n, bits: toBinary32(n), label: 'reversed' }],
+      bitHighlights: [],
+      bitSecondary: [],
+      result: `Reversed: ${n}`,
+    },
+    highlights: [],
+    message: `Done! ${original} (${toBinary32(original)}) reversed = ${n} (${toBinary32(n)}). Every bit reached its mirror position in just 5 masked swaps.`,
+    codeLine: 7,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const reverseBits: Algorithm = {
   id: 'reverse-bits',
   name: 'Reverse Bits',
@@ -105,6 +192,72 @@ export const reverseBits: Algorithm = {
   },
   defaultInput: 43261596,
   run: runReverseBits,
+  optimalApproachName: 'Bit-by-Bit Shift',
+  approaches: [
+    {
+      id: 'divide-and-conquer-masks',
+      name: 'Divide & Conquer Masks',
+      timeComplexity: 'O(1)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Reverses all 32 bits in just 5 masked swap operations (halves, bytes, nibbles, pairs, single bits) instead of looping over each bit.',
+      code: {
+        python: `def reverseBits(n):
+    n = ((n >> 16) | (n << 16)) & 0xFFFFFFFF
+    n = ((n & 0xFF00FF00) >> 8) | ((n & 0x00FF00FF) << 8)
+    n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4)
+    n = ((n & 0xCCCCCCCC) >> 2) | ((n & 0x33333333) << 2)
+    n = ((n & 0xAAAAAAAA) >> 1) | ((n & 0x55555555) << 1)
+    return n`,
+        javascript: `function reverseBits(n) {
+    n = (n >>> 16) | (n << 16);
+    n = ((n & 0xFF00FF00) >>> 8) | ((n & 0x00FF00FF) << 8);
+    n = ((n & 0xF0F0F0F0) >>> 4) | ((n & 0x0F0F0F0F) << 4);
+    n = ((n & 0xCCCCCCCC) >>> 2) | ((n & 0x33333333) << 2);
+    n = ((n & 0xAAAAAAAA) >>> 1) | ((n & 0x55555555) << 1);
+    return n >>> 0;
+}`,
+        java: `public static int reverseBits(int n) {
+    n = (n >>> 16) | (n << 16);
+    n = ((n & 0xFF00FF00) >>> 8) | ((n & 0x00FF00FF) << 8);
+    n = ((n & 0xF0F0F0F0) >>> 4) | ((n & 0x0F0F0F0F) << 4);
+    n = ((n & 0xCCCCCCCC) >>> 2) | ((n & 0x33333333) << 2);
+    n = ((n & 0xAAAAAAAA) >>> 1) | ((n & 0x55555555) << 1);
+    return n;
+}`,
+      },
+      run: runReverseBitsDivideConquer,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking 32-bit integer n',
+          2: 'Swap the two 16-bit halves (mask keeps it within 32 bits)',
+          3: 'Swap the two bytes inside each 16-bit half',
+          4: 'Swap the two nibbles inside each byte',
+          5: 'Swap the two bit-pairs inside each nibble',
+          6: 'Swap every pair of adjacent bits',
+          7: 'All bits are now mirrored — return the result',
+        },
+        javascript: {
+          1: 'Define function taking 32-bit integer n',
+          2: 'Swap the two 16-bit halves (>>> avoids sign extension)',
+          3: 'Swap the two bytes inside each 16-bit half',
+          4: 'Swap the two nibbles inside each byte',
+          5: 'Swap the two bit-pairs inside each nibble',
+          6: 'Swap every pair of adjacent bits',
+          7: 'Return as unsigned 32-bit integer',
+        },
+        java: {
+          1: 'Define method taking 32-bit integer n',
+          2: 'Swap the two 16-bit halves (>>> avoids sign extension)',
+          3: 'Swap the two bytes inside each 16-bit half',
+          4: 'Swap the two nibbles inside each byte',
+          5: 'Swap the two bit-pairs inside each nibble',
+          6: 'Swap every pair of adjacent bits',
+          7: 'All bits are now mirrored — return the result',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking 32-bit integer n',

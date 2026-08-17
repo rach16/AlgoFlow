@@ -95,6 +95,136 @@ function runPartitionLabels(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runPartitionLabelsIntervals(input: unknown): AlgorithmStep[] {
+  const s = input as string;
+  const steps: AlgorithmStep[] = [];
+  const chars = s.split('');
+
+  steps.push({
+    state: { chars: [...chars], result: 'Building character intervals...' },
+    highlights: [],
+    message: `Interval view: each letter occupies the span [first, last] occurrence. Merging overlapping spans yields exactly the partitions.`,
+    codeLine: 1,
+  });
+
+  const first: Record<string, number> = {};
+  const last: Record<string, number> = {};
+  for (let i = 0; i < s.length; i++) {
+    if (!(s[i] in first)) first[s[i]] = i;
+    last[s[i]] = i;
+  }
+
+  const intervals = Object.keys(first)
+    .map((c) => ({ c, lo: first[c], hi: last[c] }))
+    .sort((x, y) => x.lo - y.lo);
+
+  if (intervals.length === 0) {
+    steps.push({
+      state: { chars: [...chars], result: 'Partitions: []' },
+      highlights: [],
+      message: 'Empty string — no partitions.',
+      codeLine: 17,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const intervalMap: Record<string, string> = {};
+  for (const { c, lo, hi } of intervals) intervalMap[c] = `[${lo}, ${hi}]`;
+
+  steps.push({
+    state: {
+      chars: [...chars],
+      hashMap: { ...intervalMap },
+      result: `${intervals.length} intervals`,
+    },
+    highlights: [],
+    message: `Character spans (sorted by start): ${intervals.map(({ c, lo, hi }) => `${c}:[${lo},${hi}]`).join(', ')}.`,
+    codeLine: 7,
+    action: 'visit',
+  });
+
+  const partitions: number[] = [];
+  let start = intervals[0].lo;
+  let end = intervals[0].hi;
+
+  for (let k = 1; k < intervals.length; k++) {
+    const { c, lo, hi } = intervals[k];
+
+    if (lo <= end) {
+      const prevEnd = end;
+      end = Math.max(end, hi);
+
+      const hl: number[] = [];
+      for (let j = start; j <= end; j++) hl.push(j);
+
+      steps.push({
+        state: {
+          chars: [...chars],
+          hashMap: { ...intervalMap },
+          result: `Partitions: [${partitions.join(', ')}]`,
+        },
+        highlights: hl,
+        pointers: { start, end },
+        message: `'${c}' [${lo},${hi}] overlaps the current block [${start},${prevEnd}] — same partition${end > prevEnd ? `, extend end to ${end}` : ''}.`,
+        codeLine: 12,
+        action: 'compare',
+      });
+    } else {
+      const size = end - start + 1;
+      partitions.push(size);
+
+      const hl: number[] = [];
+      for (let j = start; j <= end; j++) hl.push(j);
+
+      steps.push({
+        state: {
+          chars: [...chars],
+          hashMap: { ...intervalMap },
+          result: `Partitions: [${partitions.join(', ')}]`,
+        },
+        highlights: hl,
+        pointers: { start, end },
+        message: `'${c}' starts at ${lo} > ${end} — a gap! Close partition "${s.substring(start, end + 1)}" (size ${size}) and start a new block at [${lo},${hi}].`,
+        codeLine: 14,
+        action: 'found',
+      });
+
+      start = lo;
+      end = hi;
+    }
+  }
+
+  const lastSize = end - start + 1;
+  partitions.push(lastSize);
+
+  const lastHl: number[] = [];
+  for (let j = start; j <= end; j++) lastHl.push(j);
+
+  steps.push({
+    state: {
+      chars: [...chars],
+      hashMap: { ...intervalMap },
+      result: `Partitions: [${partitions.join(', ')}]`,
+    },
+    highlights: lastHl,
+    pointers: { start, end },
+    message: `End of intervals — close the final partition "${s.substring(start, end + 1)}" (size ${lastSize}).`,
+    codeLine: 16,
+    action: 'found',
+  });
+
+  steps.push({
+    state: { chars: [...chars], result: `Partitions: [${partitions.join(', ')}]` },
+    highlights: [],
+    message: `Done! Merged intervals give partition sizes [${partitions.join(', ')}] — the same answer as the one-pass greedy.`,
+    codeLine: 17,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const partitionLabels: Algorithm = {
   id: 'partition-labels',
   name: 'Partition Labels',
@@ -161,6 +291,155 @@ export const partitionLabels: Algorithm = {
   },
   defaultInput: 'ababcbacadefegdehijhklij',
   run: runPartitionLabels,
+  optimalApproachName: 'Last Occurrence Greedy',
+  approaches: [
+    {
+      id: 'interval-merging',
+      name: 'Interval Merging',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        "Instead of extending a boundary on the fly, materialize each letter's [first, last] span and merge overlapping intervals — every merged block is one partition.",
+      code: {
+        python: `def partitionLabels(s):
+    first, last = {}, {}
+    for i, c in enumerate(s):
+        if c not in first:
+            first[c] = i
+        last[c] = i
+    intervals = sorted([first[c], last[c]] for c in first)
+    result = []
+    start, end = intervals[0]
+    for lo, hi in intervals[1:]:
+        if lo <= end:
+            end = max(end, hi)
+        else:
+            result.append(end - start + 1)
+            start, end = lo, hi
+    result.append(end - start + 1)
+    return result`,
+        javascript: `function partitionLabels(s) {
+    const first = {}, last = {};
+    for (let i = 0; i < s.length; i++) {
+        if (!(s[i] in first)) first[s[i]] = i;
+        last[s[i]] = i;
+    }
+    const intervals = Object.keys(first)
+        .map(c => [first[c], last[c]])
+        .sort((a, b) => a[0] - b[0]);
+    const result = [];
+    let [start, end] = intervals[0];
+    for (let k = 1; k < intervals.length; k++) {
+        const [lo, hi] = intervals[k];
+        if (lo <= end) {
+            end = Math.max(end, hi);
+        } else {
+            result.push(end - start + 1);
+            start = lo;
+            end = hi;
+        }
+    }
+    result.push(end - start + 1);
+    return result;
+}`,
+        java: `public static List<Integer> partitionLabels(String s) {
+    int[] first = new int[26], last = new int[26];
+    Arrays.fill(first, -1);
+    for (int i = 0; i < s.length(); i++) {
+        int c = s.charAt(i) - 'a';
+        if (first[c] == -1) first[c] = i;
+        last[c] = i;
+    }
+    List<int[]> intervals = new ArrayList<>();
+    for (int c = 0; c < 26; c++) {
+        if (first[c] != -1) intervals.add(new int[] { first[c], last[c] });
+    }
+    intervals.sort((a, b) -> a[0] - b[0]);
+    List<Integer> result = new ArrayList<>();
+    int start = intervals.get(0)[0], end = intervals.get(0)[1];
+    for (int k = 1; k < intervals.size(); k++) {
+        int lo = intervals.get(k)[0], hi = intervals.get(k)[1];
+        if (lo <= end) {
+            end = Math.max(end, hi);
+        } else {
+            result.add(end - start + 1);
+            start = lo;
+            end = hi;
+        }
+    }
+    result.add(end - start + 1);
+    return result;
+}`,
+      },
+      run: runPartitionLabelsIntervals,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking string s',
+          2: 'Maps for first and last occurrence of each letter',
+          3: 'Scan the string once',
+          4: 'First time seeing this letter?',
+          5: 'Record where it first appears',
+          6: 'Keep updating where it last appears',
+          7: "Each letter becomes an interval [first, last], sorted by start",
+          8: 'Collected partition sizes',
+          9: 'Current merged block = the first interval',
+          10: 'Sweep the remaining intervals in start order',
+          11: 'Interval starts inside the current block?',
+          12: 'Overlap — absorb it, extending the block if needed',
+          13: 'Gap between intervals',
+          14: 'The block is a finished partition; record its size',
+          15: 'Start a new block from this interval',
+          16: 'Close the final block',
+          17: 'Return the partition sizes',
+        },
+        javascript: {
+          1: 'Define function taking string s',
+          2: 'Maps for first and last occurrence of each letter',
+          3: 'Scan the string once',
+          4: 'Record where each letter first appears',
+          5: 'Keep updating where it last appears',
+          7: 'Each letter becomes an interval [first, last]',
+          8: 'Build the [first, last] pairs',
+          9: 'Sort intervals by start position',
+          10: 'Collected partition sizes',
+          11: 'Current merged block = the first interval',
+          12: 'Sweep the remaining intervals in start order',
+          13: 'Unpack the next interval',
+          14: 'Interval starts inside the current block?',
+          15: 'Overlap — absorb it, extending the block if needed',
+          17: 'Gap — the block is a finished partition; record its size',
+          18: 'Start a new block from this interval',
+          19: 'New block ends where this interval ends',
+          22: 'Close the final block',
+          23: 'Return the partition sizes',
+        },
+        java: {
+          1: 'Define method taking string s',
+          2: 'Arrays for first and last occurrence of each letter',
+          3: 'Mark all letters as unseen (-1)',
+          4: 'Scan the string once',
+          5: 'Map the character to 0..25',
+          6: 'Record where each letter first appears',
+          7: 'Keep updating where it last appears',
+          9: 'Each seen letter becomes an interval [first, last]',
+          10: 'Check all 26 letters',
+          11: 'Add intervals only for letters that appear',
+          13: 'Sort intervals by start position',
+          14: 'Collected partition sizes',
+          15: 'Current merged block = the first interval',
+          16: 'Sweep the remaining intervals in start order',
+          17: 'Unpack the next interval',
+          18: 'Interval starts inside the current block?',
+          19: 'Overlap — absorb it, extending the block if needed',
+          21: 'Gap — the block is a finished partition; record its size',
+          22: 'Start a new block from this interval',
+          23: 'New block ends where this interval ends',
+          26: 'Close the final block',
+          27: 'Return the partition sizes',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking string s',

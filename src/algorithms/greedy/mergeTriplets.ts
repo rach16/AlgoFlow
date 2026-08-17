@@ -75,6 +75,75 @@ function runMergeTriplets(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMergeTripletsMaxima(input: unknown): AlgorithmStep[] {
+  const { triplets, target } = input as MergeTripletsInput;
+  const steps: AlgorithmStep[] = [];
+  const merged = [0, 0, 0];
+
+  steps.push({
+    state: {
+      nums: target,
+      hashMap: { merged: [...merged] },
+      result: `Target: [${target.join(', ')}]`,
+    },
+    highlights: [],
+    message: `The merge operation is a per-position max — so merge ALL safe triplets into one and check if the result equals the target.`,
+    codeLine: 1,
+  });
+
+  for (let i = 0; i < triplets.length; i++) {
+    const [a, b, c] = triplets[i];
+    const isGood = a <= target[0] && b <= target[1] && c <= target[2];
+
+    steps.push({
+      state: {
+        nums: target,
+        hashMap: { merged: [...merged] },
+        result: `Merged so far: [${merged.join(', ')}]`,
+      },
+      highlights: [],
+      message: `Triplet ${i}: [${a}, ${b}, ${c}] — ${isGood ? 'safe (no value exceeds target), include it in the merge' : `discard (${a > target[0] ? `${a} > ${target[0]}` : b > target[1] ? `${b} > ${target[1]}` : `${c} > ${target[2]}`} would overshoot the target and max() can never undo it)`}.`,
+      codeLine: 4,
+      action: isGood ? 'visit' : 'delete',
+    });
+
+    if (isGood) {
+      merged[0] = Math.max(merged[0], a);
+      merged[1] = Math.max(merged[1], b);
+      merged[2] = Math.max(merged[2], c);
+
+      steps.push({
+        state: {
+          nums: target,
+          hashMap: { merged: [...merged] },
+          result: `Merged so far: [${merged.join(', ')}]`,
+        },
+        highlights: [0, 1, 2].filter((k) => merged[k] === target[k]),
+        message: `Merge in [${a}, ${b}, ${c}]: merged = [${merged.join(', ')}]. Positions matching target so far: [${[0, 1, 2].filter((k) => merged[k] === target[k]).join(', ')}].`,
+        codeLine: 7,
+        action: 'insert',
+      });
+    }
+  }
+
+  const canForm =
+    merged[0] === target[0] && merged[1] === target[1] && merged[2] === target[2];
+
+  steps.push({
+    state: {
+      nums: target,
+      hashMap: { merged: [...merged] },
+      result: canForm ? 'true' : 'false',
+    },
+    highlights: canForm ? [0, 1, 2] : [],
+    message: `Merging every safe triplet gives [${merged.join(', ')}] ${canForm ? '==' : '!='} target [${target.join(', ')}]. Result: ${canForm}.`,
+    codeLine: 8,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const mergeTriplets: Algorithm = {
   id: 'merge-triplets',
   name: 'Merge Triplets to Form Target',
@@ -133,6 +202,83 @@ export const mergeTriplets: Algorithm = {
     target: [2, 7, 5],
   },
   run: runMergeTriplets,
+  optimalApproachName: 'Filtering Greedy',
+  approaches: [
+    {
+      id: 'merged-maxima',
+      name: 'Build Merged Triplet',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of tracking matched positions in a set, actually merge every safe triplet with a per-position max and compare the final result to the target.',
+      code: {
+        python: `def mergeTriplets(triplets, target):
+    merged = [0, 0, 0]
+    for t in triplets:
+        if t[0] > target[0] or t[1] > target[1] or t[2] > target[2]:
+            continue
+        for i in range(3):
+            merged[i] = max(merged[i], t[i])
+    return merged == target`,
+        javascript: `function mergeTriplets(triplets, target) {
+    const merged = [0, 0, 0];
+    for (const t of triplets) {
+        if (t[0] > target[0] || t[1] > target[1] || t[2] > target[2])
+            continue;
+        for (let i = 0; i < 3; i++) {
+            merged[i] = Math.max(merged[i], t[i]);
+        }
+    }
+    return merged[0] === target[0] && merged[1] === target[1] && merged[2] === target[2];
+}`,
+        java: `public static boolean mergeTriplets(int[][] triplets, int[] target) {
+    int[] merged = new int[3];
+    for (int[] t : triplets) {
+        if (t[0] > target[0] || t[1] > target[1] || t[2] > target[2]) {
+            continue;
+        }
+        for (int i = 0; i < 3; i++) {
+            merged[i] = Math.max(merged[i], t[i]);
+        }
+    }
+    return merged[0] == target[0] && merged[1] == target[1] && merged[2] == target[2];
+}`,
+      },
+      run: runMergeTripletsMaxima,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking triplets and target',
+          2: 'The triplet we get by merging every safe triplet',
+          3: 'Consider each triplet',
+          4: 'Any value above target would overshoot forever — max() never shrinks',
+          5: 'Skip this unsafe triplet',
+          6: 'Merge the safe triplet position by position',
+          7: 'Merging IS taking the per-position max',
+          8: 'True iff the best possible merge equals the target exactly',
+        },
+        javascript: {
+          1: 'Define function taking triplets and target',
+          2: 'The triplet we get by merging every safe triplet',
+          3: 'Consider each triplet',
+          4: 'Any value above target would overshoot forever — max() never shrinks',
+          5: 'Skip this unsafe triplet',
+          6: 'Merge the safe triplet position by position',
+          7: 'Merging IS taking the per-position max',
+          10: 'True iff the best possible merge equals the target exactly',
+        },
+        java: {
+          1: 'Define method taking triplets and target arrays',
+          2: 'The triplet we get by merging every safe triplet',
+          3: 'Consider each triplet',
+          4: 'Any value above target would overshoot forever — max() never shrinks',
+          5: 'Skip this unsafe triplet',
+          7: 'Merge the safe triplet position by position',
+          8: 'Merging IS taking the per-position max',
+          11: 'True iff the best possible merge equals the target exactly',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking triplets and target',

@@ -91,6 +91,99 @@ function runReverseInteger(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runReverseIntegerString(input: unknown): AlgorithmStep[] {
+  const x = input as number;
+  const steps: AlgorithmStep[] = [];
+  const INT_MAX = 2147483647; // 2^31 - 1
+  const INT_MIN = -2147483648; // -2^31
+
+  steps.push({
+    state: {
+      nums: [x],
+      count: 0,
+      result: `Reversing ${x} via string`,
+    },
+    highlights: [],
+    message: `Treat the number as text: reverse the digit string, convert back, then check the 32-bit range. Trades bit tricks for readability.`,
+    codeLine: 1,
+  });
+
+  const sign = x >= 0 ? 1 : -1;
+  const s = String(Math.abs(x));
+
+  steps.push({
+    state: {
+      nums: [x],
+      count: 0,
+      result: `sign = ${sign}, digits = "${s}"`,
+    },
+    highlights: [],
+    message: `Peel off the sign (${sign === 1 ? 'positive' : 'negative'}) and stringify the absolute value: "${s}".`,
+    codeLine: 5,
+    action: 'visit',
+  });
+
+  let reversedS = '';
+  for (let i = s.length - 1; i >= 0; i--) {
+    reversedS += s[i];
+
+    steps.push({
+      state: {
+        nums: [x],
+        count: Number(reversedS),
+        result: `Reversed string so far: "${reversedS}"`,
+      },
+      highlights: [],
+      message: `Take digit '${s[i]}' from the end of "${s}": reversed string is now "${reversedS}".`,
+      codeLine: 6,
+      action: 'push',
+    });
+  }
+
+  const result = sign * Number(reversedS);
+
+  steps.push({
+    state: {
+      nums: [x],
+      count: result,
+      result: `Parsed back to integer: ${result}`,
+    },
+    highlights: [],
+    message: `Convert "${reversedS}" back to an integer and restore the sign: ${result}.`,
+    codeLine: 7,
+    action: 'visit',
+  });
+
+  if (result < INT_MIN || result > INT_MAX) {
+    steps.push({
+      state: {
+        nums: [x],
+        count: 0,
+        result: 'Overflow! Return 0',
+      },
+      highlights: [],
+      message: `${result} is outside the 32-bit range [${INT_MIN}, ${INT_MAX}] — return 0. (Strings let us check overflow after the fact; the digit-pop loop must check before each append.)`,
+      codeLine: 9,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  steps.push({
+    state: {
+      nums: [x],
+      count: result,
+      result: `Reversed: ${result}`,
+    },
+    highlights: [],
+    message: `Done! ${result} fits in 32 bits, so reverse of ${x} = ${result}.`,
+    codeLine: 10,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const reverseInteger: Algorithm = {
   id: 'reverse-integer',
   name: 'Reverse Integer',
@@ -152,6 +245,85 @@ export const reverseInteger: Algorithm = {
   },
   defaultInput: 123,
   run: runReverseInteger,
+  optimalApproachName: 'Digit-Pop Loop',
+  approaches: [
+    {
+      id: 'string-reversal',
+      name: 'String Reversal',
+      timeComplexity: 'O(log n)',
+      spaceComplexity: 'O(log n)',
+      description:
+        'Converts the number to a string, reverses it, and parses it back — checking the 32-bit range once at the end instead of before every digit append.',
+      code: {
+        python: `def reverse(x):
+    INT_MAX = 2**31 - 1
+    INT_MIN = -2**31
+    sign = 1 if x >= 0 else -1
+    s = str(abs(x))
+    reversed_s = s[::-1]
+    result = sign * int(reversed_s)
+    if result < INT_MIN or result > INT_MAX:
+        return 0
+    return result`,
+        javascript: `function reverse(x) {
+    const INT_MAX = 2**31 - 1;
+    const INT_MIN = -(2**31);
+    const sign = x >= 0 ? 1 : -1;
+    const s = String(Math.abs(x));
+    const reversedS = s.split('').reverse().join('');
+    const result = sign * parseInt(reversedS, 10);
+    if (result < INT_MIN || result > INT_MAX) return 0;
+    return result;
+}`,
+        java: `public static int reverse(int x) {
+    long sign = x >= 0 ? 1 : -1;
+    String s = Long.toString(Math.abs((long) x));
+    String reversed = new StringBuilder(s).reverse().toString();
+    long result = sign * Long.parseLong(reversed);
+    if (result < Integer.MIN_VALUE || result > Integer.MAX_VALUE) {
+        return 0;
+    }
+    return (int) result;
+}`,
+      },
+      run: runReverseIntegerString,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking integer x',
+          2: 'Store 32-bit max value constant',
+          3: 'Store 32-bit min value constant',
+          4: 'Remember the sign so we can work with the absolute value',
+          5: 'Convert the absolute value to its digit string',
+          6: 'Reverse the string with slice notation',
+          7: 'Parse back to an integer and restore the sign',
+          8: 'Single overflow check after the fact (Python ints never overflow)',
+          9: 'Out of 32-bit range — return 0',
+          10: 'Return the reversed integer',
+        },
+        javascript: {
+          1: 'Define function taking integer x',
+          2: 'Store 32-bit max value constant',
+          3: 'Store 32-bit min value constant',
+          4: 'Remember the sign so we can work with the absolute value',
+          5: 'Convert the absolute value to its digit string',
+          6: 'Reverse the string: split into chars, reverse, rejoin',
+          7: 'Parse back to an integer and restore the sign',
+          8: 'Single overflow check — return 0 if outside 32-bit range',
+          9: 'Return the reversed integer',
+        },
+        java: {
+          1: 'Define method taking integer x',
+          2: 'Remember the sign as a long for safe multiplication',
+          3: 'Cast to long first: Math.abs(Integer.MIN_VALUE) would overflow',
+          4: 'Reverse the digit string with StringBuilder',
+          5: 'Parse back as a long and restore the sign',
+          6: 'Check against the int range using the wider long type',
+          7: 'Out of 32-bit range — return 0',
+          9: 'Safe to narrow back to int now',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking integer x',

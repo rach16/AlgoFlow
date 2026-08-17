@@ -99,6 +99,84 @@ function runEditDistance(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runEditDistanceRollingRows(input: unknown): AlgorithmStep[] {
+  const { word1, word2 } = input as EditDistanceInput;
+  const steps: AlgorithmStep[] = [];
+  const m = word1.length;
+  const n = word2.length;
+  const labels = ['∅', ...word2.split('')];
+
+  let prev: number[] = Array.from({ length: n + 1 }, (_, j) => j);
+
+  steps.push({
+    state: { dp: [...prev], dpLabels: labels, result: null, word1, word2 },
+    highlights: [],
+    message: `Space trick: each 2-D row only reads the row above it, so two 1-D rows of size ${n + 1} suffice`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { dp: [...prev], dpLabels: labels, dpHighlights: Array.from({ length: n + 1 }, (_, j) => j), result: null, word1, word2 },
+    highlights: [],
+    message: `Base row (empty word1 prefix): converting "" to word2[0..j-1] costs j insertions`,
+    codeLine: 3,
+    action: 'insert',
+  });
+
+  for (let i = 1; i <= m; i++) {
+    const curr: number[] = new Array(n + 1).fill(0);
+    curr[0] = i;
+
+    steps.push({
+      state: { dp: [...curr], dpLabels: labels, dpHighlights: [0], chars: word1.split(''), result: null, word1, word2 },
+      highlights: [i - 1],
+      pointers: { i },
+      message: `Row ${i}: process word1[${i - 1}] = '${word1[i - 1]}'. curr[0] = ${i} (delete all ${i} chars to reach "")`,
+      codeLine: 5,
+      action: 'visit',
+    });
+
+    for (let j = 1; j <= n; j++) {
+      if (word1[i - 1] === word2[j - 1]) {
+        curr[j] = prev[j - 1];
+        steps.push({
+          state: { dp: [...curr], dpLabels: labels, dpHighlights: [j], dpSecondary: [j - 1], result: null, word1, word2 },
+          highlights: [],
+          pointers: { i, j },
+          message: `'${word1[i - 1]}' == '${word2[j - 1]}': free — copy diagonal from previous row: curr[${j}] = ${curr[j]}`,
+          codeLine: 8,
+          action: 'compare',
+        });
+      } else {
+        const insertOp = curr[j - 1] + 1;
+        const deleteOp = prev[j] + 1;
+        const replaceOp = prev[j - 1] + 1;
+        curr[j] = Math.min(insertOp, deleteOp, replaceOp);
+        steps.push({
+          state: { dp: [...curr], dpLabels: labels, dpHighlights: [j], dpSecondary: [j - 1], result: null, word1, word2 },
+          highlights: [],
+          pointers: { i, j },
+          message: `'${word1[i - 1]}' != '${word2[j - 1]}': curr[${j}] = 1 + min(insert=${curr[j - 1]}, delete=${prev[j]}, replace=${prev[j - 1]}) = ${curr[j]}`,
+          codeLine: 10,
+          action: 'insert',
+        });
+      }
+    }
+
+    prev = curr;
+  }
+
+  steps.push({
+    state: { dp: [...prev], dpLabels: labels, dpHighlights: [n], result: prev[n], word1, word2 },
+    highlights: [],
+    message: `Minimum edit distance from "${word1}" to "${word2}": ${prev[n]} — computed with only two rows of memory`,
+    codeLine: 13,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const editDistance: Algorithm = {
   id: 'edit-distance',
   name: 'Edit Distance',
@@ -166,6 +244,120 @@ export const editDistance: Algorithm = {
   },
   defaultInput: { word1: 'horse', word2: 'ros' },
   run: runEditDistance,
+  optimalApproachName: '2-D DP Table',
+  approaches: [
+    {
+      id: 'rolling-rows',
+      name: 'Rolling Rows (1-D)',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Identical recurrence to the 2-D table, but keeps only the previous and current rows, cutting space from O(m·n) to O(n).',
+      code: {
+        python: `def minDistance(word1, word2):
+    m, n = len(word1), len(word2)
+    prev = list(range(n + 1))
+    for i in range(1, m + 1):
+        curr = [i] + [0] * n
+        for j in range(1, n + 1):
+            if word1[i-1] == word2[j-1]:
+                curr[j] = prev[j-1]
+            else:
+                curr[j] = 1 + min(curr[j-1],
+                    prev[j], prev[j-1])
+        prev = curr
+    return prev[n]`,
+        javascript: `function minDistance(word1, word2) {
+    const m = word1.length, n = word2.length;
+    let prev = Array.from({length: n + 1}, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+        const curr = new Array(n + 1).fill(0);
+        curr[0] = i;
+        for (let j = 1; j <= n; j++) {
+            if (word1[i-1] === word2[j-1]) {
+                curr[j] = prev[j-1];
+            } else {
+                curr[j] = 1 + Math.min(curr[j-1],
+                    prev[j], prev[j-1]);
+            }
+        }
+        prev = curr;
+    }
+    return prev[n];
+}`,
+        java: `public int minDistance(String word1, String word2) {
+    int m = word1.length(), n = word2.length();
+    int[] prev = new int[n + 1];
+    for (int j = 0; j <= n; j++) prev[j] = j;
+    for (int i = 1; i <= m; i++) {
+        int[] curr = new int[n + 1];
+        curr[0] = i;
+        for (int j = 1; j <= n; j++) {
+            if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                curr[j] = prev[j - 1];
+            } else {
+                curr[j] = 1 + Math.min(curr[j - 1],
+                    Math.min(prev[j], prev[j - 1]));
+            }
+        }
+        prev = curr;
+    }
+    return prev[n];
+}`,
+      },
+      run: runEditDistanceRollingRows,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking two strings',
+          2: 'Get lengths of both strings',
+          3: 'Previous row = base cases: "" to word2[:j] costs j inserts',
+          4: 'Iterate over each character of word1 (one row at a time)',
+          5: 'New row starts with curr[0] = i (delete all i chars)',
+          6: 'Iterate over each character of word2',
+          7: 'Check if characters match',
+          8: 'Match: free — copy the diagonal from the previous row',
+          9: 'No match branch',
+          10: 'curr[j-1] = insert, then...',
+          11: 'prev[j] = delete, prev[j-1] = replace; take min + 1',
+          12: 'Current row becomes the previous row for the next i',
+          13: 'Answer sits at the end of the last computed row',
+        },
+        javascript: {
+          1: 'Define function taking two strings',
+          2: 'Get lengths of both strings',
+          3: 'Previous row = base cases: "" to word2[:j] costs j inserts',
+          4: 'Iterate over each character of word1 (one row at a time)',
+          5: 'Allocate the new current row',
+          6: 'curr[0] = i (delete all i chars of word1 prefix)',
+          7: 'Iterate over each character of word2',
+          8: 'Check if characters match',
+          9: 'Match: free — copy the diagonal from the previous row',
+          10: 'No match branch',
+          11: 'curr[j-1] = insert, then...',
+          12: 'prev[j] = delete, prev[j-1] = replace; take min + 1',
+          15: 'Current row becomes the previous row for the next i',
+          17: 'Answer sits at the end of the last computed row',
+        },
+        java: {
+          1: 'Define method taking two strings',
+          2: 'Get lengths of both strings',
+          3: 'Allocate the previous row',
+          4: 'Base cases: "" to word2[:j] costs j inserts',
+          5: 'Iterate over each character of word1 (one row at a time)',
+          6: 'Allocate the new current row',
+          7: 'curr[0] = i (delete all i chars of word1 prefix)',
+          8: 'Iterate over each character of word2',
+          9: 'Check if characters match',
+          10: 'Match: free — copy the diagonal from the previous row',
+          11: 'No match branch',
+          12: 'curr[j-1] = insert, then...',
+          13: 'prev[j] = delete, prev[j-1] = replace; take min + 1',
+          16: 'Current row becomes the previous row for the next i',
+          18: 'Answer sits at the end of the last computed row',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking two strings',

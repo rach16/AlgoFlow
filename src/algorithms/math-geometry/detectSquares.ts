@@ -109,6 +109,121 @@ function runDetectSquares(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runDetectSquaresColumnBuckets(input: unknown): AlgorithmStep[] {
+  const operations = input as [string, number[]][];
+  const steps: AlgorithmStep[] = [];
+
+  const points: Record<string, number> = {}; // "x,y" -> count
+  const cols: Record<number, number[]> = {}; // x -> list of y values (with duplicates)
+
+  steps.push({
+    state: {
+      hashMap: {},
+      result: 'Processing operations...',
+    },
+    highlights: [],
+    message: `DetectSquares with column buckets: group points by x-coordinate, so count() only scans points in the query's own column instead of every point ever added.`,
+    codeLine: 1,
+  });
+
+  for (let opIdx = 0; opIdx < operations.length; opIdx++) {
+    const [op, point] = operations[opIdx];
+
+    if (op === 'add') {
+      const [x, y] = point;
+      const key = `${x},${y}`;
+      points[key] = (points[key] || 0) + 1;
+      (cols[x] = cols[x] || []).push(y);
+
+      steps.push({
+        state: {
+          hashMap: { ...points },
+          result: `Added (${x},${y}). Column x=${x} now holds [${cols[x].join(', ')}]`,
+        },
+        highlights: [],
+        message: `Operation ${opIdx}: add(${x},${y}). Count at (${x},${y}) = ${points[key]}; y=${y} appended to column bucket x=${x}.`,
+        codeLine: 8,
+        action: 'insert',
+      });
+    } else if (op === 'count') {
+      const [px, py] = point;
+      let count = 0;
+      const bucket = cols[px] || [];
+
+      steps.push({
+        state: {
+          hashMap: { ...points },
+          result: `count(${px},${py}): scanning column x=${px} -> [${bucket.join(', ')}]`,
+        },
+        highlights: [],
+        message: `Operation ${opIdx}: count(${px},${py}). Any square with this corner needs a vertical edge in column x=${px}, so scan only that bucket: [${bucket.join(', ')}].`,
+        codeLine: 14,
+        action: 'visit',
+      });
+
+      for (const y of bucket) {
+        const d = Math.abs(y - py);
+        if (d === 0) continue;
+
+        for (const x2 of [px + d, px - d]) {
+          const c1 = points[`${x2},${py}`] || 0;
+          const c2 = points[`${x2},${y}`] || 0;
+
+          if (c1 > 0 && c2 > 0) {
+            count += c1 * c2;
+
+            steps.push({
+              state: {
+                hashMap: { ...points },
+                result: `Squares so far: ${count}`,
+              },
+              highlights: [],
+              message: `Vertical edge (${px},${py})-(${px},${y}) has side ${d}. Corners at x=${x2}: (${x2},${py}) x${c1} and (${x2},${y}) x${c2} exist -> +${c1 * c2} square${c1 * c2 > 1 ? 's' : ''}.`,
+              codeLine: 19,
+              action: 'found',
+            });
+          } else {
+            steps.push({
+              state: {
+                hashMap: { ...points },
+                result: `Squares so far: ${count}`,
+              },
+              highlights: [],
+              message: `Vertical edge of side ${d}: checking corners (${x2},${py}) and (${x2},${y}) — ${c1 === 0 ? `(${x2},${py}) missing` : `(${x2},${y}) missing`}, no square on this side.`,
+              codeLine: 19,
+              action: 'compare',
+            });
+          }
+        }
+      }
+
+      steps.push({
+        state: {
+          hashMap: { ...points },
+          result: `count(${px},${py}) = ${count}`,
+        },
+        highlights: [],
+        message: `count(${px},${py}) = ${count}.`,
+        codeLine: 20,
+        action: 'found',
+      });
+    }
+  }
+
+  steps.push({
+    state: {
+      hashMap: { ...points },
+      result: 'All operations processed',
+    },
+    highlights: [],
+    message: `Done! Processed all ${operations.length} operations using column buckets.`,
+    codeLine: 20,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const detectSquares: Algorithm = {
   id: 'detect-squares',
   name: 'Detect Squares',
@@ -198,6 +313,151 @@ export const detectSquares: Algorithm = {
     ['count', [11, 10]],
   ],
   run: runDetectSquares,
+  optimalApproachName: 'Diagonal Point Scan',
+  approaches: [
+    {
+      id: 'column-buckets',
+      name: 'X-Coordinate Buckets',
+      timeComplexity: 'O(k) per count (k = points sharing the query x)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of scanning every stored point looking for diagonals, bucket points by x-coordinate: a square needs a vertical edge in the query column, so count() only inspects that one bucket.',
+      code: {
+        python: `class DetectSquares:
+    def __init__(self):
+        self.points = defaultdict(int)
+        self.cols = defaultdict(list)
+
+    def add(self, point):
+        x, y = point
+        self.points[(x, y)] += 1
+        self.cols[x].append(y)
+
+    def count(self, point):
+        px, py = point
+        res = 0
+        for y in self.cols[px]:
+            d = abs(y - py)
+            if d == 0:
+                continue
+            for x2 in (px + d, px - d):
+                res += self.points[(x2, py)] * self.points[(x2, y)]
+        return res`,
+        javascript: `class DetectSquares {
+    constructor() {
+        this.points = {};
+        this.cols = {};
+    }
+    add(point) {
+        const [x, y] = point;
+        const key = x + ',' + y;
+        this.points[key] = (this.points[key] || 0) + 1;
+        (this.cols[x] = this.cols[x] || []).push(y);
+    }
+    count(point) {
+        const [px, py] = point;
+        let res = 0;
+        for (const y of this.cols[px] || []) {
+            const d = Math.abs(y - py);
+            if (d === 0) continue;
+            for (const x2 of [px + d, px - d]) {
+                res += (this.points[x2 + ',' + py] || 0) * (this.points[x2 + ',' + y] || 0);
+            }
+        }
+        return res;
+    }
+}`,
+        java: `class DetectSquares {
+    private Map<String, Integer> points = new HashMap<>();
+    private Map<Integer, List<Integer>> cols = new HashMap<>();
+
+    public void add(int[] point) {
+        int x = point[0], y = point[1];
+        String key = x + "," + y;
+        points.put(key, points.getOrDefault(key, 0) + 1);
+        cols.computeIfAbsent(x, k -> new ArrayList<>()).add(y);
+    }
+
+    public int count(int[] point) {
+        int px = point[0], py = point[1];
+        int res = 0;
+        for (int y : cols.getOrDefault(px, new ArrayList<>())) {
+            int d = Math.abs(y - py);
+            if (d == 0) continue;
+            for (int x2 : new int[] { px + d, px - d }) {
+                res += points.getOrDefault(x2 + "," + py, 0)
+                     * points.getOrDefault(x2 + "," + y, 0);
+            }
+        }
+        return res;
+    }
+}`,
+      },
+      run: runDetectSquaresColumnBuckets,
+      lineExplanations: {
+        python: {
+          1: 'Define DetectSquares class',
+          2: 'Initialize constructor',
+          3: 'Map counting occurrences of each exact point',
+          4: 'Buckets: x-coordinate -> list of y values (duplicates kept)',
+          6: 'Define add method for new point',
+          7: 'Unpack coordinates',
+          8: 'Increment count for this exact point',
+          9: 'Record y in the bucket for column x',
+          11: 'Define count method for query point',
+          12: 'Unpack query coordinates',
+          13: 'Initialize square count',
+          14: 'Scan only the query column — each y here is a vertical-edge partner',
+          15: 'Side length of the candidate square',
+          16: 'Same point as the query?',
+          17: 'Zero side means no area — skip',
+          18: 'The square can extend right (px+d) or left (px-d)',
+          19: 'Multiply counts of the two remaining corners',
+          20: 'Return total number of squares',
+        },
+        javascript: {
+          1: 'Define DetectSquares class',
+          2: 'Initialize constructor',
+          3: 'Map counting occurrences of each exact point',
+          4: 'Buckets: x-coordinate -> list of y values (duplicates kept)',
+          6: 'Define add method for new point',
+          7: 'Unpack coordinates',
+          8: 'Build string key from coordinates',
+          9: 'Increment count for this exact point',
+          10: 'Record y in the bucket for column x',
+          12: 'Define count method for query point',
+          13: 'Unpack query coordinates',
+          14: 'Initialize square count',
+          15: 'Scan only the query column — each y is a vertical-edge partner',
+          16: 'Side length of the candidate square',
+          17: 'Zero side means no area — skip',
+          18: 'The square can extend right (px+d) or left (px-d)',
+          19: 'Multiply counts of the two remaining corners',
+          22: 'Return total number of squares',
+        },
+        java: {
+          1: 'Define DetectSquares class',
+          2: 'Map counting occurrences of each exact point',
+          3: 'Buckets: x-coordinate -> list of y values (duplicates kept)',
+          5: 'Define add method for new point',
+          6: 'Unpack coordinates',
+          7: 'Build string key from coordinates',
+          8: 'Increment count for this exact point',
+          9: 'Record y in the bucket for column x',
+          12: 'Define count method for query point',
+          13: 'Unpack query coordinates',
+          14: 'Initialize square count',
+          15: 'Scan only the query column — each y is a vertical-edge partner',
+          16: 'Side length of the candidate square',
+          17: 'Zero side means no area — skip',
+          18: 'The square can extend right (px+d) or left (px-d)',
+          19: 'Multiply count of corner (x2, py)...',
+          20: '...by count of corner (x2, y)',
+          23: 'Return total number of squares',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define DetectSquares class',

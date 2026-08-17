@@ -81,6 +81,65 @@ function runMaximumSubarray(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMaximumSubarrayDP(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+  const dp: number[] = new Array(n).fill(0);
+  dp[0] = nums[0];
+
+  steps.push({
+    state: { nums: [...nums], result: 'Building dp table...' },
+    highlights: [],
+    message: `DP formulation: dp[i] = best subarray sum ENDING at index i. At each i, either extend the previous subarray or start fresh.`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums: [...nums], result: `dp: [${dp.join(', ')}]` },
+    highlights: [0],
+    pointers: { i: 0 },
+    message: `Base case: dp[0] = nums[0] = ${nums[0]} — the only subarray ending at index 0 is [${nums[0]}] itself.`,
+    codeLine: 4,
+    action: 'insert',
+  });
+
+  let best = dp[0];
+  let bestIdx = 0;
+
+  for (let i = 1; i < n; i++) {
+    const restart = nums[i];
+    const extend = dp[i - 1] + nums[i];
+    dp[i] = Math.max(restart, extend);
+    const extended = extend >= restart;
+    if (dp[i] > best) {
+      best = dp[i];
+      bestIdx = i;
+    }
+
+    steps.push({
+      state: { nums: [...nums], result: `dp: [${dp.slice(0, i + 1).join(', ')}]` },
+      highlights: [i],
+      secondary: [i - 1],
+      pointers: { i },
+      message: `dp[${i}] = max(${restart}, ${dp[i - 1]} + ${nums[i]}) = ${dp[i]} — ${extended ? `extending the subarray ending at ${i - 1} is worth it` : `dp[${i - 1}] = ${dp[i - 1]} is negative baggage, so start fresh at index ${i}`}.`,
+      codeLine: 6,
+      action: 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], result: `Maximum subarray sum: ${best}` },
+    highlights: [bestIdx],
+    pointers: { best: bestIdx },
+    message: `Answer = max over all dp values = ${best} (best subarray ends at index ${bestIdx}). Kadane's algorithm is exactly this dp collapsed to O(1) space.`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const maximumSubarray: Algorithm = {
   id: 'maximum-subarray',
   name: 'Maximum Subarray',
@@ -125,6 +184,78 @@ export const maximumSubarray: Algorithm = {
   },
   defaultInput: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
   run: runMaximumSubarray,
+  optimalApproachName: "Kadane's Algorithm",
+  approaches: [
+    {
+      id: 'dp-tabulation',
+      name: 'Dynamic Programming',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        "Instead of Kadane's implicit reset, build an explicit dp table where dp[i] is the best subarray sum ending at i, then take the max over the table.",
+      code: {
+        python: `def maxSubArray(nums):
+    n = len(nums)
+    dp = [0] * n
+    dp[0] = nums[0]
+    for i in range(1, n):
+        dp[i] = max(nums[i], dp[i - 1] + nums[i])
+    return max(dp)`,
+        javascript: `function maxSubArray(nums) {
+    const n = nums.length;
+    const dp = new Array(n);
+    dp[0] = nums[0];
+    for (let i = 1; i < n; i++) {
+        dp[i] = Math.max(nums[i], dp[i - 1] + nums[i]);
+    }
+    return Math.max(...dp);
+}`,
+        java: `public static int maxSubArray(int[] nums) {
+    int n = nums.length;
+    int[] dp = new int[n];
+    dp[0] = nums[0];
+    int best = nums[0];
+    for (int i = 1; i < n; i++) {
+        dp[i] = Math.max(nums[i], dp[i - 1] + nums[i]);
+        best = Math.max(best, dp[i]);
+    }
+    return best;
+}`,
+      },
+      run: runMaximumSubarrayDP,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'n = number of elements',
+          3: 'dp[i] will hold the best subarray sum ending at index i',
+          4: 'Base case: the only subarray ending at 0 is nums[0] itself',
+          5: 'Fill the dp table left to right',
+          6: 'Either start fresh at i, or extend the best subarray ending at i-1',
+          7: 'The answer is the best value over all ending positions',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'n = number of elements',
+          3: 'Allocate dp: best subarray sum ending at each index',
+          4: 'Base case: the only subarray ending at 0 is nums[0] itself',
+          5: 'Fill the dp table left to right',
+          6: 'Either start fresh at i, or extend the best subarray ending at i-1',
+          8: 'The answer is the best value over all ending positions',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'n = number of elements',
+          3: 'Allocate dp: best subarray sum ending at each index',
+          4: 'Base case: the only subarray ending at 0 is nums[0] itself',
+          5: 'Track the running best answer as we fill dp',
+          6: 'Fill the dp table left to right',
+          7: 'Either start fresh at i, or extend the best subarray ending at i-1',
+          8: 'Update the best answer seen so far',
+          10: 'Return the maximum subarray sum',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

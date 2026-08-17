@@ -65,6 +65,61 @@ function runJumpGame(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runJumpGameForward(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+
+  steps.push({
+    state: { nums: [...nums], result: 'Can we reach the last index?' },
+    highlights: [],
+    message: `Forward greedy: sweep left to right, tracking maxReach = the farthest index reachable so far.`,
+    codeLine: 1,
+  });
+
+  let maxReach = 0;
+
+  for (let i = 0; i < n; i++) {
+    if (i > maxReach) {
+      steps.push({
+        state: { nums: [...nums], result: 'false - Cannot reach the end' },
+        highlights: [i],
+        secondary: [maxReach],
+        pointers: { i, maxReach },
+        message: `Index ${i} is beyond maxReach (${maxReach}) — nothing before it can jump this far, so we are stranded. Return false.`,
+        codeLine: 5,
+        action: 'found',
+      });
+      return steps;
+    }
+
+    const reach = i + nums[i];
+    const improved = reach > maxReach;
+    maxReach = Math.max(maxReach, reach);
+
+    steps.push({
+      state: { nums: [...nums], result: `Max reach: ${maxReach}` },
+      highlights: [i],
+      secondary: [Math.min(maxReach, n - 1)],
+      pointers: { i, maxReach: Math.min(maxReach, n - 1) },
+      message: `Index ${i} (value ${nums[i]}) reaches up to index ${reach}. maxReach ${improved ? `improves to ${maxReach}` : `stays at ${maxReach}`}${maxReach >= n - 1 ? ' — the last index is already within reach!' : '.'}`,
+      codeLine: 6,
+      action: improved ? 'insert' : 'compare',
+    });
+  }
+
+  steps.push({
+    state: { nums: [...nums], result: 'true - Can reach the end!' },
+    highlights: [0, n - 1],
+    pointers: { maxReach: n - 1 },
+    message: `Swept the whole array without ever getting stranded — the last index is reachable. Return true.`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const jumpGame: Algorithm = {
   id: 'jump-game',
   name: 'Jump Game',
@@ -104,6 +159,70 @@ export const jumpGame: Algorithm = {
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGame,
+  optimalApproachName: 'Greedy (Backward Goal)',
+  approaches: [
+    {
+      id: 'greedy-forward',
+      name: 'Greedy (Forward Max-Reach)',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of pulling the goal backwards, sweep forward tracking the farthest reachable index — if the scan ever passes it, you are stranded.',
+      code: {
+        python: `def canJump(nums):
+    maxReach = 0
+    for i in range(len(nums)):
+        if i > maxReach:
+            return False
+        maxReach = max(maxReach, i + nums[i])
+    return True`,
+        javascript: `function canJump(nums) {
+    let maxReach = 0;
+    for (let i = 0; i < nums.length; i++) {
+        if (i > maxReach) return false;
+        maxReach = Math.max(maxReach, i + nums[i]);
+    }
+    return true;
+}`,
+        java: `public static boolean canJump(int[] nums) {
+    int maxReach = 0;
+    for (int i = 0; i < nums.length; i++) {
+        if (i > maxReach) return false;
+        maxReach = Math.max(maxReach, i + nums[i]);
+    }
+    return true;
+}`,
+      },
+      run: runJumpGameForward,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'Farthest index reachable so far (we start at index 0)',
+          3: 'Scan every index left to right',
+          4: 'If the scan passed maxReach, index i is unreachable',
+          5: 'Stranded — no jump can ever land here, return false',
+          6: 'Extend maxReach with the jump from index i',
+          7: 'Never got stranded, so the last index is reachable',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'Farthest index reachable so far (we start at index 0)',
+          3: 'Scan every index left to right',
+          4: 'If the scan passed maxReach, index i is unreachable — return false',
+          5: 'Extend maxReach with the jump from index i',
+          7: 'Never got stranded, so the last index is reachable',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'Farthest index reachable so far (we start at index 0)',
+          3: 'Scan every index left to right',
+          4: 'If the scan passed maxReach, index i is unreachable — return false',
+          5: 'Extend maxReach with the jump from index i',
+          7: 'Never got stranded, so the last index is reachable',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

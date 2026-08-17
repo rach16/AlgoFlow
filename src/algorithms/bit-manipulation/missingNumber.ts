@@ -98,6 +98,84 @@ function runMissingNumber(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMissingNumberGaussSum(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      bits: [],
+      bitHighlights: [],
+      result: `Finding missing number in [0..${n}]`,
+    },
+    highlights: [],
+    message: `Gauss' formula gives the sum 0+1+...+${n} instantly. Whatever the actual array sum falls short by is the missing number.`,
+    codeLine: 2,
+  } as AlgorithmStep);
+
+  const expected = (n * (n + 1)) / 2;
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      bits: [{ value: expected, bits: toBinary(expected), label: `expected sum = ${expected}` }],
+      bitHighlights: [0],
+      result: `Expected sum of 0..${n}: ${expected}`,
+    },
+    highlights: [],
+    message: `Expected sum = n(n+1)/2 = ${n} * ${n + 1} / 2 = ${expected}. That's what 0..${n} would add up to with nothing missing.`,
+    codeLine: 3,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  let actual = 0;
+
+  for (let i = 0; i < n; i++) {
+    const before = actual;
+    actual += nums[i];
+
+    steps.push({
+      state: {
+        nums: [...nums],
+        bits: [
+          { value: expected, bits: toBinary(expected), label: `expected = ${expected}` },
+          { value: actual, bits: toBinary(actual), label: `actual sum so far = ${actual}` },
+        ],
+        bitHighlights: [1],
+        result: `Actual sum: ${actual}`,
+      },
+      highlights: [i],
+      pointers: { i },
+      message: `Add nums[${i}] = ${nums[i]}: actual sum = ${before} + ${nums[i]} = ${actual}.`,
+      codeLine: 4,
+      action: 'visit',
+    } as AlgorithmStep);
+  }
+
+  const missing = expected - actual;
+
+  steps.push({
+    state: {
+      nums: [...nums],
+      bits: [
+        { value: expected, bits: toBinary(expected), label: `expected = ${expected}` },
+        { value: actual, bits: toBinary(actual), label: `actual = ${actual}` },
+        { value: missing, bits: toBinary(missing), label: `missing = ${missing}` },
+      ],
+      bitHighlights: [2],
+      result: `Missing number: ${missing}`,
+    },
+    highlights: [],
+    message: `Done! Missing number = expected - actual = ${expected} - ${actual} = ${missing}. Every present number cancels; only the absent one leaves a gap.`,
+    codeLine: 5,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const missingNumber: Algorithm = {
   id: 'missing-number',
   name: 'Missing Number',
@@ -135,6 +213,64 @@ export const missingNumber: Algorithm = {
   },
   defaultInput: [3, 0, 1],
   run: runMissingNumber,
+  optimalApproachName: 'XOR Cancellation',
+  approaches: [
+    {
+      id: 'gauss-sum-formula',
+      name: 'Gauss Sum Formula',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Computes the expected sum 0+1+...+n with n(n+1)/2 and subtracts the actual array sum — pure arithmetic instead of bitwise cancellation.',
+      code: {
+        python: `def missingNumber(nums):
+    n = len(nums)
+    expected = n * (n + 1) // 2
+    actual = sum(nums)
+    return expected - actual`,
+        javascript: `function missingNumber(nums) {
+    const n = nums.length;
+    const expected = n * (n + 1) / 2;
+    let actual = 0;
+    for (const num of nums) actual += num;
+    return expected - actual;
+}`,
+        java: `public static int missingNumber(int[] nums) {
+    int n = nums.length;
+    int expected = n * (n + 1) / 2;
+    int actual = 0;
+    for (int num : nums) actual += num;
+    return expected - actual;
+}`,
+      },
+      run: runMissingNumberGaussSum,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking array of numbers',
+          2: 'n = array length, so the full range is [0..n]',
+          3: "Gauss' formula: sum of 0..n = n(n+1)/2",
+          4: 'Sum what is actually in the array',
+          5: 'The shortfall is exactly the missing number',
+        },
+        javascript: {
+          1: 'Define function taking array of numbers',
+          2: 'n = array length, so the full range is [0..n]',
+          3: "Gauss' formula: sum of 0..n = n(n+1)/2",
+          4: 'Initialize running sum of the array',
+          5: 'Add every element to the actual sum',
+          6: 'The shortfall is exactly the missing number',
+        },
+        java: {
+          1: 'Define method taking array of numbers',
+          2: 'n = array length, so the full range is [0..n]',
+          3: "Gauss' formula: sum of 0..n = n(n+1)/2",
+          4: 'Initialize running sum of the array',
+          5: 'Add every element to the actual sum',
+          6: 'The shortfall is exactly the missing number',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking array of numbers',

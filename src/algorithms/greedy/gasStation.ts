@@ -107,6 +107,96 @@ function runGasStation(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runGasStationPrefixMin(input: unknown): AlgorithmStep[] {
+  const { gas, cost } = input as GasStationInput;
+  const steps: AlgorithmStep[] = [];
+  const n = gas.length;
+
+  steps.push({
+    state: {
+      nums: [...gas],
+      count: 0,
+      result: `Gas: [${gas.join(', ')}], Cost: [${cost.join(', ')}]`,
+    },
+    highlights: [],
+    message: `Prefix-sum view: plot the running fuel balance from station 0. The valid start is right AFTER the lowest point of that curve.`,
+    codeLine: 1,
+  });
+
+  let total = 0;
+  let minPrefix = 0;
+  let start = 0;
+
+  for (let i = 0; i < n; i++) {
+    const net = gas[i] - cost[i];
+    total += net;
+
+    steps.push({
+      state: {
+        nums: [...gas],
+        count: total,
+        result: `Prefix: ${total}, Min prefix: ${minPrefix}, Start: ${start % n}`,
+      },
+      highlights: [i],
+      pointers: { i, start: start % n },
+      message: `Station ${i}: net = ${gas[i]} - ${cost[i]} = ${net >= 0 ? '+' : ''}${net}. Running balance = ${total}.`,
+      codeLine: 6,
+      action: 'visit',
+    });
+
+    if (total < minPrefix) {
+      minPrefix = total;
+      start = i + 1;
+
+      steps.push({
+        state: {
+          nums: [...gas],
+          count: total,
+          result: `Prefix: ${total}, Min prefix: ${minPrefix}, Start: ${start % n}`,
+        },
+        highlights: [start % n],
+        secondary: [i],
+        pointers: { i, start: start % n },
+        message: `New lowest balance (${minPrefix}) at station ${i} — the deepest valley so far. Candidate start moves to station ${start % n}, just past the valley.`,
+        codeLine: 9,
+        action: 'insert',
+      });
+    }
+  }
+
+  if (total < 0) {
+    steps.push({
+      state: {
+        nums: [...gas],
+        count: total,
+        result: 'Result: -1 (impossible)',
+      },
+      highlights: [],
+      message: `Total balance = ${total} < 0 — the circuit burns more gas than it provides, so no start works. Return -1.`,
+      codeLine: 10,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const answer = start % n;
+
+  steps.push({
+    state: {
+      nums: [...gas],
+      count: total,
+      result: `Starting station: ${answer}`,
+    },
+    highlights: [answer],
+    pointers: { start: answer },
+    message: `Starting just after the minimum-prefix valley keeps the tank non-negative for the whole loop. Starting station = ${answer}.`,
+    codeLine: 10,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const gasStation: Algorithm = {
   id: 'gas-station',
   name: 'Gas Station',
@@ -168,6 +258,86 @@ export const gasStation: Algorithm = {
   },
   defaultInput: { gas: [1, 2, 3, 4, 5], cost: [3, 4, 5, 1, 2] },
   run: runGasStation,
+  optimalApproachName: 'One-Pass Greedy',
+  approaches: [
+    {
+      id: 'prefix-minimum',
+      name: 'Prefix Sum Minimum',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of resetting a running tank, compute the running fuel balance once — the valid start is the station right after the global minimum prefix.',
+      code: {
+        python: `def canCompleteCircuit(gas, cost):
+    total = 0
+    minPrefix = 0
+    start = 0
+    for i in range(len(gas)):
+        total += gas[i] - cost[i]
+        if total < minPrefix:
+            minPrefix = total
+            start = i + 1
+    return start % len(gas) if total >= 0 else -1`,
+        javascript: `function canCompleteCircuit(gas, cost) {
+    let total = 0, minPrefix = 0, start = 0;
+    for (let i = 0; i < gas.length; i++) {
+        total += gas[i] - cost[i];
+        if (total < minPrefix) {
+            minPrefix = total;
+            start = i + 1;
+        }
+    }
+    return total >= 0 ? start % gas.length : -1;
+}`,
+        java: `public static int canCompleteCircuit(int[] gas, int[] cost) {
+    int total = 0, minPrefix = 0, start = 0;
+    for (int i = 0; i < gas.length; i++) {
+        total += gas[i] - cost[i];
+        if (total < minPrefix) {
+            minPrefix = total;
+            start = i + 1;
+        }
+    }
+    return total >= 0 ? start % gas.length : -1;
+}`,
+      },
+      run: runGasStationPrefixMin,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking gas and cost arrays',
+          2: 'Running fuel balance starting the trip at station 0',
+          3: 'Lowest balance (deepest valley) seen so far',
+          4: 'Candidate starting station',
+          5: 'Walk the circuit once from station 0',
+          6: 'Add net fuel gain/loss at this station',
+          7: 'Did the balance curve reach a new low?',
+          8: 'Record the new valley depth',
+          9: 'Best start is just past the valley',
+          10: 'If total fuel is non-negative a start exists: return it (mod n), else -1',
+        },
+        javascript: {
+          1: 'Define function taking gas and cost arrays',
+          2: 'Running balance, lowest balance seen, and candidate start',
+          3: 'Walk the circuit once from station 0',
+          4: 'Add net fuel gain/loss at this station',
+          5: 'Did the balance curve reach a new low?',
+          6: 'Record the new valley depth',
+          7: 'Best start is just past the valley',
+          10: 'If total fuel is non-negative a start exists: return it (mod n), else -1',
+        },
+        java: {
+          1: 'Define method taking gas and cost arrays',
+          2: 'Running balance, lowest balance seen, and candidate start',
+          3: 'Walk the circuit once from station 0',
+          4: 'Add net fuel gain/loss at this station',
+          5: 'Did the balance curve reach a new low?',
+          6: 'Record the new valley depth',
+          7: 'Best start is just past the valley',
+          10: 'If total fuel is non-negative a start exists: return it (mod n), else -1',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking gas and cost arrays',

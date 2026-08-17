@@ -102,6 +102,66 @@ function runUniquePaths(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runUniquePathsMathCombination(input: unknown): AlgorithmStep[] {
+  const { m, n } = input as UniquePathsInput;
+  const steps: AlgorithmStep[] = [];
+
+  const total = m + n - 2;
+  const k = Math.min(m - 1, n - 1);
+  const chooseWhat = m - 1 <= n - 1 ? 'down-moves' : 'right-moves';
+  const labels = Array.from({ length: k + 1 }, (_, i) => `i=${i}`);
+
+  steps.push({
+    state: { result: null, m, n },
+    highlights: [],
+    message: `Insight: EVERY path in a ${m}x${n} grid is exactly ${total} moves — ${m - 1} downs and ${n - 1} rights. A path is just a choice of where the downs go!`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { result: null, m, n },
+    highlights: [],
+    message: `So the answer is the binomial coefficient C(${total}, ${k}): choose which ${k} of the ${total} moves are ${chooseWhat}. No DP table needed.`,
+    codeLine: 3,
+  });
+
+  const values: (number | null)[] = new Array(k + 1).fill(null);
+  values[0] = 1;
+  let res = 1;
+
+  steps.push({
+    state: { dp: [...values], dpLabels: labels, dpHighlights: [0], result: null },
+    highlights: [],
+    message: `Start res = 1 (C(${total - k}, 0) = 1) and multiply in one factor at a time to avoid huge factorials`,
+    codeLine: 4,
+    action: 'insert',
+  });
+
+  for (let i = 1; i <= k; i++) {
+    const numerator = total - k + i;
+    res = (res * numerator) / i;
+    values[i] = res;
+    steps.push({
+      state: { dp: [...values], dpLabels: labels, dpHighlights: [i], dpSecondary: [i - 1], result: null },
+      highlights: [],
+      pointers: { i },
+      message: `i=${i}: res = res × ${numerator} / ${i} = ${res}. This is C(${numerator}, ${i}) — always an integer, so division is exact`,
+      codeLine: 6,
+      action: 'insert',
+    });
+  }
+
+  steps.push({
+    state: { dp: [...values], dpLabels: labels, dpHighlights: [k], result: res },
+    highlights: [],
+    message: `C(${total}, ${k}) = ${res} unique paths — computed in O(min(m, n)) time with O(1) extra space`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const uniquePaths: Algorithm = {
   id: 'unique-paths',
   name: 'Unique Paths',
@@ -150,6 +210,74 @@ export const uniquePaths: Algorithm = {
   },
   defaultInput: { m: 3, n: 7 },
   run: runUniquePaths,
+  optimalApproachName: '2-D DP Table',
+  approaches: [
+    {
+      id: 'math-combination',
+      name: 'Math Combination',
+      timeComplexity: 'O(min(m, n))',
+      spaceComplexity: 'O(1)',
+      description:
+        'Instead of filling a DP table, count directly: every path is m+n-2 moves, so the answer is the binomial coefficient C(m+n-2, m-1).',
+      code: {
+        python: `def uniquePaths(m, n):
+    total = m + n - 2
+    k = min(m - 1, n - 1)
+    res = 1
+    for i in range(1, k + 1):
+        res = res * (total - k + i) // i
+    return res`,
+        javascript: `function uniquePaths(m, n) {
+    const total = m + n - 2;
+    const k = Math.min(m - 1, n - 1);
+    let res = 1;
+    for (let i = 1; i <= k; i++) {
+        res = res * (total - k + i) / i;
+    }
+    return res;
+}`,
+        java: `public int uniquePaths(int m, int n) {
+    int total = m + n - 2;
+    int k = Math.min(m - 1, n - 1);
+    long res = 1;
+    for (int i = 1; i <= k; i++) {
+        res = res * (total - k + i) / i;
+    }
+    return (int) res;
+}`,
+      },
+      run: runUniquePathsMathCombination,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking grid dimensions m and n',
+          2: 'Every path makes exactly m+n-2 moves total',
+          3: 'Choose the smaller count (downs or rights) for fewer iterations',
+          4: 'Running product starts at C(total-k, 0) = 1',
+          5: 'Multiply in one factor of the binomial coefficient at a time',
+          6: 'res becomes C(total-k+i, i); division is always exact',
+          7: 'Return C(m+n-2, k) — the number of unique paths',
+        },
+        javascript: {
+          1: 'Define function taking grid dimensions m and n',
+          2: 'Every path makes exactly m+n-2 moves total',
+          3: 'Choose the smaller count (downs or rights) for fewer iterations',
+          4: 'Running product starts at C(total-k, 0) = 1',
+          5: 'Multiply in one factor of the binomial coefficient at a time',
+          6: 'res becomes C(total-k+i, i); division is always exact',
+          8: 'Return C(m+n-2, k) — the number of unique paths',
+        },
+        java: {
+          1: 'Define method taking grid dimensions m and n',
+          2: 'Every path makes exactly m+n-2 moves total',
+          3: 'Choose the smaller count (downs or rights) for fewer iterations',
+          4: 'Use long to avoid overflow in the running product',
+          5: 'Multiply in one factor of the binomial coefficient at a time',
+          6: 'res becomes C(total-k+i, i); division is always exact',
+          8: 'Cast back to int and return the path count',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking grid dimensions m and n',

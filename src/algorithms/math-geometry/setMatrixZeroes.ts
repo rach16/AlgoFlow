@@ -152,6 +152,102 @@ function runSetMatrixZeroes(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSetMatrixZeroesRowColSets(input: unknown): AlgorithmStep[] {
+  const matrix = (input as number[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const m = matrix.length;
+  const n = matrix[0].length;
+
+  steps.push({
+    state: {
+      matrix: matrix.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'Scanning for zeroes...',
+    },
+    highlights: [],
+    message: `${m}x${n} matrix. Record every zero's row and column in two sets, then zero out marked rows/columns in a second pass. O(m+n) extra space.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const zeroRows = new Set<number>();
+  const zeroCols = new Set<number>();
+
+  for (let r = 0; r < m; r++) {
+    for (let c = 0; c < n; c++) {
+      if (matrix[r][c] === 0) {
+        zeroRows.add(r);
+        zeroCols.add(c);
+
+        steps.push({
+          state: {
+            matrix: matrix.map(row => [...row]),
+            matrixHighlights: [[r, c]],
+            matrixSecondary: [],
+            result: `zeroRows = {${[...zeroRows].join(', ')}}, zeroCols = {${[...zeroCols].join(', ')}}`,
+          },
+          highlights: [],
+          message: `matrix[${r}][${c}] = 0. Record row ${r} and column ${c} in the sets — unlike the marker trick, this uses real extra memory.`,
+          codeLine: 6,
+          action: 'found',
+        } as AlgorithmStep);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: matrix.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [
+        ...[...zeroRows].flatMap(r => Array.from({ length: n }, (_, c) => [r, c] as [number, number])),
+        ...[...zeroCols].flatMap(c => Array.from({ length: m }, (_, r) => [r, c] as [number, number])),
+      ],
+      result: `Rows to zero: {${[...zeroRows].join(', ')}}. Cols to zero: {${[...zeroCols].join(', ')}}`,
+    },
+    highlights: [],
+    message: `Scan complete. Rows {${[...zeroRows].join(', ')}} and columns {${[...zeroCols].join(', ')}} must become zero. Second pass applies it.`,
+    codeLine: 9,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  for (let r = 0; r < m; r++) {
+    for (let c = 0; c < n; c++) {
+      if ((zeroRows.has(r) || zeroCols.has(c)) && matrix[r][c] !== 0) {
+        matrix[r][c] = 0;
+
+        steps.push({
+          state: {
+            matrix: matrix.map(row => [...row]),
+            matrixHighlights: [[r, c]],
+            matrixSecondary: [],
+            result: `Set matrix[${r}][${c}] = 0`,
+          },
+          highlights: [],
+          message: `Cell (${r},${c}) is in ${zeroRows.has(r) ? `zero row ${r}` : `zero column ${c}`} — set it to 0.`,
+          codeLine: 12,
+          action: 'delete',
+        } as AlgorithmStep);
+      }
+    }
+  }
+
+  steps.push({
+    state: {
+      matrix: matrix.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'Matrix zeroed!',
+    },
+    highlights: [],
+    message: `Done! Same result as the O(1) marker approach, but the sets make the logic much easier to reason about.`,
+    codeLine: 12,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const setMatrixZeroes: Algorithm = {
   id: 'set-matrix-zeroes',
   name: 'Set Matrix Zeroes',
@@ -237,6 +333,116 @@ export const setMatrixZeroes: Algorithm = {
   },
   defaultInput: [[1, 1, 1], [1, 0, 1], [1, 1, 1]],
   run: runSetMatrixZeroes,
+  optimalApproachName: 'First Row/Col Markers',
+  approaches: [
+    {
+      id: 'row-col-sets',
+      name: 'Row & Column Sets',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m+n)',
+      description:
+        'Instead of reusing the first row/column as in-place markers, record zero rows and columns in two hash sets — trades O(m+n) extra space for far simpler bookkeeping.',
+      code: {
+        python: `def setZeroes(matrix):
+    m, n = len(matrix), len(matrix[0])
+    zero_rows, zero_cols = set(), set()
+    for r in range(m):
+        for c in range(n):
+            if matrix[r][c] == 0:
+                zero_rows.add(r)
+                zero_cols.add(c)
+    for r in range(m):
+        for c in range(n):
+            if r in zero_rows or c in zero_cols:
+                matrix[r][c] = 0`,
+        javascript: `function setZeroes(matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const zeroRows = new Set(), zeroCols = new Set();
+    for (let r = 0; r < m; r++) {
+        for (let c = 0; c < n; c++) {
+            if (matrix[r][c] === 0) {
+                zeroRows.add(r);
+                zeroCols.add(c);
+            }
+        }
+    }
+    for (let r = 0; r < m; r++) {
+        for (let c = 0; c < n; c++) {
+            if (zeroRows.has(r) || zeroCols.has(c)) {
+                matrix[r][c] = 0;
+            }
+        }
+    }
+}`,
+        java: `public static void setZeroes(int[][] matrix) {
+    int m = matrix.length, n = matrix[0].length;
+    Set<Integer> zeroRows = new HashSet<>();
+    Set<Integer> zeroCols = new HashSet<>();
+    for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+            if (matrix[r][c] == 0) {
+                zeroRows.add(r);
+                zeroCols.add(c);
+            }
+        }
+    }
+    for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+            if (zeroRows.contains(r) || zeroCols.contains(c)) {
+                matrix[r][c] = 0;
+            }
+        }
+    }
+}`,
+      },
+      run: runSetMatrixZeroesRowColSets,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking matrix',
+          2: 'Get matrix dimensions m and n',
+          3: 'Two sets: rows and columns that must become zero',
+          4: 'First pass: scan every row',
+          5: 'Scan every column',
+          6: 'Found a zero cell?',
+          7: 'Remember its row',
+          8: 'Remember its column',
+          9: 'Second pass: scan every row again',
+          10: 'Scan every column again',
+          11: 'Cell lies in a marked row or marked column?',
+          12: 'Zero it out',
+        },
+        javascript: {
+          1: 'Define function taking matrix',
+          2: 'Get matrix dimensions m and n',
+          3: 'Two sets: rows and columns that must become zero',
+          4: 'First pass: scan every row',
+          5: 'Scan every column',
+          6: 'Found a zero cell?',
+          7: 'Remember its row',
+          8: 'Remember its column',
+          12: 'Second pass: scan every row again',
+          13: 'Scan every column again',
+          14: 'Cell lies in a marked row or marked column?',
+          15: 'Zero it out',
+        },
+        java: {
+          1: 'Define method taking matrix',
+          2: 'Get matrix dimensions m and n',
+          3: 'Set of rows that must become zero',
+          4: 'Set of columns that must become zero',
+          5: 'First pass: scan every row',
+          6: 'Scan every column',
+          7: 'Found a zero cell?',
+          8: 'Remember its row',
+          9: 'Remember its column',
+          13: 'Second pass: scan every row again',
+          14: 'Scan every column again',
+          15: 'Cell lies in a marked row or marked column?',
+          16: 'Zero it out',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking matrix',

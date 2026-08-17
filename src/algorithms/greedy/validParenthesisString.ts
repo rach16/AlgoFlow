@@ -95,6 +95,91 @@ function runValidParenthesisString(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runValidParenthesisStringTwoPass(input: unknown): AlgorithmStep[] {
+  const s = input as string;
+  const steps: AlgorithmStep[] = [];
+  const chars = s.split('');
+
+  steps.push({
+    state: { chars: [...chars], result: 'Checking if valid...' },
+    highlights: [],
+    message: `Two-pass check: forward pass treats every '*' as '(' (best case for closers); backward pass treats every '*' as ')'. Valid iff neither pass goes negative.`,
+    codeLine: 1,
+  });
+
+  let open = 0;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    open += ch === ')' ? -1 : 1;
+
+    steps.push({
+      state: { chars: [...chars], count: Math.max(open, 0), result: `Forward open count: ${open}` },
+      highlights: [i],
+      pointers: { i },
+      message: `Forward: '${ch}' ${ch === ')' ? 'closes → open--' : ch === '(' ? 'opens → open++' : "is '*', assume the friendliest case '(' → open++"}. open = ${open}.`,
+      codeLine: 4,
+      action: 'visit',
+    });
+
+    if (open < 0) {
+      steps.push({
+        state: { chars: [...chars], result: 'false' },
+        highlights: [i],
+        message: `open < 0: this ')' has no possible partner even with every '*' as '('. Return false.`,
+        codeLine: 6,
+        action: 'found',
+      });
+      return steps;
+    }
+  }
+
+  steps.push({
+    state: { chars: [...chars], count: 0, result: 'Forward pass OK' },
+    highlights: [],
+    message: `Forward pass survived — no ')' is ever unmatched. Now scan RIGHT to LEFT treating every '*' as ')' to check the '(' side.`,
+    codeLine: 7,
+    action: 'compare',
+  });
+
+  let close = 0;
+
+  for (let i = s.length - 1; i >= 0; i--) {
+    const ch = s[i];
+    close += ch === '(' ? -1 : 1;
+
+    steps.push({
+      state: { chars: [...chars], count: Math.max(close, 0), result: `Backward close count: ${close}` },
+      highlights: [i],
+      pointers: { i },
+      message: `Backward: '${ch}' ${ch === '(' ? 'opens → close--' : ch === ')' ? 'closes → close++' : "is '*', assume the friendliest case ')' → close++"}. close = ${close}.`,
+      codeLine: 9,
+      action: 'visit',
+    });
+
+    if (close < 0) {
+      steps.push({
+        state: { chars: [...chars], result: 'false' },
+        highlights: [i],
+        message: `close < 0: this '(' has no possible partner even with every '*' as ')'. Return false.`,
+        codeLine: 11,
+        action: 'found',
+      });
+      return steps;
+    }
+  }
+
+  steps.push({
+    state: { chars: [...chars], result: 'true' },
+    highlights: [],
+    message: `Both passes stayed non-negative — every paren can find a partner with some assignment of the '*'s. Return true.`,
+    codeLine: 12,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const validParenthesisString: Algorithm = {
   id: 'valid-parenthesis-string',
   name: 'Valid Parenthesis String',
@@ -155,6 +240,98 @@ export const validParenthesisString: Algorithm = {
   },
   defaultInput: '(*))',
   run: runValidParenthesisString,
+  optimalApproachName: 'Two-Bound Greedy',
+  approaches: [
+    {
+      id: 'two-pass',
+      name: 'Two-Pass Counting',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(1)',
+      description:
+        "Instead of tracking a [lo, hi] range in one pass, make two passes: forward treating '*' as '(' and backward treating '*' as ')' — valid iff neither count goes negative.",
+      code: {
+        python: `def checkValidString(s):
+    open_count = 0
+    for c in s:
+        open_count += 1 if c in '(*' else -1
+        if open_count < 0:
+            return False
+    close_count = 0
+    for c in reversed(s):
+        close_count += 1 if c in ')*' else -1
+        if close_count < 0:
+            return False
+    return True`,
+        javascript: `function checkValidString(s) {
+    let openCount = 0;
+    for (const c of s) {
+        openCount += c === ')' ? -1 : 1;
+        if (openCount < 0) return false;
+    }
+    let closeCount = 0;
+    for (let i = s.length - 1; i >= 0; i--) {
+        closeCount += s[i] === '(' ? -1 : 1;
+        if (closeCount < 0) return false;
+    }
+    return true;
+}`,
+        java: `public static boolean checkValidString(String s) {
+    int openCount = 0;
+    for (char c : s.toCharArray()) {
+        openCount += (c == ')') ? -1 : 1;
+        if (openCount < 0) return false;
+    }
+    int closeCount = 0;
+    for (int i = s.length() - 1; i >= 0; i--) {
+        closeCount += (s.charAt(i) == '(') ? -1 : 1;
+        if (closeCount < 0) return false;
+    }
+    return true;
+}`,
+      },
+      run: runValidParenthesisStringTwoPass,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking string s',
+          2: "Forward counter: opens minus closes, with '*' as '('",
+          3: 'Scan left to right',
+          4: "'(' and '*' count as +1 (open), ')' as -1",
+          5: "Even the friendliest '*' assignment cannot save this ')'",
+          6: 'Unmatched close paren — invalid',
+          7: "Backward counter: closes minus opens, with '*' as ')'",
+          8: 'Scan right to left',
+          9: "')' and '*' count as +1 (close), '(' as -1",
+          10: "Even the friendliest '*' assignment cannot save this '('",
+          11: 'Unmatched open paren — invalid',
+          12: 'Both directions check out — some assignment of stars works',
+        },
+        javascript: {
+          1: 'Define function taking string s',
+          2: "Forward counter: opens minus closes, with '*' as '('",
+          3: 'Scan left to right',
+          4: "'(' and '*' count as +1 (open), ')' as -1",
+          5: "A ')' has no possible partner — invalid",
+          7: "Backward counter: closes minus opens, with '*' as ')'",
+          8: 'Scan right to left',
+          9: "')' and '*' count as +1 (close), '(' as -1",
+          10: "A '(' has no possible partner — invalid",
+          12: 'Both directions check out — some assignment of stars works',
+        },
+        java: {
+          1: 'Define method taking string s',
+          2: "Forward counter: opens minus closes, with '*' as '('",
+          3: 'Scan left to right',
+          4: "'(' and '*' count as +1 (open), ')' as -1",
+          5: "A ')' has no possible partner — invalid",
+          7: "Backward counter: closes minus opens, with '*' as ')'",
+          8: 'Scan right to left',
+          9: "')' and '*' count as +1 (close), '(' as -1",
+          10: "A '(' has no possible partner — invalid",
+          12: 'Both directions check out — some assignment of stars works',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking string s',

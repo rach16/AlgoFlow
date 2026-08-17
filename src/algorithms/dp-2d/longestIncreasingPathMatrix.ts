@@ -114,6 +114,104 @@ function runLongestIncreasingPathMatrix(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runLongestIncreasingPathTopo(input: unknown): AlgorithmStep[] {
+  const matrix = input as number[][];
+  const steps: AlgorithmStep[] = [];
+  const m = matrix.length;
+  const n = matrix[0].length;
+  const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+
+  steps.push({
+    state: { dp2d: matrix.map(r => [...r]), result: null },
+    highlights: [],
+    message: `Think of the matrix as a graph: each cell points to strictly larger neighbors. The longest increasing path = number of layers when we peel this DAG like an onion`,
+    codeLine: 1,
+  });
+
+  // Out-degree: number of strictly larger neighbors
+  const outdeg: number[][] = Array.from({ length: m }, () => new Array(n).fill(0));
+  for (let r = 0; r < m; r++) {
+    for (let c = 0; c < n; c++) {
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < m && nc >= 0 && nc < n && matrix[nr][nc] > matrix[r][c]) {
+          outdeg[r][c]++;
+        }
+      }
+    }
+  }
+
+  steps.push({
+    state: { dp2d: outdeg.map(r => [...r]), result: null },
+    highlights: [],
+    message: `Compute each cell's out-degree = count of larger neighbors. Cells with out-degree 0 are local peaks: every increasing path must END at one`,
+    codeLine: 11,
+    action: 'insert',
+  });
+
+  let queue: [number, number][] = [];
+  for (let r = 0; r < m; r++) {
+    for (let c = 0; c < n; c++) {
+      if (outdeg[r][c] === 0) queue.push([r, c]);
+    }
+  }
+
+  steps.push({
+    state: {
+      dp2d: outdeg.map(r => [...r]),
+      matrixHighlights: queue.map(([r, c]) => [r, c] as [number, number]),
+      result: null,
+    },
+    highlights: [],
+    message: `Layer 1 candidates: peaks ${queue.map(([r, c]) => `(${r},${c})=${matrix[r][c]}`).join(', ')} — paths of length 1 end here`,
+    codeLine: 13,
+    action: 'push',
+  });
+
+  let layers = 0;
+  while (queue.length > 0) {
+    layers++;
+    const nxt: [number, number][] = [];
+    for (const [r, c] of queue) {
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < m && nc >= 0 && nc < n && matrix[nr][nc] < matrix[r][c]) {
+          outdeg[nr][nc]--;
+          if (outdeg[nr][nc] === 0) nxt.push([nr, nc]);
+        }
+      }
+    }
+
+    steps.push({
+      state: {
+        dp2d: outdeg.map(r2 => [...r2]),
+        matrixHighlights: queue.map(([r, c]) => [r, c] as [number, number]),
+        matrixSecondary: nxt.map(([r, c]) => [r, c] as [number, number]),
+        result: null,
+      },
+      highlights: [],
+      pointers: { layer: layers },
+      message: `Peel layer ${layers}: remove ${queue.map(([r, c]) => matrix[r][c]).join(', ')} and decrement smaller neighbors' out-degrees${nxt.length > 0 ? ` — newly freed: ${nxt.map(([r, c]) => matrix[r][c]).join(', ')}` : ' — nothing left to free'}`,
+      codeLine: 16,
+      action: 'pop',
+    });
+
+    queue = nxt;
+  }
+
+  steps.push({
+    state: { dp2d: outdeg.map(r => [...r]), result: layers },
+    highlights: [],
+    message: `Peeled ${layers} layers, so the longest increasing path has length ${layers} — no recursion needed, just BFS`,
+    codeLine: 27,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const longestIncreasingPathMatrix: Algorithm = {
   id: 'longest-increasing-path-matrix',
   name: 'Longest Increasing Path in a Matrix',
@@ -195,6 +293,203 @@ private int dfs(int[][] matrix, int r, int c, int[][] memo) {
   },
   defaultInput: [[9, 9, 4], [6, 6, 8], [2, 1, 1]],
   run: runLongestIncreasingPathMatrix,
+  optimalApproachName: 'DFS + Memoization',
+  approaches: [
+    {
+      id: 'topological-peeling',
+      name: 'Topological Sort (Peel Layers)',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Replaces recursion with Kahn\'s algorithm: treat cells as a DAG pointing to larger neighbors, repeatedly peel the cells with out-degree 0 — the number of peeled layers is the longest path.',
+      code: {
+        python: `def longestIncreasingPath(matrix):
+    m, n = len(matrix), len(matrix[0])
+    dirs = [(0,1),(0,-1),(1,0),(-1,0)]
+    outdeg = [[0]*n for _ in range(m)]
+    for r in range(m):
+        for c in range(n):
+            for dr, dc in dirs:
+                nr, nc = r+dr, c+dc
+                if (0<=nr<m and 0<=nc<n and
+                    matrix[nr][nc] > matrix[r][c]):
+                    outdeg[r][c] += 1
+    queue = [(r, c) for r in range(m)
+        for c in range(n) if outdeg[r][c] == 0]
+    layers = 0
+    while queue:
+        layers += 1
+        nxt = []
+        for r, c in queue:
+            for dr, dc in dirs:
+                nr, nc = r+dr, c+dc
+                if (0<=nr<m and 0<=nc<n and
+                    matrix[nr][nc] < matrix[r][c]):
+                    outdeg[nr][nc] -= 1
+                    if outdeg[nr][nc] == 0:
+                        nxt.append((nr, nc))
+        queue = nxt
+    return layers`,
+        javascript: `function longestIncreasingPath(matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+    const outdeg = Array.from({length: m},
+        () => new Array(n).fill(0));
+    for (let r = 0; r < m; r++)
+        for (let c = 0; c < n; c++)
+            for (const [dr, dc] of dirs) {
+                const nr = r+dr, nc = c+dc;
+                if (nr>=0 && nr<m && nc>=0 && nc<n &&
+                    matrix[nr][nc] > matrix[r][c])
+                    outdeg[r][c]++;
+            }
+    let queue = [];
+    for (let r = 0; r < m; r++)
+        for (let c = 0; c < n; c++)
+            if (outdeg[r][c] === 0) queue.push([r, c]);
+    let layers = 0;
+    while (queue.length) {
+        layers++;
+        const nxt = [];
+        for (const [r, c] of queue) {
+            for (const [dr, dc] of dirs) {
+                const nr = r+dr, nc = c+dc;
+                if (nr>=0 && nr<m && nc>=0 && nc<n &&
+                    matrix[nr][nc] < matrix[r][c] &&
+                    --outdeg[nr][nc] === 0)
+                    nxt.push([nr, nc]);
+            }
+        }
+        queue = nxt;
+    }
+    return layers;
+}`,
+        java: `public int longestIncreasingPath(int[][] matrix) {
+    int m = matrix.length, n = matrix[0].length;
+    int[][] dirs = {{0,1},{0,-1},{1,0},{-1,0}};
+    int[][] outdeg = new int[m][n];
+    for (int r = 0; r < m; r++)
+        for (int c = 0; c < n; c++)
+            for (int[] d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n
+                        && matrix[nr][nc] > matrix[r][c])
+                    outdeg[r][c]++;
+            }
+    List<int[]> queue = new ArrayList<>();
+    for (int r = 0; r < m; r++)
+        for (int c = 0; c < n; c++)
+            if (outdeg[r][c] == 0) queue.add(new int[]{r, c});
+    int layers = 0;
+    while (!queue.isEmpty()) {
+        layers++;
+        List<int[]> nxt = new ArrayList<>();
+        for (int[] cell : queue) {
+            for (int[] d : dirs) {
+                int nr = cell[0] + d[0], nc = cell[1] + d[1];
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n
+                        && matrix[nr][nc] < matrix[cell[0]][cell[1]]
+                        && --outdeg[nr][nc] == 0)
+                    nxt.add(new int[]{nr, nc});
+            }
+        }
+        queue = nxt;
+    }
+    return layers;
+}`,
+      },
+      run: runLongestIncreasingPathTopo,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking matrix as input',
+          2: 'Get matrix dimensions m and n',
+          3: 'Four movement directions',
+          4: 'outdeg[r][c] = number of strictly larger neighbors',
+          5: 'Visit every cell...',
+          6: '...in every column...',
+          7: '...checking each direction',
+          8: 'Compute neighbor coordinates',
+          9: 'Neighbor must be in bounds...',
+          10: '...and strictly larger (an edge in the DAG)',
+          11: 'Count the outgoing edge',
+          12: 'Seed the queue with all peaks',
+          13: 'Peaks have out-degree 0: increasing paths end there',
+          14: 'Layer counter = longest path length so far',
+          15: 'Peel one layer per iteration',
+          16: 'Each layer adds 1 to the longest path',
+          17: 'Collect cells freed by this peel',
+          18: 'Remove every cell in the current layer',
+          19: 'Look at its neighbors',
+          20: 'Compute neighbor coordinates',
+          21: 'Neighbor must be in bounds...',
+          22: '...and strictly smaller (edge pointing at us)',
+          23: 'Removing this cell deletes one of its outgoing edges',
+          24: 'Neighbor freed once all its larger neighbors are gone',
+          25: 'It joins the next layer',
+          26: 'Move on to the next layer',
+          27: 'Number of layers = longest increasing path',
+        },
+        javascript: {
+          1: 'Define function taking matrix as input',
+          2: 'Get matrix dimensions m and n',
+          3: 'Four movement directions',
+          4: 'outdeg[r][c] = number of strictly larger neighbors',
+          6: 'Visit every cell',
+          7: 'Iterate columns',
+          8: 'Check each direction',
+          9: 'Compute neighbor coordinates',
+          10: 'Neighbor must be in bounds...',
+          11: '...and strictly larger (an edge in the DAG)',
+          12: 'Count the outgoing edge',
+          14: 'Queue of cells ready to peel',
+          15: 'Scan all cells',
+          17: 'Seed with peaks (out-degree 0): paths end there',
+          18: 'Layer counter = longest path length so far',
+          19: 'Peel one layer per iteration',
+          20: 'Each layer adds 1 to the longest path',
+          21: 'Collect cells freed by this peel',
+          22: 'Remove every cell in the current layer',
+          23: 'Look at its neighbors',
+          24: 'Compute neighbor coordinates',
+          25: 'Neighbor must be in bounds...',
+          26: '...and strictly smaller (edge pointing at us)',
+          27: 'Decrement; if all larger neighbors are gone...',
+          28: '...it joins the next layer',
+          31: 'Move on to the next layer',
+          33: 'Number of layers = longest increasing path',
+        },
+        java: {
+          1: 'Define method taking matrix as input',
+          2: 'Get matrix dimensions m and n',
+          3: 'Four movement directions',
+          4: 'outdeg[r][c] = number of strictly larger neighbors',
+          5: 'Visit every cell',
+          6: 'Iterate columns',
+          7: 'Check each direction',
+          8: 'Compute neighbor coordinates',
+          9: 'Neighbor must be in bounds...',
+          10: '...and strictly larger (an edge in the DAG)',
+          11: 'Count the outgoing edge',
+          13: 'Queue of cells ready to peel',
+          14: 'Scan all cells',
+          16: 'Seed with peaks (out-degree 0): paths end there',
+          17: 'Layer counter = longest path length so far',
+          18: 'Peel one layer per iteration',
+          19: 'Each layer adds 1 to the longest path',
+          20: 'Collect cells freed by this peel',
+          21: 'Remove every cell in the current layer',
+          22: 'Look at its neighbors',
+          23: 'Compute neighbor coordinates',
+          24: 'Neighbor must be in bounds...',
+          25: '...and strictly smaller (edge pointing at us)',
+          26: 'Decrement; if all larger neighbors are gone...',
+          27: '...it joins the next layer',
+          30: 'Move on to the next layer',
+          32: 'Number of layers = longest increasing path',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking matrix as input',

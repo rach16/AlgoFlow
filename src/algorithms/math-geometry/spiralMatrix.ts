@@ -124,6 +124,94 @@ function runSpiralMatrix(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runSpiralMatrixDirectionVectors(input: unknown): AlgorithmStep[] {
+  const matrix = (input as number[][]).map(row => [...row]);
+  const steps: AlgorithmStep[] = [];
+  const rows = matrix.length;
+  const cols = matrix[0].length;
+
+  steps.push({
+    state: {
+      matrix: matrix.map(row => [...row]),
+      matrixHighlights: [],
+      matrixSecondary: [],
+      result: 'Spiral order: []',
+    },
+    highlights: [],
+    message: `Walk the ${rows}x${cols} matrix like a robot: keep moving in the current direction, turn right when blocked by an edge or a visited cell.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const dirNames = ['right', 'down', 'left', 'up'];
+  const dr = [0, 1, 0, -1];
+  const dc = [1, 0, -1, 0];
+  const visited = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  const visitedCells: [number, number][] = [];
+  const result: number[] = [];
+  let r = 0, c = 0, d = 0;
+
+  for (let k = 0; k < rows * cols; k++) {
+    result.push(matrix[r][c]);
+    visited[r][c] = true;
+    visitedCells.push([r, c]);
+
+    steps.push({
+      state: {
+        matrix: matrix.map(row => [...row]),
+        matrixHighlights: visitedCells.map(v => [...v] as [number, number]),
+        matrixSecondary: [[r, c]],
+        result: `Spiral: [${result.join(', ')}]`,
+      },
+      highlights: [],
+      message: `Visit matrix[${r}][${c}] = ${matrix[r][c]} while heading ${dirNames[d]}. Mark it visited so we never re-enter it.`,
+      codeLine: 9,
+      action: 'visit',
+    } as AlgorithmStep);
+
+    let nr = r + dr[d];
+    let nc = c + dc[d];
+    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc]) {
+      if (k < rows * cols - 1) {
+        const blocked = nr < 0 || nr >= rows || nc < 0 || nc >= cols ? 'the matrix edge' : `visited cell (${nr},${nc})`;
+        d = (d + 1) % 4;
+
+        steps.push({
+          state: {
+            matrix: matrix.map(row => [...row]),
+            matrixHighlights: visitedCells.map(v => [...v] as [number, number]),
+            matrixSecondary: [[r, c]],
+            result: `Turn: now heading ${dirNames[d]}`,
+          },
+          highlights: [],
+          message: `Blocked by ${blocked} — rotate the direction vector clockwise: now heading ${dirNames[d]}.`,
+          codeLine: 13,
+          action: 'compare',
+        } as AlgorithmStep);
+
+        nr = r + dr[d];
+        nc = c + dc[d];
+      }
+    }
+    r = nr;
+    c = nc;
+  }
+
+  steps.push({
+    state: {
+      matrix: matrix.map(row => [...row]),
+      matrixHighlights: visitedCells.map(v => [...v] as [number, number]),
+      matrixSecondary: [],
+      result: `Spiral: [${result.join(', ')}]`,
+    },
+    highlights: [],
+    message: `Done! All ${rows * cols} cells visited exactly once. Spiral order: [${result.join(', ')}].`,
+    codeLine: 16,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const spiralMatrix: Algorithm = {
   id: 'spiral-matrix',
   name: 'Spiral Matrix',
@@ -209,6 +297,138 @@ export const spiralMatrix: Algorithm = {
   },
   defaultInput: [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
   run: runSpiralMatrix,
+  optimalApproachName: 'Boundary Shrinking',
+  approaches: [
+    {
+      id: 'direction-vectors',
+      name: 'Direction Vectors + Visited',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(m·n)',
+      description:
+        'Instead of maintaining four shrinking boundaries, simulate a walker with direction vectors that turns clockwise whenever the next cell is out of bounds or already visited — simpler logic at the cost of an O(m·n) visited grid.',
+      code: {
+        python: `def spiralOrder(matrix):
+    rows, cols = len(matrix), len(matrix[0])
+    visited = [[False] * cols for _ in range(rows)]
+    dr = [0, 1, 0, -1]
+    dc = [1, 0, -1, 0]
+    r = c = d = 0
+    result = []
+    for _ in range(rows * cols):
+        result.append(matrix[r][c])
+        visited[r][c] = True
+        nr, nc = r + dr[d], c + dc[d]
+        if not (0 <= nr < rows and 0 <= nc < cols and not visited[nr][nc]):
+            d = (d + 1) % 4
+            nr, nc = r + dr[d], c + dc[d]
+        r, c = nr, nc
+    return result`,
+        javascript: `function spiralOrder(matrix) {
+    const rows = matrix.length, cols = matrix[0].length;
+    const visited = Array.from({ length: rows }, () => new Array(cols).fill(false));
+    const dr = [0, 1, 0, -1];
+    const dc = [1, 0, -1, 0];
+    let r = 0, c = 0, d = 0;
+    const result = [];
+    for (let k = 0; k < rows * cols; k++) {
+        result.push(matrix[r][c]);
+        visited[r][c] = true;
+        let nr = r + dr[d], nc = c + dc[d];
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc]) {
+            d = (d + 1) % 4;
+            nr = r + dr[d];
+            nc = c + dc[d];
+        }
+        r = nr;
+        c = nc;
+    }
+    return result;
+}`,
+        java: `public static List<Integer> spiralOrder(int[][] matrix) {
+    int rows = matrix.length, cols = matrix[0].length;
+    boolean[][] visited = new boolean[rows][cols];
+    int[] dr = {0, 1, 0, -1};
+    int[] dc = {1, 0, -1, 0};
+    int r = 0, c = 0, d = 0;
+    List<Integer> result = new ArrayList<>();
+    for (int k = 0; k < rows * cols; k++) {
+        result.add(matrix[r][c]);
+        visited[r][c] = true;
+        int nr = r + dr[d], nc = c + dc[d];
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc]) {
+            d = (d + 1) % 4;
+            nr = r + dr[d];
+            nc = c + dc[d];
+        }
+        r = nr;
+        c = nc;
+    }
+    return result;
+}`,
+      },
+      run: runSpiralMatrixDirectionVectors,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking matrix',
+          2: 'Get matrix dimensions',
+          3: 'Visited grid — the O(m·n) extra space this approach pays',
+          4: 'Row deltas for right, down, left, up',
+          5: 'Column deltas for right, down, left, up',
+          6: 'Start at (0,0) heading right (direction index 0)',
+          7: 'Initialize result list',
+          8: 'Exactly m·n cells will be visited',
+          9: 'Record current cell in spiral order',
+          10: 'Mark current cell visited',
+          11: 'Peek at the next cell in the current direction',
+          12: 'Blocked by an edge or a visited cell?',
+          13: 'Rotate direction clockwise (right→down→left→up)',
+          14: 'Recompute the next cell in the new direction',
+          15: 'Move the walker',
+          16: 'Return spiral order result',
+        },
+        javascript: {
+          1: 'Define function taking matrix',
+          2: 'Get matrix dimensions',
+          3: 'Visited grid — the O(m·n) extra space this approach pays',
+          4: 'Row deltas for right, down, left, up',
+          5: 'Column deltas for right, down, left, up',
+          6: 'Start at (0,0) heading right (direction index 0)',
+          7: 'Initialize result array',
+          8: 'Exactly m·n cells will be visited',
+          9: 'Record current cell in spiral order',
+          10: 'Mark current cell visited',
+          11: 'Peek at the next cell in the current direction',
+          12: 'Blocked by an edge or a visited cell?',
+          13: 'Rotate direction clockwise (right→down→left→up)',
+          14: 'Recompute next row in the new direction',
+          15: 'Recompute next column in the new direction',
+          17: 'Move the walker to the next row',
+          18: 'Move the walker to the next column',
+          20: 'Return spiral order result',
+        },
+        java: {
+          1: 'Define method returning spiral order list',
+          2: 'Get matrix dimensions',
+          3: 'Visited grid — the O(m·n) extra space this approach pays',
+          4: 'Row deltas for right, down, left, up',
+          5: 'Column deltas for right, down, left, up',
+          6: 'Start at (0,0) heading right (direction index 0)',
+          7: 'Initialize result list',
+          8: 'Exactly m·n cells will be visited',
+          9: 'Record current cell in spiral order',
+          10: 'Mark current cell visited',
+          11: 'Peek at the next cell in the current direction',
+          12: 'Blocked by an edge or a visited cell?',
+          13: 'Rotate direction clockwise (right→down→left→up)',
+          14: 'Recompute next row in the new direction',
+          15: 'Recompute next column in the new direction',
+          17: 'Move the walker to the next row',
+          18: 'Move the walker to the next column',
+          20: 'Return spiral order result',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking matrix',

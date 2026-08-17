@@ -119,6 +119,80 @@ function runTargetSum(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runTargetSum1DSubsetSum(input: unknown): AlgorithmStep[] {
+  const { nums, target } = input as TargetSumInput;
+  const steps: AlgorithmStep[] = [];
+  const totalSum = nums.reduce((a, b) => a + b, 0);
+
+  steps.push({
+    state: { nums: [...nums], result: null, target },
+    highlights: [],
+    message: `Same subset-sum transformation: positives P must satisfy P = (target + total) / 2. Then solve it with a single 1-D array`,
+    codeLine: 1,
+  });
+
+  if ((target + totalSum) % 2 !== 0 || target + totalSum < 0) {
+    steps.push({
+      state: { nums: [...nums], result: 0, target },
+      highlights: [],
+      message: `(target + total) = ${target + totalSum} is odd or negative — no valid split exists. Result: 0`,
+      codeLine: 4,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const s = (target + totalSum) / 2;
+  const labels = Array.from({ length: s + 1 }, (_, j) => `${j}`);
+  const dp: number[] = new Array(s + 1).fill(0);
+  dp[0] = 1;
+
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [0], nums: [...nums], result: null, target },
+    highlights: [],
+    message: `Subset target = (${target} + ${totalSum}) / 2 = ${s}. dp[j] = ways to pick a subset summing to j; dp[0] = 1`,
+    codeLine: 7,
+    action: 'insert',
+  });
+
+  for (let i = 0; i < nums.length; i++) {
+    const num = nums[i];
+
+    steps.push({
+      state: { dp: [...dp], dpLabels: labels, nums: [...nums], result: null, target },
+      highlights: [i],
+      message: `nums[${i}] = ${num}: sweep j from ${s} DOWN to ${num} — right-to-left ensures each element is used at most once (0/1 knapsack)`,
+      codeLine: 8,
+      action: 'visit',
+    });
+
+    for (let j = s; j >= num; j--) {
+      if (dp[j - num] > 0) {
+        const before = dp[j];
+        dp[j] += dp[j - num];
+        steps.push({
+          state: { dp: [...dp], dpLabels: labels, dpHighlights: [j], dpSecondary: [j - num], nums: [...nums], result: null, target },
+          highlights: [i],
+          pointers: { j },
+          message: `dp[${j}] += dp[${j - num}]: ${before} + ${dp[j - num]} = ${dp[j]}`,
+          codeLine: 10,
+          action: 'insert',
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [s], nums: [...nums], result: dp[s], target },
+    highlights: [],
+    message: `dp[${s}] = ${dp[s]} ways to assign +/- and reach ${target} — O(sum) space instead of an n×sum table`,
+    codeLine: 11,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const targetSum: Algorithm = {
   id: 'target-sum',
   name: 'Target Sum',
@@ -183,6 +257,100 @@ export const targetSum: Algorithm = {
   },
   defaultInput: { nums: [1, 1, 1, 1, 1], target: 3 },
   run: runTargetSum,
+  optimalApproachName: '2-D Subset-Sum Table',
+  approaches: [
+    {
+      id: 'one-d-subset-sum',
+      name: '1-D Subset Sum',
+      timeComplexity: 'O(n·sum)',
+      spaceComplexity: 'O(sum)',
+      description:
+        'Uses the same subset-sum transformation but collapses the table to one array, sweeping right-to-left per number so each element is counted at most once.',
+      code: {
+        python: `def findTargetSumWays(nums, target):
+    total = sum(nums)
+    if (target + total) % 2 or target + total < 0:
+        return 0
+    s = (target + total) // 2
+    dp = [0] * (s + 1)
+    dp[0] = 1
+    for num in nums:
+        for j in range(s, num - 1, -1):
+            dp[j] += dp[j - num]
+    return dp[s]`,
+        javascript: `function findTargetSumWays(nums, target) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if ((target + total) % 2 || target + total < 0)
+        return 0;
+    const s = (target + total) / 2;
+    const dp = new Array(s + 1).fill(0);
+    dp[0] = 1;
+    for (const num of nums) {
+        for (let j = s; j >= num; j--) {
+            dp[j] += dp[j - num];
+        }
+    }
+    return dp[s];
+}`,
+        java: `public int findTargetSumWays(int[] nums, int target) {
+    int total = 0;
+    for (int num : nums) total += num;
+    if ((target + total) % 2 != 0 || target + total < 0) return 0;
+    int s = (target + total) / 2;
+    int[] dp = new int[s + 1];
+    dp[0] = 1;
+    for (int num : nums) {
+        for (int j = s; j >= num; j--) {
+            dp[j] += dp[j - num];
+        }
+    }
+    return dp[s];
+}`,
+      },
+      run: runTargetSum1DSubsetSum,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array and target',
+          2: 'Compute total sum of all numbers',
+          3: 'P = (target + total) / 2 must be a non-negative integer',
+          4: 'Otherwise no +/- assignment can work',
+          5: 'Subset target for the positive group',
+          6: 'Single dp array: dp[j] = subsets summing to j',
+          7: 'Base case: one subset (the empty one) sums to 0',
+          8: 'Process each number exactly once',
+          9: 'Sweep right-to-left so this num is not reused (0/1 knapsack)',
+          10: 'Add ways that include the current number',
+          11: 'Return ways to hit the subset target',
+        },
+        javascript: {
+          1: 'Define function taking nums array and target',
+          2: 'Compute total sum of all numbers',
+          3: 'P = (target + total) / 2 must be a non-negative integer',
+          4: 'Otherwise no +/- assignment can work',
+          5: 'Subset target for the positive group',
+          6: 'Single dp array: dp[j] = subsets summing to j',
+          7: 'Base case: one subset (the empty one) sums to 0',
+          8: 'Process each number exactly once',
+          9: 'Sweep right-to-left so this num is not reused (0/1 knapsack)',
+          10: 'Add ways that include the current number',
+          13: 'Return ways to hit the subset target',
+        },
+        java: {
+          1: 'Define method taking nums array and target',
+          2: 'Initialize total sum variable',
+          3: 'Sum all numbers in the array',
+          4: 'P = (target + total) / 2 must be a non-negative integer',
+          5: 'Subset target for the positive group',
+          6: 'Single dp array: dp[j] = subsets summing to j',
+          7: 'Base case: one subset (the empty one) sums to 0',
+          8: 'Process each number exactly once',
+          9: 'Sweep right-to-left so this num is not reused (0/1 knapsack)',
+          10: 'Add ways that include the current number',
+          13: 'Return ways to hit the subset target',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array and target',

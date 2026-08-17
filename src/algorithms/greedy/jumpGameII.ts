@@ -83,6 +83,76 @@ function runJumpGameII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runJumpGameIIDP(input: unknown): AlgorithmStep[] {
+  const nums = input as number[];
+  const steps: AlgorithmStep[] = [];
+  const n = nums.length;
+  const INF = Number.POSITIVE_INFINITY;
+  const dp: number[] = new Array(n).fill(INF);
+  dp[0] = 0;
+
+  const fmtDp = () => `dp: [${dp.map((v) => (v === INF ? '∞' : v)).join(', ')}]`;
+
+  steps.push({
+    state: { nums: [...nums], result: 'Building dp table...' },
+    highlights: [],
+    message: `DP formulation: dp[j] = fewest jumps needed to reach index j. Relax every index reachable from each position.`,
+    codeLine: 1,
+  });
+
+  steps.push({
+    state: { nums: [...nums], result: fmtDp() },
+    highlights: [0],
+    pointers: { i: 0 },
+    message: `Base case: dp[0] = 0 (we start there). Every other entry starts at ∞ (unreached).`,
+    codeLine: 4,
+    action: 'insert',
+  });
+
+  for (let i = 0; i < n; i++) {
+    if (dp[i] === INF) continue;
+    const limit = Math.min(i + nums[i], n - 1);
+
+    if (limit > i && steps.length < 70) {
+      steps.push({
+        state: { nums: [...nums], result: fmtDp() },
+        highlights: [i],
+        pointers: { i },
+        message: `From index ${i} (reachable in ${dp[i]} jump${dp[i] === 1 ? '' : 's'}, value ${nums[i]}): try to improve indices ${i + 1}..${limit}.`,
+        codeLine: 5,
+        action: 'visit',
+      });
+    }
+
+    for (let j = i + 1; j <= limit; j++) {
+      if (dp[i] + 1 < dp[j]) {
+        dp[j] = dp[i] + 1;
+        if (steps.length < 75) {
+          steps.push({
+            state: { nums: [...nums], result: fmtDp() },
+            highlights: [j],
+            secondary: [i],
+            pointers: { i, j },
+            message: `Improve dp[${j}] to ${dp[j]}: index ${j} is now reachable in ${dp[j]} jump${dp[j] === 1 ? '' : 's'} via index ${i}.`,
+            codeLine: 7,
+            action: 'insert',
+          });
+        }
+      }
+    }
+  }
+
+  steps.push({
+    state: { nums: [...nums], result: `Minimum jumps: ${dp[n - 1]}` },
+    highlights: [0, n - 1],
+    message: `dp[${n - 1}] = ${dp[n - 1]} — minimum jumps to reach the end. Same answer as the greedy window, but at O(n²) cost.`,
+    codeLine: 8,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const jumpGameII: Algorithm = {
   id: 'jump-game-ii',
   name: 'Jump Game II',
@@ -143,6 +213,84 @@ export const jumpGameII: Algorithm = {
   },
   defaultInput: [2, 3, 1, 1, 4],
   run: runJumpGameII,
+  optimalApproachName: 'Greedy BFS Window',
+  approaches: [
+    {
+      id: 'dp-min-jumps',
+      name: 'Dynamic Programming',
+      timeComplexity: 'O(n²)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of the O(n) greedy window, fill a dp table where dp[j] is the fewest jumps to reach index j by relaxing every jump edge.',
+      code: {
+        python: `def jump(nums):
+    n = len(nums)
+    dp = [float('inf')] * n
+    dp[0] = 0
+    for i in range(n):
+        for j in range(i + 1, min(i + nums[i], n - 1) + 1):
+            dp[j] = min(dp[j], dp[i] + 1)
+    return dp[n - 1]`,
+        javascript: `function jump(nums) {
+    const n = nums.length;
+    const dp = new Array(n).fill(Infinity);
+    dp[0] = 0;
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j <= Math.min(i + nums[i], n - 1); j++) {
+            dp[j] = Math.min(dp[j], dp[i] + 1);
+        }
+    }
+    return dp[n - 1];
+}`,
+        java: `public static int jump(int[] nums) {
+    int n = nums.length;
+    int[] dp = new int[n];
+    Arrays.fill(dp, Integer.MAX_VALUE);
+    dp[0] = 0;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j <= Math.min(i + nums[i], n - 1); j++) {
+            dp[j] = Math.min(dp[j], dp[i] + 1);
+        }
+    }
+    return dp[n - 1];
+}`,
+      },
+      run: runJumpGameIIDP,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking nums array',
+          2: 'n = number of indices',
+          3: 'dp[j] = fewest jumps to reach index j, initially infinity (unreached)',
+          4: 'Base case: index 0 takes zero jumps',
+          5: 'Consider every launch position i in order',
+          6: 'Every index j within jump range of i is one hop away',
+          7: 'Relax: reaching j via i costs dp[i] + 1 jumps',
+          8: 'Fewest jumps to reach the last index',
+        },
+        javascript: {
+          1: 'Define function taking nums array',
+          2: 'n = number of indices',
+          3: 'dp[j] = fewest jumps to reach index j, initially Infinity (unreached)',
+          4: 'Base case: index 0 takes zero jumps',
+          5: 'Consider every launch position i in order',
+          6: 'Every index j within jump range of i is one hop away',
+          7: 'Relax: reaching j via i costs dp[i] + 1 jumps',
+          10: 'Fewest jumps to reach the last index',
+        },
+        java: {
+          1: 'Define method taking nums array',
+          2: 'n = number of indices',
+          3: 'Allocate dp: fewest jumps to reach each index',
+          4: 'Initialize all entries to MAX_VALUE (unreached)',
+          5: 'Base case: index 0 takes zero jumps',
+          6: 'Consider every launch position i in order',
+          7: 'Every index j within jump range of i is one hop away',
+          8: 'Relax: reaching j via i costs dp[i] + 1 jumps',
+          11: 'Fewest jumps to reach the last index',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking nums array',

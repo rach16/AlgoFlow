@@ -111,6 +111,65 @@ function runCoinChangeII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCoinChangeII1DKnapsack(input: unknown): AlgorithmStep[] {
+  const { amount, coins } = input as CoinChangeIIInput;
+  const steps: AlgorithmStep[] = [];
+  const labels = Array.from({ length: amount + 1 }, (_, j) => `${j}`);
+
+  const dp: number[] = new Array(amount + 1).fill(0);
+
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, nums: [...coins], result: null, amount },
+    highlights: [],
+    message: `1-D unbounded knapsack: dp[j] = combinations for amount j. Coins in the OUTER loop keeps them ordered, counting combinations not permutations`,
+    codeLine: 1,
+  });
+
+  dp[0] = 1;
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [0], nums: [...coins], result: null, amount },
+    highlights: [],
+    message: `Base case: dp[0] = 1 (one way to make amount 0: use no coins)`,
+    codeLine: 3,
+    action: 'insert',
+  });
+
+  for (let ci = 0; ci < coins.length; ci++) {
+    const coin = coins[ci];
+
+    steps.push({
+      state: { dp: [...dp], dpLabels: labels, nums: [...coins], result: null, amount },
+      highlights: [ci],
+      message: `Coin ${coin}: sweep left-to-right so dp[j - ${coin}] may already include this coin — that's what allows unlimited reuse`,
+      codeLine: 4,
+      action: 'visit',
+    });
+
+    for (let j = coin; j <= amount; j++) {
+      const before = dp[j];
+      dp[j] += dp[j - coin];
+      steps.push({
+        state: { dp: [...dp], dpLabels: labels, dpHighlights: [j], dpSecondary: [j - coin], nums: [...coins], result: null, amount },
+        highlights: [ci],
+        pointers: { j },
+        message: `dp[${j}] += dp[${j - coin}]: ${before} + ${dp[j - coin]} = ${dp[j]} (append coin ${coin} to every combination for amount ${j - coin})`,
+        codeLine: 6,
+        action: 'insert',
+      });
+    }
+  }
+
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [amount], nums: [...coins], result: dp[amount], amount },
+    highlights: [],
+    message: `dp[${amount}] = ${dp[amount]} combinations — same answer as the 2-D table with a fraction of the memory`,
+    codeLine: 7,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const coinChangeII: Algorithm = {
   id: 'coin-change-ii',
   name: 'Coin Change II',
@@ -167,6 +226,76 @@ export const coinChangeII: Algorithm = {
   },
   defaultInput: { amount: 5, coins: [1, 2, 5] },
   run: runCoinChangeII,
+  optimalApproachName: '2-D DP Table',
+  approaches: [
+    {
+      id: 'one-d-knapsack',
+      name: '1-D Unbounded Knapsack',
+      timeComplexity: 'O(n·amount)',
+      spaceComplexity: 'O(amount)',
+      description:
+        'Collapses the 2-D table into a single dp array: with coins in the outer loop, a left-to-right sweep lets each coin be reused while still counting combinations only once.',
+      code: {
+        python: `def change(amount, coins):
+    dp = [0] * (amount + 1)
+    dp[0] = 1
+    for coin in coins:
+        for j in range(coin, amount + 1):
+            dp[j] += dp[j - coin]
+    return dp[amount]`,
+        javascript: `function change(amount, coins) {
+    const dp = new Array(amount + 1).fill(0);
+    dp[0] = 1;
+    for (const coin of coins) {
+        for (let j = coin; j <= amount; j++) {
+            dp[j] += dp[j - coin];
+        }
+    }
+    return dp[amount];
+}`,
+        java: `public int change(int amount, int[] coins) {
+    int[] dp = new int[amount + 1];
+    dp[0] = 1;
+    for (int coin : coins) {
+        for (int j = coin; j <= amount; j++) {
+            dp[j] += dp[j - coin];
+        }
+    }
+    return dp[amount];
+}`,
+      },
+      run: runCoinChangeII1DKnapsack,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking amount and coins array',
+          2: 'Single dp array: dp[j] = combinations for amount j',
+          3: 'Base case: one way to make amount 0 (no coins)',
+          4: 'Coins in outer loop — counts combinations, not permutations',
+          5: 'Left-to-right sweep allows reusing the same coin (unbounded)',
+          6: 'Add all combinations for j-coin, extended by this coin',
+          7: 'Return combinations for the full amount',
+        },
+        javascript: {
+          1: 'Define function taking amount and coins array',
+          2: 'Single dp array: dp[j] = combinations for amount j',
+          3: 'Base case: one way to make amount 0 (no coins)',
+          4: 'Coins in outer loop — counts combinations, not permutations',
+          5: 'Left-to-right sweep allows reusing the same coin (unbounded)',
+          6: 'Add all combinations for j-coin, extended by this coin',
+          9: 'Return combinations for the full amount',
+        },
+        java: {
+          1: 'Define method taking amount and coins array',
+          2: 'Single dp array: dp[j] = combinations for amount j',
+          3: 'Base case: one way to make amount 0 (no coins)',
+          4: 'Coins in outer loop — counts combinations, not permutations',
+          5: 'Left-to-right sweep allows reusing the same coin (unbounded)',
+          6: 'Add all combinations for j-coin, extended by this coin',
+          9: 'Return combinations for the full amount',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking amount and coins array',

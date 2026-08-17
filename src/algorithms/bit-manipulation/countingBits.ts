@@ -71,6 +71,74 @@ function runCountingBits(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runCountingBitsLowbit(input: unknown): AlgorithmStep[] {
+  const n = input as number;
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      dp: new Array(n + 1).fill(0),
+      dpHighlights: [],
+      bits: [{ value: 0, bits: toBinary(0), label: '0' }],
+      result: `Counting bits for 0 to ${n}`,
+    },
+    highlights: [],
+    message: `DP with the lowbit trick: i & (i-1) clears the lowest set bit, so dp[i] = dp[i & (i-1)] + 1 — one more bit than that smaller number.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const dp = new Array(n + 1).fill(0);
+
+  steps.push({
+    state: {
+      dp: [...dp],
+      dpHighlights: [0],
+      bits: [{ value: 0, bits: toBinary(0), label: 'dp[0] = 0' }],
+      result: 'dp[0] = 0',
+    },
+    highlights: [],
+    message: `Base case: dp[0] = 0 (zero has no set bits).`,
+    codeLine: 2,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  for (let i = 1; i <= n; i++) {
+    const lowbitCleared = i & (i - 1);
+    dp[i] = dp[lowbitCleared] + 1;
+
+    steps.push({
+      state: {
+        dp: [...dp],
+        dpHighlights: [i],
+        bits: [
+          { value: i, bits: toBinary(i), label: `${i}` },
+          { value: lowbitCleared, bits: toBinary(lowbitCleared), label: `${i} & ${i - 1} = ${lowbitCleared}` },
+        ],
+        result: `dp[${i}] = dp[${lowbitCleared}] + 1 = ${dp[i]}`,
+      },
+      highlights: [],
+      message: `${i} & ${i - 1} = ${lowbitCleared} clears the lowest 1-bit of ${i} (${toBinary(i)} -> ${toBinary(lowbitCleared)}). So dp[${i}] = dp[${lowbitCleared}] + 1 = ${dp[lowbitCleared]} + 1 = ${dp[i]}.`,
+      codeLine: 4,
+      action: 'insert',
+    } as AlgorithmStep);
+  }
+
+  steps.push({
+    state: {
+      dp: [...dp],
+      dpHighlights: [],
+      bits: dp.map((v, i) => ({ value: i, bits: toBinary(i), label: `${i}: ${v} bits` })),
+      result: `Result: [${dp.join(', ')}]`,
+    },
+    highlights: [],
+    message: `Done! Bit counts for 0 to ${n}: [${dp.join(', ')}]. Same O(n) time as the right-shift DP, just a different recurrence.`,
+    codeLine: 5,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const countingBits: Algorithm = {
   id: 'counting-bits',
   name: 'Counting Bits',
@@ -105,6 +173,62 @@ export const countingBits: Algorithm = {
   },
   defaultInput: 5,
   run: runCountingBits,
+  optimalApproachName: 'DP: dp[i >> 1] + (i & 1)',
+  approaches: [
+    {
+      id: 'dp-lowbit',
+      name: 'DP with Lowbit',
+      timeComplexity: 'O(n)',
+      spaceComplexity: 'O(n)',
+      description:
+        "Uses Brian Kernighan's identity as a recurrence — i & (i-1) drops the lowest set bit, so dp[i] = dp[i & (i-1)] + 1 — instead of relating i to its right-shifted half.",
+      code: {
+        python: `def countBits(n):
+    dp = [0] * (n + 1)
+    for i in range(1, n + 1):
+        dp[i] = dp[i & (i - 1)] + 1
+    return dp`,
+        javascript: `function countBits(n) {
+    const dp = new Array(n + 1).fill(0);
+    for (let i = 1; i <= n; i++) {
+        dp[i] = dp[i & (i - 1)] + 1;
+    }
+    return dp;
+}`,
+        java: `public static int[] countBits(int n) {
+    int[] dp = new int[n + 1];
+    for (int i = 1; i <= n; i++) {
+        dp[i] = dp[i & (i - 1)] + 1;
+    }
+    return dp;
+}`,
+      },
+      run: runCountingBitsLowbit,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking integer n',
+          2: 'Create DP array of size n+1, initialized to 0',
+          3: 'Loop from 1 to n inclusive',
+          4: 'i & (i-1) drops the lowest set bit — that number has exactly one fewer 1-bit',
+          5: 'Return array of bit counts',
+        },
+        javascript: {
+          1: 'Define function taking integer n',
+          2: 'Create DP array of size n+1, filled with 0',
+          3: 'Loop from 1 to n inclusive',
+          4: 'i & (i-1) drops the lowest set bit — that number has exactly one fewer 1-bit',
+          6: 'Return array of bit counts',
+        },
+        java: {
+          1: 'Define method taking integer n',
+          2: 'Create DP array of size n+1 (Java zero-fills)',
+          3: 'Loop from 1 to n inclusive',
+          4: 'i & (i-1) drops the lowest set bit — that number has exactly one fewer 1-bit',
+          6: 'Return array of bit counts',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking integer n',

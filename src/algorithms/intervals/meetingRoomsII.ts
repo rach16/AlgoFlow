@@ -101,6 +101,122 @@ function runMeetingRoomsII(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runMeetingRoomsIIMinHeap(input: unknown): AlgorithmStep[] {
+  const intervals = (input as number[][]).map(iv => [...iv]);
+  const steps: AlgorithmStep[] = [];
+
+  steps.push({
+    state: {
+      intervals: intervals.map(iv => [...iv]),
+      intervalHighlights: [],
+      intervalSecondary: [],
+      count: 0,
+      result: 'Finding minimum meeting rooms...',
+    },
+    highlights: [],
+    message: `Min-heap idea: process meetings by start time; the heap holds the end time of every occupied room, with the earliest-ending room on top.`,
+    codeLine: 1,
+  } as AlgorithmStep);
+
+  const sorted = intervals.map(iv => [...iv]).sort((a, b) => a[0] - b[0]);
+
+  steps.push({
+    state: {
+      intervals: sorted.map(iv => [...iv]),
+      intervalHighlights: [],
+      intervalSecondary: [],
+      count: 0,
+      result: `Sorted by start time`,
+    },
+    highlights: [],
+    message: `Sorted by start time: [${sorted.map(s => `[${s.join(',')}]`).join(', ')}].`,
+    codeLine: 2,
+    action: 'visit',
+  } as AlgorithmStep);
+
+  // Min-heap of end times, kept as a sorted array (smallest first)
+  const heap: number[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    const [start, end] = sorted[i];
+
+    steps.push({
+      state: {
+        intervals: sorted.map(iv => [...iv]),
+        intervalHighlights: [i],
+        intervalSecondary: [],
+        nums: [...heap],
+        count: heap.length,
+        result: heap.length
+          ? `Earliest room frees at ${heap[0]}; meeting starts at ${start}`
+          : 'No rooms occupied yet',
+      },
+      highlights: [],
+      message: heap.length
+        ? `Meeting [${start}, ${end}]: earliest-ending room frees at ${heap[0]}. Does ${heap[0]} <= ${start}?`
+        : `Meeting [${start}, ${end}]: no rooms occupied yet — it must open the first room.`,
+      codeLine: 6,
+      action: 'compare',
+    } as AlgorithmStep);
+
+    if (heap.length > 0 && heap[0] <= start) {
+      heap.shift();
+      heap.push(end);
+      heap.sort((a, b) => a - b);
+
+      steps.push({
+        state: {
+          intervals: sorted.map(iv => [...iv]),
+          intervalHighlights: [i],
+          intervalSecondary: [],
+          nums: [...heap],
+          count: heap.length,
+          result: `Reused a room. Rooms: ${heap.length}`,
+        },
+        highlights: [],
+        message: `Yes — that room is free. Reuse it: pop the old end time, push ${end}. Rooms stay at ${heap.length}.`,
+        codeLine: 7,
+        action: 'pop',
+      } as AlgorithmStep);
+    } else {
+      heap.push(end);
+      heap.sort((a, b) => a - b);
+
+      steps.push({
+        state: {
+          intervals: sorted.map(iv => [...iv]),
+          intervalHighlights: [i],
+          intervalSecondary: [],
+          nums: [...heap],
+          count: heap.length,
+          result: `Opened a new room. Rooms: ${heap.length}`,
+        },
+        highlights: [],
+        message: `No free room — every occupied room is still running. Open a new room ending at ${end}. Rooms = ${heap.length}.`,
+        codeLine: 9,
+        action: 'push',
+      } as AlgorithmStep);
+    }
+  }
+
+  steps.push({
+    state: {
+      intervals: sorted.map(iv => [...iv]),
+      intervalHighlights: [],
+      intervalSecondary: [],
+      nums: [...heap],
+      count: heap.length,
+      result: `Minimum rooms needed: ${heap.length}`,
+    },
+    highlights: [],
+    message: `Done! The heap size — ${heap.length} — is the minimum number of rooms, since a room was only added when no existing room was free.`,
+    codeLine: 11,
+    action: 'found',
+  } as AlgorithmStep);
+
+  return steps;
+}
+
 export const meetingRoomsII: Algorithm = {
   id: 'meeting-rooms-ii',
   name: 'Meeting Rooms II',
@@ -182,6 +298,92 @@ export const meetingRoomsII: Algorithm = {
   },
   defaultInput: [[0, 30], [5, 10], [15, 20]],
   run: runMeetingRoomsII,
+  optimalApproachName: 'Two Pointers (Start/End Arrays)',
+  approaches: [
+    {
+      id: 'min-heap-end-times',
+      name: 'Min-Heap of End Times',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of counting with separate start/end arrays, simulate the rooms directly: a min-heap of end times tells each meeting whether the earliest-finishing room is free to reuse or a new room must open.',
+      code: {
+        python: `def minMeetingRooms(intervals):
+    intervals.sort(key=lambda i: i[0])
+    heap = []  # end times of occupied rooms
+
+    for start, end in intervals:
+        if heap and heap[0] <= start:
+            heapq.heapreplace(heap, end)
+        else:
+            heapq.heappush(heap, end)
+
+    return len(heap)`,
+        javascript: `function minMeetingRooms(intervals) {
+    intervals.sort((a, b) => a[0] - b[0]);
+    const heap = []; // end times of occupied rooms
+
+    for (const [start, end] of intervals) {
+        heap.sort((a, b) => a - b);
+        if (heap.length && heap[0] <= start) {
+            heap.shift(); // reuse the freed room
+        }
+        heap.push(end);
+    }
+
+    return heap.length;
+}`,
+        java: `public static int minMeetingRooms(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+    PriorityQueue<Integer> heap = new PriorityQueue<>();
+
+    for (int[] interval : intervals) {
+        if (!heap.isEmpty() && heap.peek() <= interval[0]) {
+            heap.poll(); // reuse the freed room
+        }
+        heap.offer(interval[1]);
+    }
+
+    return heap.size();
+}`,
+      },
+      run: runMeetingRoomsIIMinHeap,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking intervals list',
+          2: 'Sort meetings by start time',
+          3: 'Min-heap of end times — one entry per occupied room',
+          5: 'Process meetings in chronological start order',
+          6: 'Earliest-ending room already free when this meeting starts?',
+          7: 'Reuse that room: swap its end time for this meeting’s end',
+          8: 'Otherwise every room is busy',
+          9: 'Open a new room ending at this meeting’s end',
+          11: 'Heap size = rooms ever needed simultaneously',
+        },
+        javascript: {
+          1: 'Define function taking intervals array',
+          2: 'Sort meetings by start time',
+          3: 'Min-heap of end times — one entry per occupied room',
+          5: 'Process meetings in chronological start order',
+          6: 'Keep smallest end time at index 0 (simulated heap)',
+          7: 'Earliest-ending room already free when this meeting starts?',
+          8: 'Reuse it: remove the freed room’s end time',
+          10: 'Occupy a room ending at this meeting’s end',
+          13: 'Heap size = rooms ever needed simultaneously',
+        },
+        java: {
+          1: 'Define method taking intervals 2D array',
+          2: 'Sort meetings by start time',
+          3: 'Min-heap of end times — one entry per occupied room',
+          5: 'Process meetings in chronological start order',
+          6: 'Earliest-ending room already free when this meeting starts?',
+          7: 'Reuse it: remove the freed room’s end time',
+          9: 'Occupy a room ending at this meeting’s end',
+          12: 'Heap size = rooms ever needed simultaneously',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking intervals list',

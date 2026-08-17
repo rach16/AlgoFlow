@@ -123,6 +123,94 @@ function runInterleavingString(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runInterleavingStringRolling1D(input: unknown): AlgorithmStep[] {
+  const { s1, s2, s3 } = input as InterleavingStringInput;
+  const steps: AlgorithmStep[] = [];
+  const m = s1.length;
+  const n = s2.length;
+  const labels = ['∅', ...s2.split('')];
+
+  steps.push({
+    state: { result: null, s1, s2, s3 },
+    highlights: [],
+    message: `Rolling 1-D DP: keep only one row of the interleaving table — dp[j] tracks whether the current s1 prefix and s2[0..j-1] interleave into s3`,
+    codeLine: 1,
+  });
+
+  if (m + n !== s3.length) {
+    steps.push({
+      state: { result: false, s1, s2, s3 },
+      highlights: [],
+      message: `Length mismatch: ${m}+${n} != ${s3.length}. Result: false`,
+      codeLine: 3,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const dp: string[] = new Array(n + 1).fill('F');
+  dp[0] = 'T';
+
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [0], result: null, s1, s2, s3 },
+    highlights: [],
+    message: `Row i=0 (empty s1 prefix): dp[0] = T — empty + empty forms empty`,
+    codeLine: 6,
+    action: 'insert',
+  });
+
+  for (let j = 1; j <= n; j++) {
+    dp[j] = dp[j - 1] === 'T' && s2[j - 1] === s3[j - 1] ? 'T' : 'F';
+  }
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: Array.from({ length: n }, (_, j) => j + 1), result: null, s1, s2, s3 },
+    highlights: [],
+    message: `Fill row 0 using only s2: dp[j] = T while s2 prefix matches s3 prefix → [${dp.join(', ')}]`,
+    codeLine: 8,
+    action: 'insert',
+  });
+
+  for (let i = 1; i <= m; i++) {
+    dp[0] = dp[0] === 'T' && s1[i - 1] === s3[i - 1] ? 'T' : 'F';
+
+    steps.push({
+      state: { dp: [...dp], dpLabels: labels, dpHighlights: [0], result: null, s1, s2, s3 },
+      highlights: [],
+      pointers: { i },
+      message: `Row ${i} (s1 prefix "${s1.slice(0, i)}"): dp[0] = ${dp[0]} — using only s1, does s1[0..${i - 1}] match s3[0..${i - 1}]?`,
+      codeLine: 10,
+      action: 'visit',
+    });
+
+    for (let j = 1; j <= n; j++) {
+      const k = i + j - 1;
+      const fromTop = dp[j] === 'T' && s1[i - 1] === s3[k]; // dp[j] still holds row i-1
+      const fromLeft = dp[j - 1] === 'T' && s2[j - 1] === s3[k];
+      dp[j] = fromTop || fromLeft ? 'T' : 'F';
+
+      steps.push({
+        state: { dp: [...dp], dpLabels: labels, dpHighlights: [j], dpSecondary: [j - 1], result: null, s1, s2, s3 },
+        highlights: [],
+        pointers: { i, j },
+        message: `dp[${j}]: s3[${k}]='${s3[k]}' — take from s1 (old dp[${j}]): ${fromTop}, take from s2 (dp[${j - 1}]): ${fromLeft} → ${dp[j]}`,
+        codeLine: 13,
+        action: dp[j] === 'T' ? 'found' : 'compare',
+      });
+    }
+  }
+
+  const result = dp[n] === 'T';
+  steps.push({
+    state: { dp: [...dp], dpLabels: labels, dpHighlights: [n], result, s1, s2, s3 },
+    highlights: [],
+    message: `"${s3}" ${result ? 'CAN' : 'CANNOT'} be formed — same answer with O(n) instead of O(m·n) space`,
+    codeLine: 15,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const interleavingString: Algorithm = {
   id: 'interleaving-string',
   name: 'Interleaving String',
@@ -195,6 +283,123 @@ export const interleavingString: Algorithm = {
   },
   defaultInput: { s1: 'aabcc', s2: 'dbbca', s3: 'aadbbcbcac' },
   run: runInterleavingString,
+  optimalApproachName: '2-D DP Table',
+  approaches: [
+    {
+      id: 'rolling-1d-dp',
+      name: 'Rolling 1-D DP',
+      timeComplexity: 'O(m·n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Same transitions as the 2-D table, but processed row by row in place: the not-yet-overwritten dp[j] plays the role of the cell above, so only one array is needed.',
+      code: {
+        python: `def isInterleave(s1, s2, s3):
+    if len(s1) + len(s2) != len(s3):
+        return False
+    m, n = len(s1), len(s2)
+    dp = [False] * (n + 1)
+    dp[0] = True
+    for j in range(1, n + 1):
+        dp[j] = dp[j-1] and s2[j-1] == s3[j-1]
+    for i in range(1, m + 1):
+        dp[0] = dp[0] and s1[i-1] == s3[i-1]
+        for j in range(1, n + 1):
+            k = i + j - 1
+            dp[j] = ((dp[j] and s1[i-1] == s3[k]) or
+                (dp[j-1] and s2[j-1] == s3[k]))
+    return dp[n]`,
+        javascript: `function isInterleave(s1, s2, s3) {
+    if (s1.length + s2.length !== s3.length)
+        return false;
+    const m = s1.length, n = s2.length;
+    const dp = new Array(n + 1).fill(false);
+    dp[0] = true;
+    for (let j = 1; j <= n; j++)
+        dp[j] = dp[j-1] && s2[j-1] === s3[j-1];
+    for (let i = 1; i <= m; i++) {
+        dp[0] = dp[0] && s1[i-1] === s3[i-1];
+        for (let j = 1; j <= n; j++) {
+            const k = i + j - 1;
+            dp[j] = (dp[j] && s1[i-1] === s3[k]) ||
+                (dp[j-1] && s2[j-1] === s3[k]);
+        }
+    }
+    return dp[n];
+}`,
+        java: `public boolean isInterleave(String s1, String s2, String s3) {
+    if (s1.length() + s2.length() != s3.length()) return false;
+    int m = s1.length(), n = s2.length();
+    boolean[] dp = new boolean[n + 1];
+    dp[0] = true;
+    for (int j = 1; j <= n; j++) {
+        dp[j] = dp[j - 1] && s2.charAt(j - 1) == s3.charAt(j - 1);
+    }
+    for (int i = 1; i <= m; i++) {
+        dp[0] = dp[0] && s1.charAt(i - 1) == s3.charAt(i - 1);
+        for (int j = 1; j <= n; j++) {
+            int k = i + j - 1;
+            dp[j] = (dp[j] && s1.charAt(i - 1) == s3.charAt(k))
+                || (dp[j - 1] && s2.charAt(j - 1) == s3.charAt(k));
+        }
+    }
+    return dp[n];
+}`,
+      },
+      run: runInterleavingStringRolling1D,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking three strings',
+          2: 'Check if combined length matches s3',
+          3: 'Return false if lengths are incompatible',
+          4: 'Get lengths of s1 and s2',
+          5: 'One row of booleans replaces the 2-D table',
+          6: 'Base case: empty + empty interleave to empty',
+          7: 'Fill row 0 using only s2 characters',
+          8: 'True while the s2 prefix matches the s3 prefix',
+          9: 'Process one s1 character (one "row") at a time',
+          10: 'Column 0: only s1 used — must match s3 directly',
+          11: 'Iterate over s2 positions',
+          12: 'k = index into s3 for cell (i, j)',
+          13: 'Old dp[j] is the cell ABOVE (take char from s1)...',
+          14: '...or new dp[j-1] is the cell LEFT (take char from s2)',
+          15: 'Answer for full s1 and s2 sits in dp[n]',
+        },
+        javascript: {
+          1: 'Define function taking three strings',
+          2: 'Check if combined length matches s3',
+          3: 'Return false if lengths are incompatible',
+          4: 'Get lengths of s1 and s2',
+          5: 'One row of booleans replaces the 2-D table',
+          6: 'Base case: empty + empty interleave to empty',
+          7: 'Fill row 0 using only s2 characters',
+          8: 'True while the s2 prefix matches the s3 prefix',
+          9: 'Process one s1 character (one "row") at a time',
+          10: 'Column 0: only s1 used — must match s3 directly',
+          11: 'Iterate over s2 positions',
+          12: 'k = index into s3 for cell (i, j)',
+          13: 'Old dp[j] is the cell ABOVE (take char from s1)...',
+          14: '...or new dp[j-1] is the cell LEFT (take char from s2)',
+          17: 'Answer for full s1 and s2 sits in dp[n]',
+        },
+        java: {
+          1: 'Define method taking three strings',
+          2: 'Return false if lengths are incompatible',
+          3: 'Get lengths of s1 and s2',
+          4: 'One row of booleans replaces the 2-D table',
+          5: 'Base case: empty + empty interleave to empty',
+          6: 'Fill row 0 using only s2 characters',
+          7: 'True while the s2 prefix matches the s3 prefix',
+          9: 'Process one s1 character (one "row") at a time',
+          10: 'Column 0: only s1 used — must match s3 directly',
+          11: 'Iterate over s2 positions',
+          12: 'k = index into s3 for cell (i, j)',
+          13: 'Old dp[j] is the cell ABOVE (take char from s1)...',
+          14: '...or new dp[j-1] is the cell LEFT (take char from s2)',
+          17: 'Answer for full s1 and s2 sits in dp[n]',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking three strings',

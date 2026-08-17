@@ -106,6 +106,127 @@ function runHandOfStraights(input: unknown): AlgorithmStep[] {
   return steps;
 }
 
+function runHandOfStraightsMinHeap(input: unknown): AlgorithmStep[] {
+  const { hand, groupSize } = input as HandOfStraightsInput;
+  const steps: AlgorithmStep[] = [];
+  const n = hand.length;
+
+  steps.push({
+    state: {
+      nums: [...hand],
+      hashMap: {},
+      result: `Hand: [${hand.join(', ')}], Group size: ${groupSize}`,
+    },
+    highlights: [],
+    message: `Min-heap greedy: the smallest remaining card MUST start a group, so repeatedly peek the heap minimum and build from it.`,
+    codeLine: 1,
+  });
+
+  if (n % groupSize !== 0) {
+    steps.push({
+      state: { nums: [...hand], hashMap: {}, result: 'false' },
+      highlights: [],
+      message: `${n} cards cannot be evenly divided into groups of ${groupSize}. Return false.`,
+      codeLine: 2,
+      action: 'found',
+    });
+    return steps;
+  }
+
+  const count: Record<number, number> = {};
+  for (const card of hand) {
+    count[card] = (count[card] || 0) + 1;
+  }
+
+  // Sorted array of unique values acts as our min-heap (min at index 0)
+  const heap = [...new Set(hand)].sort((a, b) => a - b);
+  const display = [...heap];
+
+  steps.push({
+    state: { nums: display, hashMap: { ...count }, result: `Heap: [${heap.join(', ')}]` },
+    highlights: [],
+    message: `Count each card, then heapify the unique values: heap = [${heap.join(', ')}] (minimum on top).`,
+    codeLine: 6,
+    action: 'insert',
+  });
+
+  while (heap.length > 0) {
+    const first = heap[0];
+
+    steps.push({
+      state: {
+        nums: display,
+        hashMap: { ...count },
+        result: `Group: [${first}..${first + groupSize - 1}]`,
+      },
+      highlights: [display.indexOf(first)],
+      message: `Heap min = ${first}. Nothing smaller remains, so ${first} can only be a group START. Build [${first}..${first + groupSize - 1}].`,
+      codeLine: 8,
+      action: 'visit',
+    });
+
+    for (let card = first; card < first + groupSize; card++) {
+      if ((count[card] || 0) === 0) {
+        steps.push({
+          state: { nums: display, hashMap: { ...count }, result: 'false' },
+          highlights: display.indexOf(card) >= 0 ? [display.indexOf(card)] : [],
+          message: `Need card ${card} to continue the run, but none remain. Group cannot be completed. Return false.`,
+          codeLine: 11,
+          action: 'delete',
+        });
+        return steps;
+      }
+
+      count[card] -= 1;
+
+      steps.push({
+        state: {
+          nums: display,
+          hashMap: { ...count },
+          result: `Group: [${first}..${first + groupSize - 1}]`,
+        },
+        highlights: display.indexOf(card) >= 0 ? [display.indexOf(card)] : [],
+        message: `Use one copy of card ${card}. Remaining: ${count[card]}.`,
+        codeLine: 12,
+        action: 'compare',
+      });
+
+      if (count[card] === 0) {
+        if (card !== heap[0]) {
+          steps.push({
+            state: { nums: display, hashMap: { ...count }, result: 'false' },
+            highlights: display.indexOf(card) >= 0 ? [display.indexOf(card)] : [],
+            message: `Card ${card} is exhausted, but ${heap[0]} (smaller) still has copies whose groups must pass through ${card}. Return false.`,
+            codeLine: 15,
+            action: 'delete',
+          });
+          return steps;
+        }
+
+        heap.shift();
+
+        steps.push({
+          state: { nums: display, hashMap: { ...count }, result: `Heap: [${heap.join(', ')}]` },
+          highlights: [],
+          message: `Card ${card} is used up and it was the heap minimum — pop it. Heap: [${heap.length ? heap.join(', ') : 'empty'}].`,
+          codeLine: 16,
+          action: 'pop',
+        });
+      }
+    }
+  }
+
+  steps.push({
+    state: { nums: display, hashMap: { ...count }, result: 'true' },
+    highlights: [],
+    message: `Heap empty — every card was consumed into a valid consecutive group. Return true.`,
+    codeLine: 17,
+    action: 'found',
+  });
+
+  return steps;
+}
+
 export const handOfStraights: Algorithm = {
   id: 'hand-of-straights',
   name: 'Hand of Straights',
@@ -175,6 +296,126 @@ export const handOfStraights: Algorithm = {
   },
   defaultInput: { hand: [1, 2, 3, 6, 2, 3, 4, 7, 8], groupSize: 3 },
   run: runHandOfStraights,
+  optimalApproachName: 'Sorted Map Greedy',
+  approaches: [
+    {
+      id: 'min-heap',
+      name: 'Min-Heap',
+      timeComplexity: 'O(n log n)',
+      spaceComplexity: 'O(n)',
+      description:
+        'Instead of scanning all sorted values, keep unique cards in a min-heap and repeatedly build a group from the current minimum, popping values as they run out.',
+      code: {
+        python: `def isNStraightHand(hand, groupSize):
+    if len(hand) % groupSize:
+        return False
+    count = Counter(hand)
+    minH = list(count.keys())
+    heapq.heapify(minH)
+    while minH:
+        first = minH[0]
+        for card in range(first, first + groupSize):
+            if count.get(card, 0) == 0:
+                return False
+            count[card] -= 1
+            if count[card] == 0:
+                if card != minH[0]:
+                    return False
+                heapq.heappop(minH)
+    return True`,
+        javascript: `function isNStraightHand(hand, groupSize) {
+    if (hand.length % groupSize !== 0) return false;
+    const count = new Map();
+    for (const c of hand) count.set(c, (count.get(c) || 0) + 1);
+    const minH = [...count.keys()].sort((a, b) => a - b);
+    while (minH.length) {
+        const first = minH[0];
+        for (let card = first; card < first + groupSize; card++) {
+            if ((count.get(card) || 0) === 0) return false;
+            count.set(card, count.get(card) - 1);
+            if (count.get(card) === 0) {
+                if (card !== minH[0]) return false;
+                minH.shift();
+            }
+        }
+    }
+    return true;
+}`,
+        java: `public static boolean isNStraightHand(int[] hand, int groupSize) {
+    if (hand.length % groupSize != 0) return false;
+    Map<Integer, Integer> count = new HashMap<>();
+    for (int c : hand) count.put(c, count.getOrDefault(c, 0) + 1);
+    PriorityQueue<Integer> minH = new PriorityQueue<>(count.keySet());
+    while (!minH.isEmpty()) {
+        int first = minH.peek();
+        for (int card = first; card < first + groupSize; card++) {
+            if (count.getOrDefault(card, 0) == 0) return false;
+            count.put(card, count.get(card) - 1);
+            if (count.get(card) == 0) {
+                if (card != minH.peek()) return false;
+                minH.poll();
+            }
+        }
+    }
+    return true;
+}`,
+      },
+      run: runHandOfStraightsMinHeap,
+      lineExplanations: {
+        python: {
+          1: 'Define function taking hand and groupSize',
+          2: 'Hand must divide evenly into groups',
+          3: 'Not divisible, return false',
+          4: 'Count copies of each card value',
+          5: 'Collect the unique card values',
+          6: 'Heapify so the smallest value is always on top',
+          7: 'Keep forming groups until every card is used',
+          8: 'The heap minimum must start the next group',
+          9: 'The group needs groupSize consecutive cards',
+          10: 'A needed card has no copies left',
+          11: 'Group cannot be completed, return false',
+          12: 'Consume one copy of this card',
+          13: 'Did this card just run out?',
+          14: 'A smaller card still needs groups passing through here',
+          15: 'That smaller card can never finish its groups, return false',
+          16: 'Exhausted card was the minimum — pop it off the heap',
+          17: 'Heap empty: every card fit into a group',
+        },
+        javascript: {
+          1: 'Define function taking hand and groupSize',
+          2: 'Hand must divide evenly into groups',
+          3: 'Count copies of each card value',
+          4: 'Build the frequency map',
+          5: 'Sorted unique values act as the min-heap (min at front)',
+          6: 'Keep forming groups until every card is used',
+          7: 'The heap minimum must start the next group',
+          8: 'The group needs groupSize consecutive cards',
+          9: 'A needed card has no copies left — return false',
+          10: 'Consume one copy of this card',
+          11: 'Did this card just run out?',
+          12: 'A smaller card still needs groups passing through here — return false',
+          13: 'Exhausted card was the minimum — pop it off the heap',
+          17: 'Heap empty: every card fit into a group',
+        },
+        java: {
+          1: 'Define method taking hand array and groupSize',
+          2: 'Hand must divide evenly into groups',
+          3: 'Count copies of each card value',
+          4: 'Build the frequency map',
+          5: 'Min-heap of the unique card values',
+          6: 'Keep forming groups until every card is used',
+          7: 'The heap minimum must start the next group',
+          8: 'The group needs groupSize consecutive cards',
+          9: 'A needed card has no copies left — return false',
+          10: 'Consume one copy of this card',
+          11: 'Did this card just run out?',
+          12: 'A smaller card still needs groups passing through here — return false',
+          13: 'Exhausted card was the minimum — pop it off the heap',
+          17: 'Heap empty: every card fit into a group',
+        },
+      },
+    },
+  ],
   lineExplanations: {
     python: {
       1: 'Define function taking hand and groupSize',
