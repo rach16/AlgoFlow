@@ -47,6 +47,14 @@ import { generateParentheses } from './stack/generateParentheses';
 import { dailyTemperatures } from './stack/dailyTemperatures';
 import { carFleet } from './stack/carFleet';
 import { largestRectHistogram } from './stack/largestRectHistogram';
+import { baseballGame } from './stack/baseballGame';
+import { implementStackUsingQueues } from './stack/implementStackUsingQueues';
+import { implementQueueUsingStacks } from './stack/implementQueueUsingStacks';
+import { asteroidCollision } from './stack/asteroidCollision';
+import { onlineStockSpan } from './stack/onlineStockSpan';
+import { simplifyPath } from './stack/simplifyPath';
+import { decodeString } from './stack/decodeString';
+import { maxFrequencyStack } from './stack/maxFrequencyStack';
 
 // Sliding Window
 import { bestTimeToBuySellStock } from './sliding-window/bestTimeToBuySellStock';
@@ -67,6 +75,13 @@ import { findMinRotatedSorted } from './binary-search/findMinRotatedSorted';
 import { searchRotatedSorted } from './binary-search/searchRotatedSorted';
 import { timeBasedKeyValue } from './binary-search/timeBasedKeyValue';
 import { medianTwoSortedArrays } from './binary-search/medianTwoSortedArrays';
+import { searchInsertPosition } from './binary-search/searchInsertPosition';
+import { guessNumber } from './binary-search/guessNumber';
+import { sqrtX } from './binary-search/sqrtX';
+import { capacityToShipPackages } from './binary-search/capacityToShipPackages';
+import { searchRotatedSortedII } from './binary-search/searchRotatedSortedII';
+import { splitArrayLargestSum } from './binary-search/splitArrayLargestSum';
+import { findInMountainArray } from './binary-search/findInMountainArray';
 
 // Linked List
 import { reverseLinkedList } from './linked-list/reverseLinkedList';
@@ -80,6 +95,9 @@ import { findDuplicateNumber } from './linked-list/findDuplicateNumber';
 import { lruCache } from './linked-list/lruCache';
 import { mergeKSortedLists } from './linked-list/mergeKSortedLists';
 import { reverseNodesKGroup } from './linked-list/reverseNodesKGroup';
+import { reverseLinkedListII } from './linked-list/reverseLinkedListII';
+import { designCircularQueue } from './linked-list/designCircularQueue';
+import { lfuCache } from './linked-list/lfuCache';
 
 // Backtracking
 import { subsets } from './backtracking/subsets';
@@ -122,6 +140,14 @@ import { kthSmallestBST } from './trees/kthSmallestBST';
 import { constructFromPreorderInorder } from './trees/constructFromPreorderInorder';
 import { maxPathSum } from './trees/maxPathSum';
 import { serializeDeserialize } from './trees/serializeDeserialize';
+import { inorderTraversal } from './trees/inorderTraversal';
+import { preorderTraversal } from './trees/preorderTraversal';
+import { postorderTraversal } from './trees/postorderTraversal';
+import { insertIntoBST } from './trees/insertIntoBST';
+import { deleteNodeBST } from './trees/deleteNodeBST';
+import { houseRobberIII } from './trees/houseRobberIII';
+import { deleteLeavesGivenValue } from './trees/deleteLeavesGivenValue';
+import { constructQuadTree } from './trees/constructQuadTree';
 
 // 1-D Dynamic Programming
 import { climbingStairs } from './dp-1d/climbingStairs';
@@ -227,7 +253,7 @@ export const categories: Category[] = [
     id: 'stack',
     name: 'Stack',
     icon: '📚',
-    algorithms: [validParentheses, minStack, evalRPN, generateParentheses, dailyTemperatures, carFleet, largestRectHistogram],
+    algorithms: [validParentheses, minStack, evalRPN, generateParentheses, dailyTemperatures, carFleet, largestRectHistogram, baseballGame, implementStackUsingQueues, implementQueueUsingStacks, asteroidCollision, onlineStockSpan, simplifyPath, decodeString, maxFrequencyStack],
   },
   {
     id: 'sliding-window',
@@ -239,13 +265,13 @@ export const categories: Category[] = [
     id: 'binary-search',
     name: 'Binary Search',
     icon: '🔍',
-    algorithms: [binarySearch, search2DMatrix, kokoEatingBananas, findMinRotatedSorted, searchRotatedSorted, timeBasedKeyValue, medianTwoSortedArrays],
+    algorithms: [binarySearch, search2DMatrix, kokoEatingBananas, findMinRotatedSorted, searchRotatedSorted, timeBasedKeyValue, medianTwoSortedArrays, searchInsertPosition, guessNumber, sqrtX, capacityToShipPackages, searchRotatedSortedII, splitArrayLargestSum, findInMountainArray],
   },
   {
     id: 'linked-list',
     name: 'Linked List',
     icon: '🔗',
-    algorithms: [reverseLinkedList, mergeTwoSortedLists, reorderList, removeNthFromEnd, copyListRandomPointer, addTwoNumbers, linkedListCycle, findDuplicateNumber, lruCache, mergeKSortedLists, reverseNodesKGroup],
+    algorithms: [reverseLinkedList, mergeTwoSortedLists, reorderList, removeNthFromEnd, copyListRandomPointer, addTwoNumbers, linkedListCycle, findDuplicateNumber, lruCache, mergeKSortedLists, reverseNodesKGroup, reverseLinkedListII, designCircularQueue, lfuCache],
   },
   {
     id: 'backtracking',
@@ -269,7 +295,7 @@ export const categories: Category[] = [
     id: 'trees',
     name: 'Trees',
     icon: '🌳',
-    algorithms: [invertBinaryTree, maxDepthBinaryTree, diameterBinaryTree, balancedBinaryTree, sameTree, subtreeOfAnotherTree, lowestCommonAncestorBST, levelOrderTraversal, rightSideView, countGoodNodes, validateBST, kthSmallestBST, constructFromPreorderInorder, maxPathSum, serializeDeserialize],
+    algorithms: [invertBinaryTree, maxDepthBinaryTree, diameterBinaryTree, balancedBinaryTree, sameTree, subtreeOfAnotherTree, lowestCommonAncestorBST, levelOrderTraversal, rightSideView, countGoodNodes, validateBST, kthSmallestBST, constructFromPreorderInorder, maxPathSum, serializeDeserialize, inorderTraversal, preorderTraversal, postorderTraversal, insertIntoBST, deleteNodeBST, houseRobberIII, deleteLeavesGivenValue, constructQuadTree],
   },
   {
     id: 'dp-1d',

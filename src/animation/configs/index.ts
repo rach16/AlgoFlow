@@ -24,6 +24,12 @@ import { arraysHashingNewBConfigs } from './arraysHashingNewB';
 import { twoPointersNewAConfigs } from './twoPointersNewA';
 import { twoPointersNewBConfigs } from './twoPointersNewB';
 import { slidingWindowNewConfigs } from './slidingWindowNew';
+import { stackNewAConfigs } from './stackNewA';
+import { stackNewBConfigs } from './stackNewB';
+import { binarySearchNewAConfigs } from './binarySearchNewA';
+import { binarySearchLinkedListNewConfigs } from './binarySearchLinkedListNew';
+import { treesNewAConfigs } from './treesNewA';
+import { treesNewBConfigs } from './treesNewB';
 
 const allConfigs: AnimationConfig[] = [
   ...arraysHashingConfigs,
@@ -50,6 +56,12 @@ const allConfigs: AnimationConfig[] = [
   ...twoPointersNewAConfigs,
   ...twoPointersNewBConfigs,
   ...slidingWindowNewConfigs,
+  ...stackNewAConfigs,
+  ...stackNewBConfigs,
+  ...binarySearchNewAConfigs,
+  ...binarySearchLinkedListNewConfigs,
+  ...treesNewAConfigs,
+  ...treesNewBConfigs,
 ];
 
 const configMap = new Map<string, AnimationConfig>();

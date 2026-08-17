@@ -102,22 +102,28 @@ export function VisualizerPage() {
   const dpLabels = state?.dpLabels as string[] | undefined;
   const dpHighlights = state?.dpHighlights as number[] | undefined;
   const dpSecondary = state?.dpSecondary as number[] | undefined;
-  const matrixHighlights = state?.matrixHighlights as [number, number][] | undefined;
-  const matrixSecondary = state?.matrixSecondary as [number, number][] | undefined;
-  const graphHighlights = state?.graphHighlights as (number | string)[] | undefined;
-  const graphSecondary = state?.graphSecondary as (number | string)[] | undefined;
-  const graphVisitedEdges = state?.graphVisitedEdges as [number | string, number | string][] | undefined;
-  const graphDirected = state?.graphDirected as boolean | undefined;
-  const linkedListHighlights = state?.linkedListHighlights as number[] | undefined;
-  const linkedListSecondary = state?.linkedListSecondary as number[] | undefined;
-  const linkedListPointers = state?.linkedListPointers as Record<string, number> | undefined;
-  const treeHighlights = state?.treeHighlights as number[] | undefined;
-  const treeSecondary = state?.treeSecondary as number[] | undefined;
-  const treePointers = state?.treePointers as Record<string, number> | undefined;
-  const bitHighlights = state?.bitHighlights as number[] | undefined;
-  const bitSecondary = state?.bitSecondary as number[] | undefined;
-  const intervalHighlights = state?.intervalHighlights as number[] | undefined;
-  const intervalSecondary = state?.intervalSecondary as number[] | undefined;
+  // View-specific highlight keys belong in `state`, but a number of algorithms emit them
+  // at the step level instead. Accept either so those highlights aren't silently dropped.
+  const stepExtras = currentStep as unknown as Record<string, unknown> | undefined;
+  const viewKey = <T,>(key: string): T | undefined =>
+    (state?.[key] ?? stepExtras?.[key]) as T | undefined;
+
+  const matrixHighlights = viewKey<[number, number][]>('matrixHighlights');
+  const matrixSecondary = viewKey<[number, number][]>('matrixSecondary');
+  const graphHighlights = viewKey<(number | string)[]>('graphHighlights');
+  const graphSecondary = viewKey<(number | string)[]>('graphSecondary');
+  const graphVisitedEdges = viewKey<[number | string, number | string][]>('graphVisitedEdges');
+  const graphDirected = viewKey<boolean>('graphDirected');
+  const linkedListHighlights = viewKey<number[]>('linkedListHighlights');
+  const linkedListSecondary = viewKey<number[]>('linkedListSecondary');
+  const linkedListPointers = viewKey<Record<string, number>>('linkedListPointers');
+  const treeHighlights = viewKey<number[]>('treeHighlights');
+  const treeSecondary = viewKey<number[]>('treeSecondary');
+  const treePointers = viewKey<Record<string, number>>('treePointers');
+  const bitHighlights = viewKey<number[]>('bitHighlights');
+  const bitSecondary = viewKey<number[]>('bitSecondary');
+  const intervalHighlights = viewKey<number[]>('intervalHighlights');
+  const intervalSecondary = viewKey<number[]>('intervalSecondary');
 
   const activeDataStructures = detectDataStructures(state, currentAlgorithm.category);
 
