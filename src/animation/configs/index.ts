@@ -30,6 +30,11 @@ import { binarySearchNewAConfigs } from './binarySearchNewA';
 import { binarySearchLinkedListNewConfigs } from './binarySearchLinkedListNew';
 import { treesNewAConfigs } from './treesNewA';
 import { treesNewBConfigs } from './treesNewB';
+import { backtrackingNewConfigs } from './backtrackingNew';
+import { heapNewConfigs } from './heapNew';
+import { dp1dNewConfigs } from './dp1dNew';
+import { dp2dNewConfigs } from './dp2dNew';
+import { intervalsTriesNewConfigs } from './intervalsTriesNew';
 
 const allConfigs: AnimationConfig[] = [
   ...arraysHashingConfigs,
@@ -62,6 +67,11 @@ const allConfigs: AnimationConfig[] = [
   ...binarySearchLinkedListNewConfigs,
   ...treesNewAConfigs,
   ...treesNewBConfigs,
+  ...backtrackingNewConfigs,
+  ...heapNewConfigs,
+  ...dp1dNewConfigs,
+  ...dp2dNewConfigs,
+  ...intervalsTriesNewConfigs,
 ];
 
 const configMap = new Map<string, AnimationConfig>();

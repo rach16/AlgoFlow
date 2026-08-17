@@ -109,11 +109,19 @@ import { wordSearch } from './backtracking/wordSearch';
 import { palindromePartitioning } from './backtracking/palindromePartitioning';
 import { letterCombinations } from './backtracking/letterCombinations';
 import { nQueens } from './backtracking/nQueens';
+import { subsetXorTotal } from './backtracking/subsetXorTotal';
+import { combinations } from './backtracking/combinations';
+import { permutationsII } from './backtracking/permutationsII';
+import { matchsticksToSquare } from './backtracking/matchsticksToSquare';
+import { partitionKEqualSubsets } from './backtracking/partitionKEqualSubsets';
+import { nQueensII } from './backtracking/nQueensII';
+import { wordBreakII } from './backtracking/wordBreakII';
 
 // Tries
 import { implementTrie } from './tries/implementTrie';
 import { addSearchWords } from './tries/addSearchWords';
 import { wordSearchII } from './tries/wordSearchII';
+import { extraCharactersInString } from './tries/extraCharactersInString';
 
 // Heap / Priority Queue
 import { kthLargestStream } from './heap/kthLargestStream';
@@ -123,6 +131,11 @@ import { kthLargestElement } from './heap/kthLargestElement';
 import { taskScheduler } from './heap/taskScheduler';
 import { designTwitter } from './heap/designTwitter';
 import { findMedianDataStream } from './heap/findMedianDataStream';
+import { singleThreadedCPU } from './heap/singleThreadedCPU';
+import { reorganizeString } from './heap/reorganizeString';
+import { longestHappyString } from './heap/longestHappyString';
+import { carPooling } from './heap/carPooling';
+import { ipo } from './heap/ipo';
 
 // Trees
 import { invertBinaryTree } from './trees/invertBinaryTree';
@@ -162,6 +175,11 @@ import { maxProductSubarray } from './dp-1d/maxProductSubarray';
 import { wordBreak } from './dp-1d/wordBreak';
 import { longestIncreasingSubsequence } from './dp-1d/longestIncreasingSubsequence';
 import { partitionEqualSubsetSum } from './dp-1d/partitionEqualSubsetSum';
+import { tribonacci } from './dp-1d/tribonacci';
+import { combinationSumIV } from './dp-1d/combinationSumIV';
+import { perfectSquares } from './dp-1d/perfectSquares';
+import { integerBreak } from './dp-1d/integerBreak';
+import { stoneGameIII } from './dp-1d/stoneGameIII';
 
 // 2-D Dynamic Programming
 import { uniquePaths } from './dp-2d/uniquePaths';
@@ -175,6 +193,11 @@ import { distinctSubsequences } from './dp-2d/distinctSubsequences';
 import { editDistance } from './dp-2d/editDistance';
 import { burstBalloons } from './dp-2d/burstBalloons';
 import { regexMatching } from './dp-2d/regexMatching';
+import { uniquePathsII } from './dp-2d/uniquePathsII';
+import { minimumPathSum } from './dp-2d/minimumPathSum';
+import { lastStoneWeightII } from './dp-2d/lastStoneWeightII';
+import { stoneGame } from './dp-2d/stoneGame';
+import { stoneGameII } from './dp-2d/stoneGameII';
 
 // Greedy
 import { maximumSubarray } from './greedy/maximumSubarray';
@@ -193,6 +216,7 @@ import { nonOverlappingIntervals } from './intervals/nonOverlappingIntervals';
 import { meetingRooms } from './intervals/meetingRooms';
 import { meetingRoomsII } from './intervals/meetingRoomsII';
 import { minIntervalQuery } from './intervals/minIntervalQuery';
+import { meetingRoomsIII } from './intervals/meetingRoomsIII';
 
 // Math & Geometry
 import { rotateImage } from './math-geometry/rotateImage';
@@ -277,19 +301,19 @@ export const categories: Category[] = [
     id: 'backtracking',
     name: 'Backtracking',
     icon: '🔙',
-    algorithms: [subsets, combinationSum, permutations, subsetsII, combinationSumII, wordSearch, palindromePartitioning, letterCombinations, nQueens],
+    algorithms: [subsets, combinationSum, permutations, subsetsII, combinationSumII, wordSearch, palindromePartitioning, letterCombinations, nQueens, subsetXorTotal, combinations, permutationsII, matchsticksToSquare, partitionKEqualSubsets, nQueensII, wordBreakII],
   },
   {
     id: 'tries',
     name: 'Tries',
     icon: '🔤',
-    algorithms: [implementTrie, addSearchWords, wordSearchII],
+    algorithms: [implementTrie, addSearchWords, wordSearchII, extraCharactersInString],
   },
   {
     id: 'heap',
     name: 'Heap / Priority Queue',
     icon: '⛰️',
-    algorithms: [kthLargestStream, lastStoneWeight, kClosestPoints, kthLargestElement, taskScheduler, designTwitter, findMedianDataStream],
+    algorithms: [kthLargestStream, lastStoneWeight, kClosestPoints, kthLargestElement, taskScheduler, designTwitter, findMedianDataStream, singleThreadedCPU, reorganizeString, longestHappyString, carPooling, ipo],
   },
   {
     id: 'trees',
@@ -301,13 +325,13 @@ export const categories: Category[] = [
     id: 'dp-1d',
     name: '1-D Dynamic Programming',
     icon: '📈',
-    algorithms: [climbingStairs, minCostClimbingStairs, houseRobber, houseRobberII, longestPalindromicSubstring, palindromicSubstrings, decodeWays, coinChange, maxProductSubarray, wordBreak, longestIncreasingSubsequence, partitionEqualSubsetSum],
+    algorithms: [climbingStairs, minCostClimbingStairs, houseRobber, houseRobberII, longestPalindromicSubstring, palindromicSubstrings, decodeWays, coinChange, maxProductSubarray, wordBreak, longestIncreasingSubsequence, partitionEqualSubsetSum, tribonacci, combinationSumIV, perfectSquares, integerBreak, stoneGameIII],
   },
   {
     id: 'dp-2d',
     name: '2-D Dynamic Programming',
     icon: '📊',
-    algorithms: [uniquePaths, longestCommonSubsequence, buySellStockCooldown, coinChangeII, targetSum, interleavingString, longestIncreasingPathMatrix, distinctSubsequences, editDistance, burstBalloons, regexMatching],
+    algorithms: [uniquePaths, longestCommonSubsequence, buySellStockCooldown, coinChangeII, targetSum, interleavingString, longestIncreasingPathMatrix, distinctSubsequences, editDistance, burstBalloons, regexMatching, uniquePathsII, minimumPathSum, lastStoneWeightII, stoneGame, stoneGameII],
   },
   {
     id: 'greedy',
@@ -319,7 +343,7 @@ export const categories: Category[] = [
     id: 'intervals',
     name: 'Intervals',
     icon: '📏',
-    algorithms: [insertInterval, mergeIntervals, nonOverlappingIntervals, meetingRooms, meetingRoomsII, minIntervalQuery],
+    algorithms: [insertInterval, mergeIntervals, nonOverlappingIntervals, meetingRooms, meetingRoomsII, minIntervalQuery, meetingRoomsIII],
   },
   {
     id: 'math-geometry',
