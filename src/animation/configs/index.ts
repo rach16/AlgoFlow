@@ -18,6 +18,13 @@ import { bitManipulationConfigs } from './bitManipulation';
 import { graphsConfigs } from './graphs';
 import { advancedGraphsConfigs } from './advancedGraphs';
 
+// NeetCode 250 additions
+import { arraysHashingNewAConfigs } from './arraysHashingNewA';
+import { arraysHashingNewBConfigs } from './arraysHashingNewB';
+import { twoPointersNewAConfigs } from './twoPointersNewA';
+import { twoPointersNewBConfigs } from './twoPointersNewB';
+import { slidingWindowNewConfigs } from './slidingWindowNew';
+
 const allConfigs: AnimationConfig[] = [
   ...arraysHashingConfigs,
   ...twoPointersConfigs,
@@ -37,6 +44,12 @@ const allConfigs: AnimationConfig[] = [
   ...bitManipulationConfigs,
   ...graphsConfigs,
   ...advancedGraphsConfigs,
+  // NeetCode 250 additions
+  ...arraysHashingNewAConfigs,
+  ...arraysHashingNewBConfigs,
+  ...twoPointersNewAConfigs,
+  ...twoPointersNewBConfigs,
+  ...slidingWindowNewConfigs,
 ];
 
 const configMap = new Map<string, AnimationConfig>();

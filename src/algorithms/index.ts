@@ -10,6 +10,19 @@ import { encodeDecode } from './arrays-hashing/encodeDecode';
 import { productExceptSelf } from './arrays-hashing/productExceptSelf';
 import { validSudoku } from './arrays-hashing/validSudoku';
 import { longestConsecutive } from './arrays-hashing/longestConsecutive';
+import { concatenationOfArray } from './arrays-hashing/concatenationOfArray';
+import { longestCommonPrefix } from './arrays-hashing/longestCommonPrefix';
+import { removeElement } from './arrays-hashing/removeElement';
+import { majorityElement } from './arrays-hashing/majorityElement';
+import { designHashSet } from './arrays-hashing/designHashSet';
+import { designHashMap } from './arrays-hashing/designHashMap';
+import { sortColors } from './arrays-hashing/sortColors';
+import { sortAnArray } from './arrays-hashing/sortAnArray';
+import { rangeSumQuery2D } from './arrays-hashing/rangeSumQuery2D';
+import { buySellStockII } from './arrays-hashing/buySellStockII';
+import { majorityElementII } from './arrays-hashing/majorityElementII';
+import { subarraySumEqualsK } from './arrays-hashing/subarraySumEqualsK';
+import { firstMissingPositive } from './arrays-hashing/firstMissingPositive';
 
 // Two Pointers
 import { validPalindrome } from './two-pointers/validPalindrome';
@@ -17,6 +30,14 @@ import { twoSumII } from './two-pointers/twoSumII';
 import { threeSum } from './two-pointers/threeSum';
 import { containerWithMostWater } from './two-pointers/containerWithMostWater';
 import { trappingRainWater } from './two-pointers/trappingRainWater';
+import { reverseString } from './two-pointers/reverseString';
+import { validPalindromeII } from './two-pointers/validPalindromeII';
+import { mergeStringsAlternately } from './two-pointers/mergeStringsAlternately';
+import { mergeSortedArray } from './two-pointers/mergeSortedArray';
+import { removeDuplicatesFromSortedArray } from './two-pointers/removeDuplicatesFromSortedArray';
+import { rotateArray } from './two-pointers/rotateArray';
+import { fourSum } from './two-pointers/fourSum';
+import { boatsToSavePeople } from './two-pointers/boatsToSavePeople';
 
 // Stack
 import { validParentheses } from './stack/validParentheses';
@@ -34,6 +55,9 @@ import { longestRepeatingCharReplacement } from './sliding-window/longestRepeati
 import { permutationInString } from './sliding-window/permutationInString';
 import { minimumWindowSubstring } from './sliding-window/minimumWindowSubstring';
 import { slidingWindowMaximum } from './sliding-window/slidingWindowMaximum';
+import { containsDuplicateII } from './sliding-window/containsDuplicateII';
+import { minSizeSubarraySum } from './sliding-window/minSizeSubarraySum';
+import { findKClosestElements } from './sliding-window/findKClosestElements';
 
 // Binary Search
 import { binarySearch } from './binary-search/binarySearch';
@@ -191,13 +215,13 @@ export const categories: Category[] = [
     id: 'arrays-hashing',
     name: 'Arrays & Hashing',
     icon: '📊',
-    algorithms: [twoSum, containsDuplicate, validAnagram, groupAnagrams, topKFrequent, encodeDecode, productExceptSelf, validSudoku, longestConsecutive],
+    algorithms: [twoSum, containsDuplicate, validAnagram, groupAnagrams, topKFrequent, encodeDecode, productExceptSelf, validSudoku, longestConsecutive, concatenationOfArray, longestCommonPrefix, removeElement, majorityElement, designHashSet, designHashMap, sortColors, sortAnArray, rangeSumQuery2D, buySellStockII, majorityElementII, subarraySumEqualsK, firstMissingPositive],
   },
   {
     id: 'two-pointers',
     name: 'Two Pointers',
     icon: '👆',
-    algorithms: [validPalindrome, twoSumII, threeSum, containerWithMostWater, trappingRainWater],
+    algorithms: [validPalindrome, twoSumII, threeSum, containerWithMostWater, trappingRainWater, reverseString, validPalindromeII, mergeStringsAlternately, mergeSortedArray, removeDuplicatesFromSortedArray, rotateArray, fourSum, boatsToSavePeople],
   },
   {
     id: 'stack',
@@ -209,7 +233,7 @@ export const categories: Category[] = [
     id: 'sliding-window',
     name: 'Sliding Window',
     icon: '🪟',
-    algorithms: [bestTimeToBuySellStock, longestSubstringWithoutRepeating, longestRepeatingCharReplacement, permutationInString, minimumWindowSubstring, slidingWindowMaximum],
+    algorithms: [bestTimeToBuySellStock, longestSubstringWithoutRepeating, longestRepeatingCharReplacement, permutationInString, minimumWindowSubstring, slidingWindowMaximum, containsDuplicateII, minSizeSubarraySum, findKClosestElements],
   },
   {
     id: 'binary-search',
