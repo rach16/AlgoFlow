@@ -199,7 +199,7 @@ export const targetSum: Algorithm = {
   category: '2-D DP',
   difficulty: 'Medium',
   timeComplexity: 'O(n·sum)',
-  spaceComplexity: 'O(sum)',
+  spaceComplexity: 'O(n·sum)',
   pattern: 'DP / 0-1 Knapsack — subset sum to (total + target) / 2',
   description:
     'You are given an integer array nums and an integer target. You want to build an expression out of nums by adding one of the symbols \'+\' and \'-\' before each integer in nums and then concatenate all the integers. Return the number of different expressions that you can build, which evaluates to target.',

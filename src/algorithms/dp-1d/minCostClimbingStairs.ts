@@ -134,7 +134,7 @@ export const minCostClimbingStairs: Algorithm = {
   category: '1-D DP',
   difficulty: 'Easy',
   timeComplexity: 'O(n)',
-  spaceComplexity: 'O(1)',
+  spaceComplexity: 'O(n)',
   pattern: 'DP — dp[i] = cost[i] + min(dp[i-1], dp[i-2])',
   description:
     'You are given an integer array cost where cost[i] is the cost of ith step on a staircase. Once you pay the cost, you can either climb one or two steps. You can either start from the step with index 0, or the step with index 1. Return the minimum cost to reach the top of the floor.',

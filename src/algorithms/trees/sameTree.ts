@@ -257,7 +257,7 @@ export const sameTree: Algorithm = {
       id: 'iterative-stack-of-pairs',
       name: 'Iterative Stack of Pairs',
       timeComplexity: 'O(n)',
-      spaceComplexity: 'O(n)',
+      spaceComplexity: 'O(h)',
       description:
         'Replaces the recursion with an explicit stack of (p, q) node pairs — the same comparisons in the same order, but no risk of call-stack overflow on deep trees.',
       code: {

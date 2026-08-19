@@ -176,7 +176,7 @@ export const coinChangeII: Algorithm = {
   category: '2-D DP',
   difficulty: 'Medium',
   timeComplexity: 'O(n·amount)',
-  spaceComplexity: 'O(amount)',
+  spaceComplexity: 'O(n·amount)',
   pattern: 'DP — unbounded knapsack, count combinations',
   description:
     'You are given an integer array coins representing coins of different denominations and an integer amount representing a total amount of money. Return the number of combinations that make up that amount.',

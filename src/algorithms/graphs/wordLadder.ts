@@ -338,7 +338,7 @@ export const wordLadder: Algorithm = {
   category: 'Graphs',
   difficulty: 'Hard',
   timeComplexity: 'O(m²·n)',
-  spaceComplexity: 'O(m²·n)',
+  spaceComplexity: 'O(n·m)',
   pattern: 'BFS — shortest path, try all one-letter transformations',
   description:
     'Given beginWord, endWord, and a word list, find the length of the shortest transformation sequence from beginWord to endWord, changing one letter at a time. Each transformed word must exist in the word list. Return 0 if no sequence exists.',

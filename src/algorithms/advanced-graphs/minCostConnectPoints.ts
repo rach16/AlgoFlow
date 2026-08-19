@@ -266,8 +266,8 @@ export const minCostConnectPoints: Algorithm = {
   name: 'Min Cost to Connect All Points',
   category: 'Advanced Graphs',
   difficulty: 'Medium',
-  timeComplexity: 'O(n² log n)',
-  spaceComplexity: 'O(n²)',
+  timeComplexity: 'O(n²)',
+  spaceComplexity: 'O(n)',
   pattern: 'Prim MST — min heap of edges, grow tree greedily',
   description:
     'You are given an array points representing integer coordinates of some points on a 2D-plane, where points[i] = [xi, yi]. The cost of connecting two points [xi, yi] and [xj, yj] is the manhattan distance between them. Return the minimum cost to make all points connected.',

@@ -160,7 +160,7 @@ export const groupAnagrams: Algorithm = {
   name: 'Group Anagrams',
   category: 'Arrays & Hashing',
   difficulty: 'Medium',
-  timeComplexity: 'O(n·k)',
+  timeComplexity: 'O(n·k log k)',
   spaceComplexity: 'O(n·k)',
   pattern: 'Hash Map — sorted string as key',
   description:

@@ -213,7 +213,7 @@ export const decodeWays: Algorithm = {
   category: '1-D DP',
   difficulty: 'Medium',
   timeComplexity: 'O(n)',
-  spaceComplexity: 'O(1)',
+  spaceComplexity: 'O(n)',
   pattern: 'DP — dp[i] = dp[i-1] (single) + dp[i-2] (double if valid)',
   description:
     'A message containing letters from A-Z can be encoded into numbers using the mapping A=1, B=2, ..., Z=26. Given a string s containing only digits, return the number of ways to decode it.',

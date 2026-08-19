@@ -220,7 +220,7 @@ export const stoneGame: Algorithm = {
       id: 'parity-math',
       name: 'Parity Argument',
       timeComplexity: 'O(n)',
-      spaceComplexity: 'O(1)',
+      spaceComplexity: 'O(n)',
       description:
         'Skips the DP entirely: with an even number of piles Alice can claim every even-index pile or every odd-index pile, so she simply takes whichever group is larger and always wins.',
       code: {

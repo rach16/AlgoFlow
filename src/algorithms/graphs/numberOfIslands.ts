@@ -324,7 +324,7 @@ private static void dfs(char[][] grid, int r, int c, Set<String> visited,
       id: 'bfs-flood-fill',
       name: 'BFS Flood Fill',
       timeComplexity: 'O(m·n)',
-      spaceComplexity: 'O(min(m,n))',
+      spaceComplexity: 'O(m·n)',
       description:
         'Sinks each island with an explicit queue expanding ring by ring instead of recursing — the queue holds at most one BFS frontier, O(min(m,n)) cells, versus a DFS stack that can hold a whole island.',
       code: {

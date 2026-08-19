@@ -416,7 +416,7 @@ private static double dfs(String src, String dst, double product,
     {
       id: 'weighted-union-find',
       name: 'Weighted Union-Find',
-      timeComplexity: 'O((E + q)·α(V))',
+      timeComplexity: 'O((E + q)·log V)',
       spaceComplexity: 'O(V)',
       description:
         'Rather than re-walking the graph for every query, store each variable\'s ratio to its parent and compress paths — after the equations are absorbed, a query is a single division of two stored weights.',

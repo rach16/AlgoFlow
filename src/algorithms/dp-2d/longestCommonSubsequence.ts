@@ -230,7 +230,7 @@ export const longestCommonSubsequence: Algorithm = {
       id: 'rolling-1d-array',
       name: 'Rolling 1-D Array',
       timeComplexity: 'O(m·n)',
-      spaceComplexity: 'O(min(m, n))',
+      spaceComplexity: 'O(n)',
       description:
         'Same recurrence as the 2-D table, but since each row only depends on the previous one, a single 1-D array (plus one saved diagonal value) replaces the whole matrix.',
       code: {

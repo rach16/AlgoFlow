@@ -15,6 +15,13 @@
  * the two datasets independent so notes can be filled in incrementally.
  */
 
+import { arraysHashingNotes } from './complexityNotes/arraysHashing';
+import { treesNotes } from './complexityNotes/trees';
+import { graphsNotes } from './complexityNotes/graphs';
+import { dpNotes } from './complexityNotes/dp';
+import { stackLinkedListNotes } from './complexityNotes/stackLinkedList';
+import { pointersSearchNotes } from './complexityNotes/pointersSearch';
+
 /** Key format for COMPLEXITY_NOTES: the algorithm id and the approach id. */
 export const noteKey = (algorithmId: string, approachId: string) => `${algorithmId}:${approachId}`;
 
@@ -153,7 +160,9 @@ export const COMPLEXITY_METHOD: MethodSection[] = [
  * Per-problem derivations, keyed `${algorithmId}:${approachId}`.
  * `optimal` is the approach id of each algorithm's main solution.
  */
-export const COMPLEXITY_NOTES: Record<string, ComplexityNote> = {
+/** Hand-written exemplars, one per distinct pattern. These are the reference for voice and
+ *  depth; the per-category files under ./complexityNotes follow them. */
+const CORE_NOTES: Record<string, ComplexityNote> = {
   // ---- single-pass hash map, and the sort+two-pointer contrast -------------------
   'two-sum:optimal': {
     time: [
@@ -462,4 +471,20 @@ export const COMPLEXITY_NOTES: Record<string, ComplexityNote> = {
     gotcha:
       'That O(1) depends on not counting the output. If the interviewer counts it, the honest answer is O(n) — always state which convention you are using.',
   },
+};
+
+/**
+ * The public registry. Composed from the hand-written exemplars plus one file per category,
+ * so parallel authoring never touches a shared object. Later spreads win on key collision,
+ * which cannot happen in practice — each file owns a disjoint set of (algorithm, approach)
+ * pairs, and the test suite asserts every key resolves to a real one.
+ */
+export const COMPLEXITY_NOTES: Record<string, ComplexityNote> = {
+  ...CORE_NOTES,
+  ...arraysHashingNotes,
+  ...treesNotes,
+  ...graphsNotes,
+  ...dpNotes,
+  ...stackLinkedListNotes,
+  ...pointersSearchNotes,
 };

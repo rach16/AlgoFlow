@@ -130,7 +130,7 @@ export const validPalindrome: Algorithm = {
   category: 'Two Pointers',
   difficulty: 'Easy',
   timeComplexity: 'O(n)',
-  spaceComplexity: 'O(1)',
+  spaceComplexity: 'O(n)',
   pattern: 'Two Pointers — converge from both ends',
   description:
     'A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.',

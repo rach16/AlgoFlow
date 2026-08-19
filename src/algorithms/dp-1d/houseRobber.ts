@@ -154,7 +154,7 @@ export const houseRobber: Algorithm = {
   category: '1-D DP',
   difficulty: 'Medium',
   timeComplexity: 'O(n)',
-  spaceComplexity: 'O(1)',
+  spaceComplexity: 'O(n)',
   pattern: 'DP — rob or skip: dp[i] = max(dp[i-1], dp[i-2] + nums[i])',
   description:
     'You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed. Adjacent houses have security systems connected, so if two adjacent houses were broken into on the same night, it will alert the police. Given an integer array nums representing the amount of money of each house, return the maximum amount of money you can rob tonight without alerting the police.',
