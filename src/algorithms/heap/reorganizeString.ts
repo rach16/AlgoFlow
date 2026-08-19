@@ -417,7 +417,7 @@ def reorganizeString(s):
         python: {
           1: 'Counter gives frequencies and most_common ordering for free',
           3: 'Define function taking the string',
-          4: 'Count how often each character appears',
+          4: 'Counter walks the input once and returns the whole {value: count} map',
           5: 'Grab the single most frequent character',
           6: 'If it needs more than half the seats (rounded up) it cannot be spread out',
           7: 'No valid arrangement exists',
@@ -472,7 +472,7 @@ def reorganizeString(s):
       1: 'Import heapq for heap operations',
       2: 'Counter for character frequencies',
       4: 'Define function taking the string',
-      5: 'Count how often each character appears',
+      5: 'Counter walks the input once and returns the whole {value: count} map',
       6: 'Negate counts to turn Python min-heap into a max-heap',
       7: 'Heapify in O(k)',
       9: 'Accumulate the rearranged characters',

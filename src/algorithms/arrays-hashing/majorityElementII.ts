@@ -266,7 +266,7 @@ export const majorityElementII: Algorithm = {
           1: 'Define function taking the array',
           2: 'Value → occurrence count',
           3: 'One pass over every element',
-          4: 'Bump the tally for this value',
+          4: 'get(k, 0) returns 0 for a key never seen, so its first count becomes 1 — no KeyError',
           5: 'Keep values whose tally beats ⌊n/3⌋',
         },
         javascript: {
@@ -281,7 +281,7 @@ export const majorityElementII: Algorithm = {
           1: 'Define function taking the array',
           2: 'Value → occurrence count',
           3: 'One pass over every element',
-          4: 'Bump the tally for this value',
+          4: 'getOrDefault gives 0 instead of the null get() would return, so a first sighting becomes 1',
           6: 'Walk the finished tally',
           7: 'Keep values whose tally beats n/3',
           9: 'Return the qualifying values',
