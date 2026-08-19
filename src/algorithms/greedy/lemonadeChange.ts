@@ -284,7 +284,7 @@ export const lemonadeChange: Algorithm = {
     {
       id: 'drawer-simulation',
       name: 'Drawer Simulation',
-      timeComplexity: 'O(n log n)',
+      timeComplexity: 'O(n²)',
       spaceComplexity: 'O(n)',
       description:
         'Instead of two integer counters, keep the real multiset of bills in the drawer and pay change largest-bill-first — the same greedy rule, but visible as an actual cash drawer.',

@@ -225,7 +225,7 @@ export const powXN: Algorithm = {
   category: 'Math & Geometry',
   difficulty: 'Medium',
   timeComplexity: 'O(log n)',
-  spaceComplexity: 'O(1)',
+  spaceComplexity: 'O(log n)',
   pattern: 'Binary Exponentiation — square and multiply',
   description:
     'Implement pow(x, n), which calculates x raised to the power n (i.e., x^n).',

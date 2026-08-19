@@ -275,7 +275,7 @@ def predictPartyVictory(senate):
     {
       id: 'pending-ban-counters',
       name: 'Pending-Ban Counters',
-      timeComplexity: 'O(n)',
+      timeComplexity: 'O(n log n)',
       spaceComplexity: 'O(n)',
       description:
         'Drop the queues entirely: sweep the seats in repeated rounds carrying two counters of bans still owed, silencing any senator whose party already has a ban pending.',
