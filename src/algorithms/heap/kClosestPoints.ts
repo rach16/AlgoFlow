@@ -208,8 +208,8 @@ export const kClosestPoints: Algorithm = {
   name: 'K Closest Points to Origin',
   category: 'Heap / Priority Queue',
   difficulty: 'Medium',
-  timeComplexity: 'O(n log k)',
-  spaceComplexity: 'O(k)',
+  timeComplexity: 'O(n + k log n)',
+  spaceComplexity: 'O(n)',
   pattern: 'Max Heap — keep k closest by distance',
   description:
     'Given an array of points where points[i] = [xi, yi] represents a point on the X-Y plane and an integer k, return the k closest points to the origin (0, 0). The distance between two points on the X-Y plane is the Euclidean distance.',

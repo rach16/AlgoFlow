@@ -461,7 +461,7 @@ class Trie {
     {
       id: 'prefix-hash-sets',
       name: 'Two Hash Sets',
-      timeComplexity: 'O(L²) insert, O(1) lookup',
+      timeComplexity: 'O(L²) insert, O(L) lookup',
       spaceComplexity: 'O(N·L²)',
       description:
         'Instead of a character tree, store every complete word in one hash set and every prefix of every word in another — queries become single O(1) set lookups at the cost of heavier inserts and no prefix sharing.',

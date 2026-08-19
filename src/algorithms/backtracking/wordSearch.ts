@@ -395,7 +395,7 @@ private static boolean backtrack(char[][] board, String word, int r, int c, int 
       id: 'iterative-dfs-stack',
       name: 'Iterative DFS (Explicit Stack)',
       timeComplexity: 'O(m·n·4^L)',
-      spaceComplexity: 'O(4^L·L)',
+      spaceComplexity: 'O(m·n + L²)',
       description:
         'Replaces recursion with an explicit stack of frames that each carry their own path — no board mutation or un-marking on backtrack, at the cost of copying paths into child frames.',
       code: {

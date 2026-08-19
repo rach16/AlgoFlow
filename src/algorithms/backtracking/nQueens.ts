@@ -416,7 +416,7 @@ private static void backtrack(int row, char[][] board, Set<Integer> cols,
       id: 'bitmask',
       name: 'Bitmask Backtracking',
       timeComplexity: 'O(n!)',
-      spaceComplexity: 'O(n)',
+      spaceComplexity: 'O(n²)',
       description:
         'Replaces the three hash sets with three integers whose bits mark attacked columns and diagonals — a single bitwise op finds all safe columns of a row at once, and shifting the diagonal masks per row keeps them aligned.',
       code: {

@@ -21,6 +21,8 @@ import { graphsNotes } from './complexityNotes/graphs';
 import { dpNotes } from './complexityNotes/dp';
 import { stackLinkedListNotes } from './complexityNotes/stackLinkedList';
 import { pointersSearchNotes } from './complexityNotes/pointersSearch';
+import { backtrackingTriesNotes } from './complexityNotes/backtrackingTries';
+import { heapIntervalsNotes } from './complexityNotes/heapIntervals';
 
 /** Key format for COMPLEXITY_NOTES: the algorithm id and the approach id. */
 export const noteKey = (algorithmId: string, approachId: string) => `${algorithmId}:${approachId}`;
@@ -487,4 +489,6 @@ export const COMPLEXITY_NOTES: Record<string, ComplexityNote> = {
   ...dpNotes,
   ...stackLinkedListNotes,
   ...pointersSearchNotes,
+  ...backtrackingTriesNotes,
+  ...heapIntervalsNotes,
 };
