@@ -40,6 +40,7 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
     categories.map((c) => c.id)
   );
   const [viewMode, setViewMode] = useState<'categories' | 'patterns'>('categories');
+  const [expandedPatterns, setExpandedPatterns] = useState<string[]>([]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) =>
@@ -48,6 +49,11 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
         : [...prev, categoryId]
     );
   };
+
+  const togglePattern = (name: string) =>
+    setExpandedPatterns((prev) =>
+      prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name]
+    );
 
   const selectAlgorithm = (algorithm: Algorithm) => {
     setCurrentAlgorithm(algorithm);
@@ -190,24 +196,99 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
             const stats = getPatternStats(categories, solvedProblems);
             return (
               <div className="space-y-2">
-                {stats.map(({ name, total, solved }) => (
-                  <div key={name} className="px-3 py-2 rounded-lg bg-slate-700/50">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{name}</span>
-                      <span className={`text-xs ${solved === total && total > 0 ? 'text-green-400' : 'text-slate-500'}`}>
-                        {solved}/{total}
-                      </span>
+                {stats.map(({ name, total, solved, algorithms }) => {
+                  const isExpanded = expandedPatterns.includes(name);
+                  return (
+                    <div key={name} className="rounded-lg bg-slate-700/50 overflow-hidden">
+                      <button
+                        onClick={() => togglePattern(name)}
+                        className="w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium flex-1 truncate">{name}</span>
+                          <span
+                            className={`text-xs flex-shrink-0 ${
+                              solved === total && total > 0 ? 'text-green-400' : 'text-slate-500'
+                            }`}
+                          >
+                            {solved}/{total}
+                          </span>
+                          <svg
+                            className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        <div className="mt-1.5 h-1.5 bg-slate-600 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              solved === total && total > 0
+                                ? 'bg-green-500'
+                                : solved > 0
+                                ? 'bg-indigo-500'
+                                : 'bg-slate-600'
+                            }`}
+                            style={{ width: `${total > 0 ? (solved / total) * 100 : 0}%` }}
+                          />
+                        </div>
+                      </button>
+
+                      {/* Problems using this pattern. A pattern spans categories, so each row
+                          names its category — that cross-cutting view is the point of this list. */}
+                      {isExpanded && (
+                        <div className="px-1.5 pb-1.5 space-y-0.5">
+                          {algorithms.map((algorithm) => (
+                            <button
+                              key={algorithm.id}
+                              onClick={() => selectAlgorithm(algorithm)}
+                              title={`${algorithm.name} — ${algorithm.category} — ${algorithm.difficulty}`}
+                              className={`
+                                w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-sm
+                                transition-colors
+                                ${
+                                  currentAlgorithm?.id === algorithm.id
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'text-slate-300 hover:bg-slate-600/70'
+                                }
+                              `}
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                  algorithm.difficulty === 'Easy'
+                                    ? 'bg-green-500'
+                                    : algorithm.difficulty === 'Medium'
+                                    ? 'bg-yellow-500'
+                                    : 'bg-red-500'
+                                }`}
+                              />
+                              <span className="flex-1 min-w-0">
+                                <span className="block truncate leading-tight">{algorithm.name}</span>
+                                <span className="block truncate text-[10px] text-slate-500 leading-tight">
+                                  {algorithm.category}
+                                </span>
+                              </span>
+                              {solvedProblems.includes(algorithm.id) && (
+                                <svg
+                                  className="w-4 h-4 text-green-400 flex-shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="mt-1.5 h-1.5 bg-slate-600 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          solved === total && total > 0 ? 'bg-green-500' : solved > 0 ? 'bg-indigo-500' : 'bg-slate-600'
-                        }`}
-                        style={{ width: `${total > 0 ? (solved / total) * 100 : 0}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })()}

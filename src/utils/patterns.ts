@@ -20,11 +20,16 @@ export function getAllPatterns(categories: Category[]): Map<string, Algorithm[]>
   return patternMap;
 }
 
+export interface PatternStat {
+  name: string;
+  total: number;
+  solved: number;
+  /** The problems using this pattern, so the UI can list them without recomputing the map. */
+  algorithms: Algorithm[];
+}
+
 /** Get pattern stats given solved problem IDs */
-export function getPatternStats(
-  categories: Category[],
-  solvedIds: string[]
-): { name: string; total: number; solved: number }[] {
+export function getPatternStats(categories: Category[], solvedIds: string[]): PatternStat[] {
   const patternMap = getAllPatterns(categories);
   const solvedSet = new Set(solvedIds);
 
@@ -33,6 +38,7 @@ export function getPatternStats(
       name,
       total: algos.length,
       solved: algos.filter((a) => solvedSet.has(a.id)).length,
+      algorithms: algos,
     }))
-    .sort((a, b) => b.total - a.total);
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
 }
