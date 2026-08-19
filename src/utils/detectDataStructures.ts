@@ -30,12 +30,31 @@ export function detectDataStructures(
     detected.push('graph');
   }
 
-  // Category-based detection for data structures without explicit state fields
-  if (category === 'heap') {
+  // Category-based detection for structures with no distinctive state field.
+  // NB: `category` is the DISPLAY name ('Heap / Priority Queue', 'Tries'), not the category id,
+  // so these must match on substrings — comparing to 'heap'/'tries' never fired.
+  const cat = (category ?? '').toLowerCase();
+  if (cat.includes('heap')) {
     detected.push('heap');
   }
-  if (category === 'tries') {
+  if (cat.includes('trie')) {
     detected.push('trie');
+  }
+
+  // Strings and arrays are what most problems actually manipulate, and their method reference is
+  // the one people reach for most, so surface it whenever they are present. Algorithms name their
+  // string state inconsistently (`chars`, but also `s`, `t`, `word`, ...), so detect by VALUE
+  // type rather than by key name — checking only `chars` missed Valid Anagram, which uses s/t.
+  const hasStringValue = Object.values(state).some(
+    (v) =>
+      typeof v === 'string' ||
+      (Array.isArray(v) && v.length > 0 && v.every((x) => typeof x === 'string'))
+  );
+  if (hasStringValue) {
+    detected.push('string');
+  }
+  if (Array.isArray(state.nums)) {
+    detected.push('array');
   }
 
   return detected;

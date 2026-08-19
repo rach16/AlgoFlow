@@ -4,7 +4,7 @@ import { useProgressStore } from '../../store/progressStore';
 import { categories } from '../../algorithms';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 
-type View = 'visualizer' | 'sdet' | 'complexity';
+type View = 'visualizer' | 'sdet' | 'complexity' | 'methods';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -16,6 +16,7 @@ const TABS: { id: View; label: string }[] = [
   { id: 'visualizer', label: 'Visualizer' },
   { id: 'sdet', label: 'SDET Prep' },
   { id: 'complexity', label: 'Complexity' },
+  { id: 'methods', label: 'Methods' },
 ];
 
 export function Header({ onMenuClick, view, onViewChange }: HeaderProps) {
