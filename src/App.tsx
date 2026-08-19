@@ -3,9 +3,10 @@ import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { VisualizerPage } from './pages/VisualizerPage';
 import { SdetPrepPage } from './pages/SdetPrepPage';
+import { ComplexityPage } from './pages/ComplexityPage';
 import { categories } from './algorithms';
 
-export type AppView = 'visualizer' | 'sdet';
+export type AppView = 'visualizer' | 'sdet' | 'complexity';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -22,10 +23,10 @@ function App() {
           onSelect={() => setView('visualizer')}
         />
         <main className="flex-1 overflow-y-auto lg:overflow-hidden min-w-0">
-          {view === 'visualizer' ? (
-            <VisualizerPage />
-          ) : (
-            <SdetPrepPage onOpenAlgorithm={() => setView('visualizer')} />
+          {view === 'visualizer' && <VisualizerPage />}
+          {view === 'sdet' && <SdetPrepPage onOpenAlgorithm={() => setView('visualizer')} />}
+          {view === 'complexity' && (
+            <ComplexityPage onOpenAlgorithm={() => setView('visualizer')} />
           )}
         </main>
       </div>

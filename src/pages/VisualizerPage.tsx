@@ -15,12 +15,15 @@ import { CodeBlock } from '../components/common/CodeBlock';
 import { DataStructureInfoPanel } from '../components/visualizer/data-structure-info/DataStructureInfoPanel';
 import { detectDataStructures } from '../utils/detectDataStructures';
 import { getActiveApproach } from '../utils/approaches';
+import { COMPLEXITY_NOTES, noteKey } from '../data/complexity';
+import { DerivationBody } from '../components/common/DerivationBody';
 import { useProgressStore } from '../store/progressStore';
 
 export function VisualizerPage() {
   const { currentAlgorithm, steps, currentStepIndex, approachId } = useVisualizerStore();
   const { solvedProblems, toggleSolved } = useProgressStore();
   const [showCode, setShowCode] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
   const [codePanelWidth, setCodePanelWidth] = useState(400);
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,6 +79,7 @@ export function VisualizerPage() {
   const currentStep = steps[currentStepIndex];
   const state = currentStep?.state as Record<string, unknown> | undefined;
   const activeApproach = getActiveApproach(currentAlgorithm, approachId);
+  const complexityNote = COMPLEXITY_NOTES[noteKey(currentAlgorithm.id, activeApproach.id)];
 
   const nums = state?.nums as number[] | undefined;
   const chars = state?.chars as string[] | undefined;
@@ -152,6 +156,17 @@ export function VisualizerPage() {
           }`}>{currentAlgorithm.difficulty}</span>
           <span className="hidden sm:inline text-slate-400">Time: <span className="text-slate-200 font-mono">{activeApproach.timeComplexity}</span></span>
           <span className="hidden sm:inline text-slate-400">Space: <span className="text-slate-200 font-mono">{activeApproach.spaceComplexity}</span></span>
+          {complexityNote && (
+            <button
+              onClick={() => setShowWhy(!showWhy)}
+              className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                showWhy ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              title="How these bounds are derived"
+            >
+              {showWhy ? 'Hide why' : 'Why?'}
+            </button>
+          )}
           <span className="hidden sm:inline text-slate-400">|</span>
           <span className="hidden sm:inline text-indigo-400 font-medium">{currentAlgorithm.pattern}</span>
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
@@ -191,6 +206,19 @@ export function VisualizerPage() {
           <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{activeApproach.spaceComplexity}</span></span>
           <span className="text-indigo-400">{currentAlgorithm.pattern}</span>
         </div>
+
+        {/* Derivation for the selected approach */}
+        {showWhy && complexityNote && (
+          <div className="bg-slate-800 rounded-xl p-4">
+            <div className="flex items-baseline gap-2 mb-3 flex-wrap">
+              <h3 className="text-sm font-semibold text-slate-200">
+                Why {activeApproach.timeComplexity} time and {activeApproach.spaceComplexity} space?
+              </h3>
+              <span className="text-xs text-slate-500">{activeApproach.name}</span>
+            </div>
+            <DerivationBody note={complexityNote} />
+          </div>
+        )}
 
         {/* Mobile code view */}
         {showCode && (

@@ -21,6 +21,7 @@ import { describe, it, expect } from 'vitest';
 import { categories, getAllAlgorithms, getAlgorithmById } from './index';
 import { getAnimationConfig } from '../animation/configs';
 import { getApproaches, OPTIMAL_APPROACH_ID } from '../utils/approaches';
+import { COMPLEXITY_NOTES, COMPLEXITY_METHOD, noteKey } from '../data/complexity';
 import type { Algorithm, AlgorithmStep } from '../types/algorithm';
 
 const algorithms = getAllAlgorithms();
@@ -402,4 +403,42 @@ describe('animation configs', () => {
       });
     }
   );
+});
+
+describe('complexity derivations', () => {
+  // A note keyed to a misspelled algorithm or approach id renders nowhere and is invisible
+  // without this check — the same silent-failure shape as the state-key bugs above.
+  it('every note key resolves to a real algorithm and approach', () => {
+    const valid = new Set(
+      algorithms.flatMap((a) => getApproaches(a).map((ap) => noteKey(a.id, ap.id)))
+    );
+    const orphans = Object.keys(COMPLEXITY_NOTES).filter((k) => !valid.has(k));
+    expect(orphans, 'note keys matching no (algorithm, approach) pair').toEqual([]);
+  });
+
+  it.each(Object.entries(COMPLEXITY_NOTES))('%s — derivation is substantive', (_key, note) => {
+    expect(note.time.length, 'needs at least two time steps to be a derivation').toBeGreaterThanOrEqual(2);
+    expect(note.space.length).toBeGreaterThanOrEqual(1);
+    // The last step of each list is the conclusion ("O(n).") and is meant to be terse.
+    // Everything leading up to it has to actually carry an argument.
+    for (const list of [note.time, note.space]) {
+      for (const step of list.slice(0, -1)) {
+        expect(step.trim().length, `reasoning step too short to explain anything: ${step}`)
+          .toBeGreaterThan(15);
+      }
+      expect(list.at(-1)!.trim().length, 'conclusion must not be empty').toBeGreaterThan(3);
+    }
+    if (note.gotcha) expect(note.gotcha.trim().length).toBeGreaterThan(30);
+  });
+
+  it('the method reference is present and structured', () => {
+    expect(COMPLEXITY_METHOD.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(COMPLEXITY_METHOD.map((s) => s.id)).size).toBe(COMPLEXITY_METHOD.length);
+    for (const section of COMPLEXITY_METHOD) {
+      expect(section.title.trim()).not.toBe('');
+      expect(section.intro.trim().length).toBeGreaterThan(20);
+      // a section with neither rows nor prose would render as an empty accordion
+      expect((section.rows?.length ?? 0) + (section.notes?.length ?? 0)).toBeGreaterThan(0);
+    }
+  });
 });
