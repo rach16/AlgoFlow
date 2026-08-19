@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore } from '../../store/progressStore';
 import { getPatternStats } from '../../utils/patterns';
+import { getTopicStats, type TopicId } from '../../utils/topics';
 import type { Category, Algorithm } from '../../types/algorithm';
 
 interface SidebarProps {
@@ -39,8 +40,9 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     categories.map((c) => c.id)
   );
-  const [viewMode, setViewMode] = useState<'categories' | 'patterns'>('categories');
+  const [viewMode, setViewMode] = useState<'categories' | 'patterns' | 'topics'>('categories');
   const [expandedPatterns, setExpandedPatterns] = useState<string[]>([]);
+  const [expandedTopics, setExpandedTopics] = useState<TopicId[]>([]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) =>
@@ -49,6 +51,11 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
         : [...prev, categoryId]
     );
   };
+
+  const toggleTopic = (id: TopicId) =>
+    setExpandedTopics((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    );
 
   const togglePattern = (name: string) =>
     setExpandedPatterns((prev) =>
@@ -60,6 +67,49 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
     onSelect?.();
     onClose();
   };
+
+  /** One problem in a grouped list. `showCategory` is for the Patterns and Topics views,
+   *  where the grouping cuts across categories and the category is the useful context. */
+  const AlgorithmRow = ({
+    algorithm,
+    showCategory,
+  }: {
+    algorithm: Algorithm;
+    showCategory?: boolean;
+  }) => (
+    <button
+      onClick={() => selectAlgorithm(algorithm)}
+      title={`${algorithm.name} — ${algorithm.category} — ${algorithm.difficulty}`}
+      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-sm transition-colors ${
+        currentAlgorithm?.id === algorithm.id
+          ? 'bg-indigo-600 text-white'
+          : 'text-slate-300 hover:bg-slate-600/70'
+      }`}
+    >
+      <span
+        className={`w-2 h-2 rounded-full flex-shrink-0 ${
+          algorithm.difficulty === 'Easy'
+            ? 'bg-green-500'
+            : algorithm.difficulty === 'Medium'
+            ? 'bg-yellow-500'
+            : 'bg-red-500'
+        }`}
+      />
+      <span className="flex-1 min-w-0">
+        <span className="block truncate leading-tight">{algorithm.name}</span>
+        {showCategory && (
+          <span className="block truncate text-[10px] text-slate-500 leading-tight">
+            {algorithm.category}
+          </span>
+        )}
+      </span>
+      {solvedProblems.includes(algorithm.id) && (
+        <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </button>
+  );
 
   const totalAlgorithms = categories.reduce((sum, c) => sum + c.algorithms.length, 0);
 
@@ -118,6 +168,14 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
               }`}
             >
               Patterns
+            </button>
+            <button
+              onClick={() => setViewMode('topics')}
+              className={`flex-1 text-xs py-1.5 rounded-md transition-colors ${
+                viewMode === 'topics' ? 'bg-slate-600 text-white' : 'text-slate-400'
+              }`}
+            >
+              Topics
             </button>
           </div>
 
@@ -238,51 +296,76 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
                         </div>
                       </button>
 
-                      {/* Problems using this pattern. A pattern spans categories, so each row
-                          names its category — that cross-cutting view is the point of this list. */}
                       {isExpanded && (
                         <div className="px-1.5 pb-1.5 space-y-0.5">
                           {algorithms.map((algorithm) => (
-                            <button
-                              key={algorithm.id}
-                              onClick={() => selectAlgorithm(algorithm)}
-                              title={`${algorithm.name} — ${algorithm.category} — ${algorithm.difficulty}`}
-                              className={`
-                                w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-sm
-                                transition-colors
-                                ${
-                                  currentAlgorithm?.id === algorithm.id
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'text-slate-300 hover:bg-slate-600/70'
-                                }
-                              `}
-                            >
-                              <span
-                                className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                  algorithm.difficulty === 'Easy'
-                                    ? 'bg-green-500'
-                                    : algorithm.difficulty === 'Medium'
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
-                                }`}
-                              />
-                              <span className="flex-1 min-w-0">
-                                <span className="block truncate leading-tight">{algorithm.name}</span>
-                                <span className="block truncate text-[10px] text-slate-500 leading-tight">
-                                  {algorithm.category}
-                                </span>
-                              </span>
-                              {solvedProblems.includes(algorithm.id) && (
-                                <svg
-                                  className="w-4 h-4 text-green-400 flex-shrink-0"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </button>
+                            <AlgorithmRow key={algorithm.id} algorithm={algorithm} showCategory />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+          {/* Topics view — grouped by what the input IS, which cuts across categories */}
+          {viewMode === 'topics' && (() => {
+            const stats = getTopicStats(categories, solvedProblems);
+            return (
+              <div className="space-y-2">
+                <p className="text-[11px] text-slate-500 leading-snug px-1 mb-1">
+                  Grouped by what the input is, not where it sits in the curriculum. A problem can
+                  appear in more than one topic.
+                </p>
+                {stats.map(({ id, name, icon, blurb, total, solved, algorithms }) => {
+                  const isExpanded = expandedTopics.includes(id);
+                  return (
+                    <div key={id} className="rounded-lg bg-slate-700/50 overflow-hidden">
+                      <button
+                        onClick={() => toggleTopic(id)}
+                        title={blurb}
+                        className="w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="flex-shrink-0">{icon}</span>
+                          <span className="text-sm font-medium flex-1 truncate">{name}</span>
+                          <span
+                            className={`text-xs flex-shrink-0 ${
+                              solved === total && total > 0 ? 'text-green-400' : 'text-slate-500'
+                            }`}
+                          >
+                            {solved}/{total}
+                          </span>
+                          <svg
+                            className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        <div className="mt-1.5 h-1.5 bg-slate-600 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              solved === total && total > 0
+                                ? 'bg-green-500'
+                                : solved > 0
+                                ? 'bg-indigo-500'
+                                : 'bg-slate-600'
+                            }`}
+                            style={{ width: `${total > 0 ? (solved / total) * 100 : 0}%` }}
+                          />
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="px-1.5 pb-1.5 space-y-0.5">
+                          {algorithms.map((algorithm) => (
+                            <AlgorithmRow key={algorithm.id} algorithm={algorithm} showCategory />
                           ))}
                         </div>
                       )}
