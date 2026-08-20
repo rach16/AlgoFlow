@@ -13,7 +13,7 @@ const LANGS: { id: Lang; label: string }[] = [
 
 /** Most-reached-for first, rather than alphabetical. */
 const ORDER = [
-  'string', 'hashmap', 'hashset', 'array',
+  'string', 'char', 'hashmap', 'hashset', 'array',
   'stack', 'queue', 'heap',
   'linkedlist', 'binarytree', 'graph', 'trie',
 ];

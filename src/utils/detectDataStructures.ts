@@ -51,7 +51,10 @@ export function detectDataStructures(
       (Array.isArray(v) && v.length > 0 && v.every((x) => typeof x === 'string'))
   );
   if (hasStringValue) {
+    // Both surfaces are relevant to a string problem, and they are separate APIs — String
+    // methods act on the whole string, Character helpers act on one char.
     detected.push('string');
+    detected.push('char');
   }
   if (Array.isArray(state.nums)) {
     detected.push('array');
