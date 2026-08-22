@@ -399,7 +399,9 @@ private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited, Lis
       description:
         'Builds the ordering front-to-back rather than by DFS postorder: repeatedly take a course with indegree 0, append it, and decrement its dependents — if fewer than numCourses get placed, a cycle exists.',
       code: {
-        python: `def findOrder(numCourses, prerequisites):
+        python: `from collections import deque
+
+def findOrder(numCourses, prerequisites):
     adj = {i: [] for i in range(numCourses)}
     indegree = [0] * numCourses
     for crs, pre in prerequisites:
@@ -469,22 +471,23 @@ private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited, Lis
       run: runCourseScheduleIIKahns,
       lineExplanations: {
         python: {
-          1: 'Define function with course count and prereqs',
-          2: 'Adjacency list: prereq -> courses it unlocks',
-          3: 'Indegree = pending prerequisites per course',
-          4: 'Process each prerequisite pair',
-          5: 'Prereq unlocks this course when done',
-          6: 'One more prerequisite pending for this course',
-          8: 'Start with all courses that need no prereqs',
-          9: 'The topological order we are building',
-          10: 'Process while some course is ready',
-          11: 'Take the next ready course',
-          12: 'Its prereqs are already placed — append it',
-          13: 'Update every course this one unlocks',
-          14: 'It waits on one fewer prerequisite now',
-          15: 'All its prerequisites placed?',
-          16: 'It becomes ready — enqueue it',
-          17: 'Full order if no cycle, else empty list',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function with course count and prereqs',
+          4: 'Adjacency list: prereq -> courses it unlocks',
+          5: 'Indegree = pending prerequisites per course',
+          6: 'Process each prerequisite pair',
+          7: 'Prereq unlocks this course when done',
+          8: 'One more prerequisite pending for this course',
+          10: 'Start with all courses that need no prereqs',
+          11: 'The topological order we are building',
+          12: 'Process while some course is ready',
+          13: 'Take the next ready course',
+          14: 'Its prereqs are already placed — append it',
+          15: 'Update every course this one unlocks',
+          16: 'It waits on one fewer prerequisite now',
+          17: 'All its prerequisites placed?',
+          18: 'It becomes ready — enqueue it',
+          19: 'Full order if no cycle, else empty list',
         },
         javascript: {
           1: 'Define function with course count and prereqs',

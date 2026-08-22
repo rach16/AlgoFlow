@@ -339,7 +339,9 @@ private Node dfs(Node node, Map<Node, Node> oldToNew) {
       description:
         'Clones the graph iteratively level by level with a queue instead of recursing — same oldToNew map, but no risk of stack overflow on deep graphs.',
       code: {
-        python: `def cloneGraph(node):
+        python: `from collections import deque
+
+def cloneGraph(node):
     if not node:
         return None
     oldToNew = {node: Node(node.val)}
@@ -391,19 +393,20 @@ private Node dfs(Node node, Map<Node, Node> oldToNew) {
       run: runCloneGraphBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking a graph node',
-          2: 'Handle null input',
-          3: 'Return None for empty graph',
-          4: 'Clone the start node and map original -> clone',
-          5: 'Seed the BFS queue with the start node',
-          6: 'Process nodes until the queue is empty',
-          7: 'Dequeue the next node to process',
-          8: 'Walk each neighbor of the current node',
-          9: 'Neighbor not cloned yet?',
-          10: 'Create its clone in the map',
-          11: 'Enqueue it so its neighbors get processed later',
-          12: 'Wire current clone to the neighbor clone',
-          13: 'Return the clone of the start node',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking a graph node',
+          4: 'Handle null input',
+          5: 'Return None for empty graph',
+          6: 'Clone the start node and map original -> clone',
+          7: 'Seed the BFS queue with the start node',
+          8: 'Process nodes until the queue is empty',
+          9: 'Dequeue the next node to process',
+          10: 'Walk each neighbor of the current node',
+          11: 'Neighbor not cloned yet?',
+          12: 'Create its clone in the map',
+          13: 'Enqueue it so its neighbors get processed later',
+          14: 'Wire current clone to the neighbor clone',
+          15: 'Return the clone of the start node',
         },
         javascript: {
           1: 'Define function taking a graph node',

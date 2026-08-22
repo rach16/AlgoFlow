@@ -313,7 +313,9 @@ export const pathWithMinimumEffort: Algorithm = {
     'You are given a rows x columns grid of heights. Starting at the top-left cell you want to travel to the bottom-right cell, moving up, down, left or right. A route\'s effort is the maximum absolute difference in heights between two consecutive cells of the route. Return the minimum effort required to travel from the top-left cell to the bottom-right cell.',
   problemUrl: 'https://leetcode.com/problems/path-with-minimum-effort/',
   code: {
-    python: `def minimumEffortPath(heights):
+    python: `import heapq
+
+def minimumEffortPath(heights):
     rows, cols = len(heights), len(heights[0])
     effort = [[float('inf')] * cols for _ in range(rows)]
     effort[0][0] = 0
@@ -399,7 +401,9 @@ export const pathWithMinimumEffort: Algorithm = {
       description:
         'Instead of computing the best effort directly, guess it: feasibility is monotonic in t, so binary search t and let a plain BFS that only walks steps of size ≤ t answer "is t enough?".',
       code: {
-        python: `def minimumEffortPath(heights):
+        python: `from collections import deque
+
+def minimumEffortPath(heights):
     rows, cols = len(heights), len(heights[0])
 
     def canReach(limit):
@@ -495,30 +499,31 @@ private static boolean canReach(int[][] heights, int limit) {
       run: runPathWithMinimumEffortBinarySearch,
       lineExplanations: {
         python: {
-          1: 'Define function taking the height grid',
-          2: 'Grid dimensions',
-          4: 'Feasibility check: can we cross using only steps ≤ limit?',
-          5: 'Visited set seeded with the start cell',
-          6: 'BFS queue starting at the top-left',
-          7: 'Standard BFS loop',
-          8: 'Dequeue the next reachable cell',
-          9: 'Did we make it to the bottom-right?',
-          10: 'Yes — this limit is feasible',
-          11: 'Try all four neighbors',
-          12: 'Neighbor coordinates',
-          13: 'Stay in bounds and skip already-seen cells',
-          14: 'Only walk edges whose height jump fits the limit',
-          15: 'Mark the neighbor visited',
-          16: 'Queue it for later expansion',
-          17: 'Exhausted the component without reaching the target',
-          19: 'Answer lies between 0 and the largest height',
-          20: 'Binary search for the smallest feasible limit',
-          21: 'Midpoint guess',
-          22: 'Is this guess enough?',
-          23: 'Feasible — the answer is at most mid',
-          24: 'Not feasible',
-          25: 'Answer must be strictly larger than mid',
-          26: 'lo == hi is the minimum feasible effort',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking the height grid',
+          4: 'Grid dimensions',
+          6: 'Feasibility check: can we cross using only steps ≤ limit?',
+          7: 'Visited set seeded with the start cell',
+          8: 'BFS queue starting at the top-left',
+          9: 'Standard BFS loop',
+          10: 'Dequeue the next reachable cell',
+          11: 'Did we make it to the bottom-right?',
+          12: 'Yes — this limit is feasible',
+          13: 'Try all four neighbors',
+          14: 'Neighbor coordinates',
+          15: 'Stay in bounds and skip already-seen cells',
+          16: 'Only walk edges whose height jump fits the limit',
+          17: 'Mark the neighbor visited',
+          18: 'Queue it for later expansion',
+          19: 'Exhausted the component without reaching the target',
+          21: 'Answer lies between 0 and the largest height',
+          22: 'Binary search for the smallest feasible limit',
+          23: 'Midpoint guess',
+          24: 'Is this guess enough?',
+          25: 'Feasible — the answer is at most mid',
+          26: 'Not feasible',
+          27: 'Answer must be strictly larger than mid',
+          28: 'lo == hi is the minimum feasible effort',
         },
         javascript: {
           1: 'Define function taking the height grid',
@@ -578,26 +583,27 @@ private static boolean canReach(int[][] heights, int limit) {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking the height grid',
-      2: 'Grid dimensions',
-      3: 'effort[r][c] = best "largest jump" needed to reach (r,c)',
-      4: 'The start cell costs nothing',
-      5: 'Min-heap of (effort, row, col)',
-      7: 'Dijkstra main loop',
-      8: 'Pop the frontier cell with the smallest effort',
-      9: 'Is this the bottom-right corner?',
-      10: 'First pop of the target is optimal — return it',
-      11: 'Stale heap entry (a better value was recorded later)',
-      12: 'Skip it',
-      13: 'Try all four neighbors',
-      14: 'Neighbor coordinates',
-      15: 'Stay inside the grid',
-      16: 'Cost of this single step',
-      17: 'Path cost is a MAX, not a sum — this is the key twist',
-      18: 'Only keep it if it beats the recorded effort',
-      19: 'Record the improved effort',
-      20: 'Push the neighbor back onto the heap',
-      21: 'Single-cell grid needs no effort',
+      1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+      3: 'Define function taking the height grid',
+      4: 'Grid dimensions',
+      5: 'effort[r][c] = best "largest jump" needed to reach (r,c)',
+      6: 'The start cell costs nothing',
+      7: 'Min-heap of (effort, row, col)',
+      9: 'Dijkstra main loop',
+      10: 'Pop the frontier cell with the smallest effort',
+      11: 'Is this the bottom-right corner?',
+      12: 'First pop of the target is optimal — return it',
+      13: 'Stale heap entry (a better value was recorded later)',
+      14: 'Skip it',
+      15: 'Try all four neighbors',
+      16: 'Neighbor coordinates',
+      17: 'Stay inside the grid',
+      18: 'Cost of this single step',
+      19: 'Path cost is a MAX, not a sum — this is the key twist',
+      20: 'Only keep it if it beats the recorded effort',
+      21: 'Record the improved effort',
+      22: 'Push the neighbor back onto the heap',
+      23: 'Single-cell grid needs no effort',
     },
     javascript: {
       1: 'Define function taking the height grid',

@@ -185,7 +185,9 @@ export const rightSideView: Algorithm = {
     'Given the root of a binary tree, imagine yourself standing on the right side of it, return the values of the nodes you can see ordered from top to bottom.',
   problemUrl: 'https://leetcode.com/problems/binary-tree-right-side-view/',
   code: {
-    python: `def rightSideView(root):
+    python: `from collections import deque
+
+def rightSideView(root):
     if not root:
         return []
     result = []
@@ -332,22 +334,23 @@ private static void dfs(TreeNode node, int depth, List<Integer> result) {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking tree root',
-      2: 'Base case: empty tree returns empty list',
-      3: 'Return empty list for null root',
-      4: 'Init result list for right side values',
-      5: 'Init queue with root node',
-      6: 'Process levels while queue has nodes',
-      7: 'Track rightmost node at each level',
-      8: 'Iterate over all nodes in current level',
-      9: 'Dequeue front node from queue',
-      10: 'Update rightmost to current node value',
-      11: 'If left child exists, enqueue it',
-      12: 'Add left child to queue',
-      13: 'If right child exists, enqueue it',
-      14: 'Add right child to queue',
-      15: 'Append rightmost value to result',
-      16: 'Return right side view values',
+      1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+      3: 'Define function taking tree root',
+      4: 'Base case: empty tree returns empty list',
+      5: 'Return empty list for null root',
+      6: 'Init result list for right side values',
+      7: 'Init queue with root node',
+      8: 'Process levels while queue has nodes',
+      9: 'Track rightmost node at each level',
+      10: 'Iterate over all nodes in current level',
+      11: 'Dequeue front node from queue',
+      12: 'Update rightmost to current node value',
+      13: 'If left child exists, enqueue it',
+      14: 'Add left child to queue',
+      15: 'If right child exists, enqueue it',
+      16: 'Add right child to queue',
+      17: 'Append rightmost value to result',
+      18: 'Return right side view values',
     },
     javascript: {
       1: 'Define function taking tree root',

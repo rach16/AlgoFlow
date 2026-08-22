@@ -291,7 +291,10 @@ export const networkDelayTime: Algorithm = {
     'You are given a network of n nodes, labeled from 1 to n. You are also given times, a list of travel times as directed edges times[i] = (ui, vi, wi), where ui is the source node, vi is the target node, and wi is the time it takes for a signal to travel from source to target. We will send a signal from a given node k. Return the minimum time it takes for all the n nodes to receive the signal. If it is impossible for all the n nodes to receive the signal, return -1.',
   problemUrl: 'https://leetcode.com/problems/network-delay-time/',
   code: {
-    python: `def networkDelayTime(times, n, k):
+    python: `import heapq
+from collections import defaultdict
+
+def networkDelayTime(times, n, k):
     graph = defaultdict(list)
     for u, v, w in times:
         graph[u].append((v, w))
@@ -500,23 +503,25 @@ export const networkDelayTime: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function with edges, node count, source',
-      2: 'Build adjacency list using defaultdict',
-      3: 'Add each directed edge with weight',
-      4: 'Store destination and weight pair',
-      6: 'Init distances to infinity for all nodes',
-      7: 'Source node has zero distance',
-      8: 'Min-heap starts with source node',
-      10: 'Process nodes while heap is not empty',
-      11: 'Pop node with smallest distance',
-      12: 'Skip if we already found a shorter path',
-      13: 'Skip stale heap entries',
-      14: 'Explore each neighbor edge',
-      15: 'Check if this path is shorter',
-      16: 'Update shortest distance to neighbor',
-      17: 'Push updated distance to heap',
-      19: 'Find maximum distance among all nodes',
-      20: 'Return max distance or -1 if unreachable',
+      1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+      2: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      4: 'Define function with edges, node count, source',
+      5: 'Build adjacency list using defaultdict',
+      6: 'Add each directed edge with weight',
+      7: 'Store destination and weight pair',
+      9: 'Init distances to infinity for all nodes',
+      10: 'Source node has zero distance',
+      11: 'Min-heap starts with source node',
+      13: 'Process nodes while heap is not empty',
+      14: 'Pop node with smallest distance',
+      15: 'Skip if we already found a shorter path',
+      16: 'Skip stale heap entries',
+      17: 'Explore each neighbor edge',
+      18: 'Check if this path is shorter',
+      19: 'Update shortest distance to neighbor',
+      20: 'Push updated distance to heap',
+      22: 'Find maximum distance among all nodes',
+      23: 'Return max distance or -1 if unreachable',
     },
     javascript: {
       1: 'Define function with edges, node count, source',

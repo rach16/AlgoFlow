@@ -360,7 +360,9 @@ export const courseScheduleIV: Algorithm = {
       description:
         'Instead of an n³ table sweep, walk the graph in topological order and let each course inherit the union of its parents\' prerequisite sets — one pass over the edges, much faster on sparse graphs.',
       code: {
-        python: `def checkIfPrerequisite(numCourses, prerequisites, queries):
+        python: `from collections import deque
+
+def checkIfPrerequisite(numCourses, prerequisites, queries):
     adj = [[] for _ in range(numCourses)]
     indegree = [0] * numCourses
     prereqs = [set() for _ in range(numCourses)]
@@ -439,23 +441,24 @@ export const courseScheduleIV: Algorithm = {
       run: runCourseScheduleIVKahns,
       lineExplanations: {
         python: {
-          1: 'Course count, direct prereq pairs, and queries',
-          2: 'Adjacency list: course -> courses it unlocks',
-          3: 'Indegree = how many prereqs a course still waits on',
-          4: 'prereqs[c] will hold every course needed before c',
-          5: 'Read each direct prerequisite pair',
-          6: 'a unlocks b',
-          7: 'b waits on one more course',
-          9: 'Start from courses that need nothing',
-          10: 'Process in topological order',
-          11: 'This course now has its final prereq set',
-          12: 'Push knowledge down to each unlocked course',
-          13: 'nxt directly needs node',
-          14: 'nxt also inherits everything node needed',
-          15: 'One fewer pending prerequisite for nxt',
-          16: 'All of nxt prereqs settled?',
-          17: 'Then its own set is final — enqueue it',
-          19: 'Each query is one set membership test',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Course count, direct prereq pairs, and queries',
+          4: 'Adjacency list: course -> courses it unlocks',
+          5: 'Indegree = how many prereqs a course still waits on',
+          6: 'prereqs[c] will hold every course needed before c',
+          7: 'Read each direct prerequisite pair',
+          8: 'a unlocks b',
+          9: 'b waits on one more course',
+          11: 'Start from courses that need nothing',
+          12: 'Process in topological order',
+          13: 'This course now has its final prereq set',
+          14: 'Push knowledge down to each unlocked course',
+          15: 'nxt directly needs node',
+          16: 'nxt also inherits everything node needed',
+          17: 'One fewer pending prerequisite for nxt',
+          18: 'All of nxt prereqs settled?',
+          19: 'Then its own set is final — enqueue it',
+          21: 'Each query is one set membership test',
         },
         javascript: {
           1: 'Course count, direct prereq pairs, and queries',

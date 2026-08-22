@@ -286,7 +286,9 @@ export const openTheLock: Algorithm = {
     'A lock has 4 circular wheels, each showing a digit 0-9, and starts at "0000". One move turns a single wheel one slot in either direction. Given a list of deadend states the lock must never display and a target, return the minimum number of moves to open it, or -1 if impossible.',
   problemUrl: 'https://leetcode.com/problems/open-the-lock/',
   code: {
-    python: `def openLock(deadends, target):
+    python: `from collections import deque
+
+def openLock(deadends, target):
     dead = set(deadends)
     if "0000" in dead:
         return -1
@@ -557,30 +559,31 @@ export const openTheLock: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking deadends and the target combo',
-      2: 'Deadends as a set for O(1) rejection',
-      3: 'Start state blocked...',
-      4: '...the lock can never move',
-      5: 'Target is the start',
-      6: 'Zero turns needed',
-      7: 'BFS queue seeded with the starting combo',
-      8: 'Seen set so no combo is queued twice',
-      9: 'Turn counter, one per BFS layer',
-      10: 'Keep going while the frontier has combos',
-      11: 'Everything popped this round costs one more turn',
-      12: 'Freeze the layer size so the layer stays clean',
-      13: 'Take the next combo off the frontier',
-      14: 'Each of the four wheels',
-      15: 'Its current digit',
-      16: 'Turn it one slot up or one slot down',
-      17: 'Build the resulting combo',
-      18: 'Already visited, or a jammed deadend',
-      19: 'Skip it',
-      20: 'First sighting of the target...',
-      21: '...and BFS guarantees this is the shortest route',
-      22: 'Claim it on enqueue, not on dequeue',
-      23: 'Push it onto the next layer',
-      24: 'Frontier drained without reaching the target',
+      1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+      3: 'Define function taking deadends and the target combo',
+      4: 'Deadends as a set for O(1) rejection',
+      5: 'Start state blocked...',
+      6: '...the lock can never move',
+      7: 'Target is the start',
+      8: 'Zero turns needed',
+      9: 'BFS queue seeded with the starting combo',
+      10: 'Seen set so no combo is queued twice',
+      11: 'Turn counter, one per BFS layer',
+      12: 'Keep going while the frontier has combos',
+      13: 'Everything popped this round costs one more turn',
+      14: 'Freeze the layer size so the layer stays clean',
+      15: 'Take the next combo off the frontier',
+      16: 'Each of the four wheels',
+      17: 'Its current digit',
+      18: 'Turn it one slot up or one slot down',
+      19: 'Build the resulting combo',
+      20: 'Already visited, or a jammed deadend',
+      21: 'Skip it',
+      22: 'First sighting of the target...',
+      23: '...and BFS guarantees this is the shortest route',
+      24: 'Claim it on enqueue, not on dequeue',
+      25: 'Push it onto the next layer',
+      26: 'Frontier drained without reaching the target',
     },
     javascript: {
       1: 'Define function taking deadends and the target combo',

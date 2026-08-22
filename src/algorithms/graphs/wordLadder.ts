@@ -344,7 +344,9 @@ export const wordLadder: Algorithm = {
     'Given beginWord, endWord, and a word list, find the length of the shortest transformation sequence from beginWord to endWord, changing one letter at a time. Each transformed word must exist in the word list. Return 0 if no sequence exists.',
   problemUrl: 'https://leetcode.com/problems/word-ladder/',
   code: {
-    python: `def ladderLength(beginWord, endWord, wordList):
+    python: `from collections import deque
+
+def ladderLength(beginWord, endWord, wordList):
     if endWord not in wordList:
         return 0
     wordSet = set(wordList)
@@ -610,26 +612,27 @@ export const wordLadder: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function with begin, end, and word list',
-      2: 'Check if endWord exists in word list',
-      3: 'Return 0 if endWord not reachable',
-      4: 'Convert word list to set for O(1) lookup',
-      5: 'Initialize BFS queue with beginWord',
-      6: 'Track visited words to avoid revisits',
-      7: 'Start at transformation level 1',
-      9: 'BFS loop while queue has words',
-      10: 'Process all words at current level',
-      11: 'Dequeue one word',
-      12: 'Try changing each character position',
-      13: 'Try all 26 lowercase letters',
-      14: 'Build new word with one char changed',
-      15: 'If new word is endWord, found shortest',
-      16: 'Return level + 1 as path length',
-      17: 'If new word exists and not visited',
-      18: 'Mark as visited',
-      19: 'Add to queue for next level',
-      20: 'Increment level after processing all words',
-      22: 'No transformation sequence found',
+      1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+      3: 'Define function with begin, end, and word list',
+      4: 'Check if endWord exists in word list',
+      5: 'Return 0 if endWord not reachable',
+      6: 'Convert word list to set for O(1) lookup',
+      7: 'Initialize BFS queue with beginWord',
+      8: 'Track visited words to avoid revisits',
+      9: 'Start at transformation level 1',
+      11: 'BFS loop while queue has words',
+      12: 'Process all words at current level',
+      13: 'Dequeue one word',
+      14: 'Try changing each character position',
+      15: 'Try all 26 lowercase letters',
+      16: 'Build new word with one char changed',
+      17: 'If new word is endWord, found shortest',
+      18: 'Return level + 1 as path length',
+      19: 'If new word exists and not visited',
+      20: 'Mark as visited',
+      21: 'Add to queue for next level',
+      22: 'Increment level after processing all words',
+      24: 'No transformation sequence found',
     },
     javascript: {
       1: 'Define function with begin, end, and word list',

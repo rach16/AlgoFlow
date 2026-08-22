@@ -297,7 +297,9 @@ export const reconstructItinerary: Algorithm = {
     'You are given a list of airline tickets where tickets[i] = [fromi, toi] represent the departure and the arrival airports of one flight. Reconstruct the itinerary in order and return it. All of the tickets belong to a man who departs from "JFK", thus, the itinerary must begin with "JFK". If there are multiple valid itineraries, you should return the itinerary that has the smallest lexical order when read as a single string.',
   problemUrl: 'https://leetcode.com/problems/reconstruct-itinerary/',
   code: {
-    python: `def findItinerary(tickets):
+    python: `from collections import defaultdict
+
+def findItinerary(tickets):
     graph = defaultdict(list)
     for src, dst in sorted(tickets, reverse=True):
         graph[src].append(dst)
@@ -370,7 +372,9 @@ export const reconstructItinerary: Algorithm = {
       description:
         "Instead of Hierholzer's guaranteed linear Eulerian-path walk, plain backtracking greedily tries the smallest destination and undoes choices when it strands tickets — intuitive, but can revisit exponentially many partial routes.",
       code: {
-        python: `def findItinerary(tickets):
+        python: `from collections import defaultdict
+
+def findItinerary(tickets):
     graph = defaultdict(list)
     for src, dst in sorted(tickets):
         graph[src].append(dst)
@@ -454,27 +458,28 @@ private boolean backtrack(String airport, Map<String, List<String>> graph,
       run: runReconstructItineraryBacktracking,
       lineExplanations: {
         python: {
-          1: 'Define function taking list of ticket pairs',
-          2: 'Build adjacency list with defaultdict',
-          3: 'Sort tickets so destinations are tried smallest-first',
-          4: 'Append destination to source list',
-          6: 'Total tickets — the route must use all of them',
-          7: 'Route starts at JFK',
-          9: 'Recursive backtracking from current airport',
-          10: 'Success: route uses every ticket',
-          11: 'Propagate success up the recursion',
-          12: 'Try each destination in lexical order',
-          13: 'None marks a ticket already used',
-          14: 'Skip used tickets',
-          15: 'Use this ticket (mark it)',
-          16: 'Extend the route with the destination',
-          17: 'Recurse — did this choice complete the route?',
-          18: 'Yes: keep the choice, bubble success up',
-          19: 'No: undo the route extension',
-          20: 'Return the ticket for other branches',
-          21: 'All destinations failed from here',
-          23: 'Kick off the search from JFK',
-          24: 'Route now holds the full itinerary',
+          1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+          3: 'Define function taking list of ticket pairs',
+          4: 'Build adjacency list with defaultdict',
+          5: 'Sort tickets so destinations are tried smallest-first',
+          6: 'Append destination to source list',
+          8: 'Total tickets — the route must use all of them',
+          9: 'Route starts at JFK',
+          11: 'Recursive backtracking from current airport',
+          12: 'Success: route uses every ticket',
+          13: 'Propagate success up the recursion',
+          14: 'Try each destination in lexical order',
+          15: 'None marks a ticket already used',
+          16: 'Skip used tickets',
+          17: 'Use this ticket (mark it)',
+          18: 'Extend the route with the destination',
+          19: 'Recurse — did this choice complete the route?',
+          20: 'Yes: keep the choice, bubble success up',
+          21: 'No: undo the route extension',
+          22: 'Return the ticket for other branches',
+          23: 'All destinations failed from here',
+          25: 'Kick off the search from JFK',
+          26: 'Route now holds the full itinerary',
         },
         javascript: {
           1: 'Define function taking tickets array',
@@ -527,17 +532,18 @@ private boolean backtrack(String airport, Map<String, List<String>> graph,
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking list of ticket pairs',
-      2: 'Build adjacency list with defaultdict',
-      3: 'Sort tickets reverse so pop gives smallest',
-      4: 'Append destination to source list',
-      6: 'Start Hierholzer algorithm from JFK',
-      7: 'Route will be built in reverse',
-      9: 'Process while stack has airports',
-      10: 'Follow edges while current has neighbors',
-      11: 'Pop smallest destination, push to stack',
-      12: 'Dead end: pop from stack, add to route',
-      14: 'Reverse route to get correct itinerary',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Define function taking list of ticket pairs',
+      4: 'Build adjacency list with defaultdict',
+      5: 'Sort tickets reverse so pop gives smallest',
+      6: 'Append destination to source list',
+      8: 'Start Hierholzer algorithm from JFK',
+      9: 'Route will be built in reverse',
+      11: 'Process while stack has airports',
+      12: 'Follow edges while current has neighbors',
+      13: 'Pop smallest destination, push to stack',
+      14: 'Dead end: pop from stack, add to route',
+      16: 'Reverse route to get correct itinerary',
     },
     javascript: {
       1: 'Define function taking tickets array',

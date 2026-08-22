@@ -418,7 +418,9 @@ private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited) {
       description:
         "Instead of hunting for cycles with DFS coloring, Kahn's algorithm repeatedly 'takes' courses whose indegree is 0 — if a cycle exists, its courses never reach indegree 0 and the finished count falls short.",
       code: {
-        python: `def canFinish(numCourses, prerequisites):
+        python: `from collections import deque
+
+def canFinish(numCourses, prerequisites):
     adj = {i: [] for i in range(numCourses)}
     indegree = [0] * numCourses
     for crs, pre in prerequisites:
@@ -487,22 +489,23 @@ private boolean dfs(int crs, Map<Integer, List<Integer>> adj, int[] visited) {
       run: runCourseScheduleKahns,
       lineExplanations: {
         python: {
-          1: 'Define function with course count and prereqs',
-          2: 'Adjacency list: prereq -> courses it unlocks',
-          3: 'Indegree = pending prerequisites per course',
-          4: 'Process each prerequisite pair',
-          5: 'Prereq unlocks this course when done',
-          6: 'One more prerequisite pending for this course',
-          8: 'Start with all courses that need no prereqs',
-          9: 'Count how many courses we manage to take',
-          10: 'Process while some course is ready',
-          11: 'Take the next ready course',
-          12: 'One more course finished',
-          13: 'Update every course this one unlocks',
-          14: 'It waits on one fewer prerequisite now',
-          15: 'All its prerequisites done?',
-          16: 'It becomes ready — enqueue it',
-          17: 'No cycle iff every course got taken',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function with course count and prereqs',
+          4: 'Adjacency list: prereq -> courses it unlocks',
+          5: 'Indegree = pending prerequisites per course',
+          6: 'Process each prerequisite pair',
+          7: 'Prereq unlocks this course when done',
+          8: 'One more prerequisite pending for this course',
+          10: 'Start with all courses that need no prereqs',
+          11: 'Count how many courses we manage to take',
+          12: 'Process while some course is ready',
+          13: 'Take the next ready course',
+          14: 'One more course finished',
+          15: 'Update every course this one unlocks',
+          16: 'It waits on one fewer prerequisite now',
+          17: 'All its prerequisites done?',
+          18: 'It becomes ready — enqueue it',
+          19: 'No cycle iff every course got taken',
         },
         javascript: {
           1: 'Define function with course count and prereqs',

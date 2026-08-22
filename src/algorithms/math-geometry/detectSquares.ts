@@ -236,7 +236,9 @@ export const detectSquares: Algorithm = {
     'You are given a stream of points on the X-Y plane. Design an algorithm that adds new points from the stream into a data structure. Duplicate points are allowed and should be treated as different points. Given a query point, counts the number of ways to choose three points from the data structure such that the three points and the query point form an axis-aligned square with positive area.',
   problemUrl: 'https://leetcode.com/problems/detect-squares/',
   code: {
-    python: `class DetectSquares:
+    python: `from collections import defaultdict
+
+class DetectSquares:
     def __init__(self):
         self.points = defaultdict(int)
         self.point_list = []
@@ -323,7 +325,9 @@ export const detectSquares: Algorithm = {
       description:
         'Instead of scanning every stored point looking for diagonals, bucket points by x-coordinate: a square needs a vertical edge in the query column, so count() only inspects that one bucket.',
       code: {
-        python: `class DetectSquares:
+        python: `from collections import defaultdict
+
+class DetectSquares:
     def __init__(self):
         self.points = defaultdict(int)
         self.cols = defaultdict(list)
@@ -396,24 +400,25 @@ export const detectSquares: Algorithm = {
       run: runDetectSquaresColumnBuckets,
       lineExplanations: {
         python: {
-          1: 'Define DetectSquares class',
-          2: 'Initialize constructor',
-          3: 'Map counting occurrences of each exact point',
-          4: 'Buckets: x-coordinate -> list of y values (duplicates kept)',
-          6: 'Define add method for new point',
-          7: 'Unpack coordinates',
-          8: 'Increment count for this exact point',
-          9: 'Record y in the bucket for column x',
-          11: 'Define count method for query point',
-          12: 'Unpack query coordinates',
-          13: 'Initialize square count',
-          14: 'Scan only the query column — each y here is a vertical-edge partner',
-          15: 'Side length of the candidate square',
-          16: 'Same point as the query?',
-          17: 'Zero side means no area — skip',
-          18: 'The square can extend right (px+d) or left (px-d)',
-          19: 'Multiply counts of the two remaining corners',
-          20: 'Return total number of squares',
+          1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+          3: 'Define DetectSquares class',
+          4: 'Initialize constructor',
+          5: 'Map counting occurrences of each exact point',
+          6: 'Buckets: x-coordinate -> list of y values (duplicates kept)',
+          8: 'Define add method for new point',
+          9: 'Unpack coordinates',
+          10: 'Increment count for this exact point',
+          11: 'Record y in the bucket for column x',
+          13: 'Define count method for query point',
+          14: 'Unpack query coordinates',
+          15: 'Initialize square count',
+          16: 'Scan only the query column — each y here is a vertical-edge partner',
+          17: 'Side length of the candidate square',
+          18: 'Same point as the query?',
+          19: 'Zero side means no area — skip',
+          20: 'The square can extend right (px+d) or left (px-d)',
+          21: 'Multiply counts of the two remaining corners',
+          22: 'Return total number of squares',
         },
         javascript: {
           1: 'Define DetectSquares class',
@@ -460,21 +465,22 @@ export const detectSquares: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define DetectSquares class',
-      2: 'Initialize constructor',
-      3: 'Map to count occurrences of each point',
-      4: 'List to store all added points',
-      6: 'Define add method for new point',
-      7: 'Increment count for this point',
-      8: 'Append point to list',
-      10: 'Define count method for query point',
-      11: 'Initialize square count to 0',
-      12: 'Extract query point coordinates',
-      13: 'Check each stored point as diagonal',
-      14: 'Skip if not a valid diagonal match',
-      15: 'Continue to next point',
-      16: 'Multiply counts of two other corners',
-      17: 'Return total number of squares',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Define DetectSquares class',
+      4: 'Initialize constructor',
+      5: 'Map to count occurrences of each point',
+      6: 'List to store all added points',
+      8: 'Define add method for new point',
+      9: 'Increment count for this point',
+      10: 'Append point to list',
+      12: 'Define count method for query point',
+      13: 'Initialize square count to 0',
+      14: 'Extract query point coordinates',
+      15: 'Check each stored point as diagonal',
+      16: 'Skip if not a valid diagonal match',
+      17: 'Continue to next point',
+      18: 'Multiply counts of two other corners',
+      19: 'Return total number of squares',
     },
     javascript: {
       1: 'Define DetectSquares class',

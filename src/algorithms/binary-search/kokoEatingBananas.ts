@@ -209,7 +209,7 @@ export const kokoEatingBananas: Algorithm = {
         k = (left + right) // 2
         hours = 0
         for p in piles:
-            hours += math.ceil(p / k)
+            hours += (p + k - 1) // k  # ceiling division
 
         if hours <= h:
             result = k
@@ -283,7 +283,7 @@ export const kokoEatingBananas: Algorithm = {
     while True:
         hours = 0
         for p in piles:
-            hours += math.ceil(p / k)
+            hours += (p + k - 1) // k  # ceiling division
         if hours <= h:
             return k
         k += 1`,
@@ -322,7 +322,7 @@ export const kokoEatingBananas: Algorithm = {
           3: 'Keep trying speeds until one works',
           4: 'Reset total hours for this speed',
           5: 'For each pile, compute hours needed',
-          6: 'A pile of p bananas takes ceil(p/k) hours at speed k',
+          6: 'Integer ceiling division: a pile of p takes (p + k - 1) // k hours at speed k',
           7: 'Does this speed finish within h hours?',
           8: 'Yes — every slower speed already failed, so k is the minimum',
           9: 'Too slow — bump the speed by 1 and retry',
@@ -361,7 +361,7 @@ export const kokoEatingBananas: Algorithm = {
       6: 'Try the midpoint speed k',
       7: 'Initialize total hours counter',
       8: 'For each pile, compute hours needed',
-      9: 'Add ceil(pile/k) hours for this pile',
+      9: 'Integer ceiling division — // floors, so the + k - 1 rounds it up',
       11: 'If total hours fits within h',
       12: 'Update result with this valid speed',
       13: 'Try a slower speed (search left)',

@@ -307,7 +307,9 @@ export const accountsMerge: Algorithm = {
     'Each account is a name followed by a list of emails. Two accounts belong to the same person if they share at least one email (names alone are not enough). Merge them and return each person as their name followed by their emails in sorted order.',
   problemUrl: 'https://leetcode.com/problems/accounts-merge/',
   code: {
-    python: `def accountsMerge(accounts):
+    python: `from collections import defaultdict
+
+def accountsMerge(accounts):
     parent = {}
     owner = {}
 
@@ -428,7 +430,9 @@ private static void union(String a, String b, Map<String, String> parent) {
       description:
         'Skips Union-Find entirely: build an undirected graph where each account wires its emails to its first email, then every connected component found by DFS is one person.',
       code: {
-        python: `def accountsMerge(accounts):
+        python: `from collections import defaultdict
+
+def accountsMerge(accounts):
     adj = defaultdict(set)
     owner = {}
     for name, *emails in accounts:
@@ -522,28 +526,29 @@ private static void dfs(String e, Map<String, Set<String>> adj,
       run: runAccountsMergeDFS,
       lineExplanations: {
         python: {
-          1: 'Take the raw list of accounts',
-          2: 'Adjacency: email -> emails sharing an account with it',
-          3: 'Remember which name owns each email',
-          4: 'Unpack the name and its email list',
-          5: 'Wire every email of this account...',
-          6: 'Record the owning name',
-          7: '...to the account first email',
-          8: 'Undirected, so add the reverse link too',
-          10: 'Emails already placed in some component',
-          11: 'Merged accounts accumulate here',
-          13: 'DFS collecting one connected component',
-          14: 'Never revisit an email',
-          15: 'This email belongs to the component',
-          16: 'Follow every co-account email',
-          17: 'Only descend into unseen emails',
-          18: 'Recurse to pull in the rest of the component',
-          20: 'Try every email as a component seed',
-          21: 'Skip ones already merged',
-          22: 'Fresh component starts empty',
-          23: 'Flood-fill it',
-          24: 'Name first, then emails sorted',
-          25: 'Return the merged accounts',
+          1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+          3: 'Take the raw list of accounts',
+          4: 'Adjacency: email -> emails sharing an account with it',
+          5: 'Remember which name owns each email',
+          6: 'Unpack the name and its email list',
+          7: 'Wire every email of this account...',
+          8: 'Record the owning name',
+          9: '...to the account first email',
+          10: 'Undirected, so add the reverse link too',
+          12: 'Emails already placed in some component',
+          13: 'Merged accounts accumulate here',
+          15: 'DFS collecting one connected component',
+          16: 'Never revisit an email',
+          17: 'This email belongs to the component',
+          18: 'Follow every co-account email',
+          19: 'Only descend into unseen emails',
+          20: 'Recurse to pull in the rest of the component',
+          22: 'Try every email as a component seed',
+          23: 'Skip ones already merged',
+          24: 'Fresh component starts empty',
+          25: 'Flood-fill it',
+          26: 'Name first, then emails sorted',
+          27: 'Return the merged accounts',
         },
         javascript: {
           1: 'Take the raw list of accounts',
@@ -597,29 +602,30 @@ private static void dfs(String e, Map<String, Set<String>> adj,
   ],
   lineExplanations: {
     python: {
-      1: 'Take the raw list of accounts',
-      2: 'Union-Find parent pointer per email',
-      3: 'Remember which name owns each email',
-      5: 'Find the representative email of a group',
-      6: 'Climb until we reach a self-parent',
-      7: 'Path compression: skip to the grandparent',
-      8: 'Move up one level',
-      9: 'Return the root email',
-      11: 'Merge the groups of two emails',
-      12: 'Locate both roots',
-      13: 'Already merged? nothing to do',
-      14: 'Otherwise hang one root under the other',
-      16: 'Process each raw account',
-      17: 'Register every email it contains',
-      18: 'A new email starts as its own root',
-      19: 'Record the account name for this email',
-      20: 'Every other email of this account...',
-      21: '...gets unioned with the first one',
-      23: 'Bucket emails by their final root',
-      24: 'Walk every known email',
-      25: 'find() gives the person it belongs to',
-      27: 'Name first, then the emails sorted',
-      28: 'One output row per merged person',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Take the raw list of accounts',
+      4: 'Union-Find parent pointer per email',
+      5: 'Remember which name owns each email',
+      7: 'Find the representative email of a group',
+      8: 'Climb until we reach a self-parent',
+      9: 'Path compression: skip to the grandparent',
+      10: 'Move up one level',
+      11: 'Return the root email',
+      13: 'Merge the groups of two emails',
+      14: 'Locate both roots',
+      15: 'Already merged? nothing to do',
+      16: 'Otherwise hang one root under the other',
+      18: 'Process each raw account',
+      19: 'Register every email it contains',
+      20: 'A new email starts as its own root',
+      21: 'Record the account name for this email',
+      22: 'Every other email of this account...',
+      23: '...gets unioned with the first one',
+      25: 'Bucket emails by their final root',
+      26: 'Walk every known email',
+      27: 'find() gives the person it belongs to',
+      29: 'Name first, then the emails sorted',
+      30: 'One output row per merged person',
     },
     javascript: {
       1: 'Take the raw list of accounts',

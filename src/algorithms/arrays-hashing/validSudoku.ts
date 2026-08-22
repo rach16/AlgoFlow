@@ -307,7 +307,9 @@ export const validSudoku: Algorithm = {
     'Determine if a 9x9 Sudoku board is valid. Only the filled cells need to be validated according to the rules: each row, column, and 3x3 sub-box must contain the digits 1-9 without repetition.',
   problemUrl: 'https://leetcode.com/problems/valid-sudoku/',
   code: {
-    python: `def isValidSudoku(board):
+    python: `from collections import defaultdict
+
+def isValidSudoku(board):
     rows = defaultdict(set)
     cols = defaultdict(set)
     boxes = defaultdict(set)
@@ -520,24 +522,25 @@ export const validSudoku: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking 9x9 board',
-      2: 'Create set dict to track each row',
-      3: 'Create set dict to track each column',
-      4: 'Create set dict to track each 3x3 box',
-      5: 'Loop through each row index 0-8',
-      6: 'Loop through each column index 0-8',
-      7: 'Skip empty cells marked with "."',
-      8: 'Skip to next iteration for empty cells',
-      9: 'Read the digit value at current cell',
-      10: 'Compute which 3x3 box this cell belongs to',
-      11: 'Check if val already seen in row, col,',
-      12: 'or column set, or in the box set',
-      13: 'for a duplicate',
-      14: 'Return False if any duplicate found',
-      15: 'Add value to the row tracking set',
-      16: 'Add value to the column tracking set',
-      17: 'Add value to the box tracking set',
-      18: 'Return True if no duplicates found',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Define function taking 9x9 board',
+      4: 'Create set dict to track each row',
+      5: 'Create set dict to track each column',
+      6: 'Create set dict to track each 3x3 box',
+      7: 'Loop through each row index 0-8',
+      8: 'Loop through each column index 0-8',
+      9: 'Skip empty cells marked with "."',
+      10: 'Skip to next iteration for empty cells',
+      11: 'Read the digit value at current cell',
+      12: 'Compute which 3x3 box this cell belongs to',
+      13: 'Check if val already seen in row, col,',
+      14: 'or column set, or in the box set',
+      15: 'for a duplicate',
+      16: 'Return False if any duplicate found',
+      17: 'Add value to the row tracking set',
+      18: 'Add value to the column tracking set',
+      19: 'Add value to the box tracking set',
+      20: 'Return True if no duplicates found',
     },
     javascript: {
       1: 'Define function taking 9x9 board',

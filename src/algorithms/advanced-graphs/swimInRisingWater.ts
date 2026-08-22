@@ -265,7 +265,9 @@ export const swimInRisingWater: Algorithm = {
     'You are given an n x n integer matrix grid where each value grid[i][j] represents the elevation at that point (i, j). The rain starts to fall. At time t, the depth of the water everywhere is t. You can swim from a square to another 4-directionally adjacent square if and only if the elevation of both squares individually are at most t. Return the least time until you can reach the bottom right square (n - 1, n - 1) if you start at the top left square (0, 0).',
   problemUrl: 'https://leetcode.com/problems/swim-in-rising-water/',
   code: {
-    python: `def swimInWater(grid):
+    python: `import heapq
+
+def swimInWater(grid):
     n = len(grid)
     visited = set()
     heap = [(grid[0][0], 0, 0)]
@@ -488,21 +490,22 @@ private boolean canReach(int[][] grid, int t, int r, int c, boolean[][] visited)
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking elevation grid',
-      2: 'Get grid side length',
-      3: 'Track visited cells',
-      4: 'Min-heap: (max elevation on path, row, col)',
-      5: 'Mark starting cell as visited',
-      7: 'Process cells while heap is not empty',
-      8: 'Pop cell with smallest max elevation',
-      9: 'Check if we reached bottom-right corner',
-      10: 'Return the minimum time needed',
-      12: 'Try all 4 adjacent directions',
-      13: 'Compute neighbor coordinates',
-      14: 'Check bounds and skip visited cells',
-      15: 'Mark neighbor as visited',
-      16: 'Push neighbor with updated max elevation',
-      18: 'Return -1 if no path exists',
+      1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+      3: 'Define function taking elevation grid',
+      4: 'Get grid side length',
+      5: 'Track visited cells',
+      6: 'Min-heap: (max elevation on path, row, col)',
+      7: 'Mark starting cell as visited',
+      9: 'Process cells while heap is not empty',
+      10: 'Pop cell with smallest max elevation',
+      11: 'Check if we reached bottom-right corner',
+      12: 'Return the minimum time needed',
+      14: 'Try all 4 adjacent directions',
+      15: 'Compute neighbor coordinates',
+      16: 'Check bounds and skip visited cells',
+      17: 'Mark neighbor as visited',
+      18: 'Push neighbor with updated max elevation',
+      20: 'Return -1 if no path exists',
     },
     javascript: {
       1: 'Define function taking elevation grid',

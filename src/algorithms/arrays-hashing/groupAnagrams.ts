@@ -167,7 +167,9 @@ export const groupAnagrams: Algorithm = {
     'Given an array of strings strs, group the anagrams together. You can return the answer in any order. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase.',
   problemUrl: 'https://leetcode.com/problems/group-anagrams/',
   code: {
-    python: `def groupAnagrams(strs):
+    python: `from collections import defaultdict
+
+def groupAnagrams(strs):
     res = defaultdict(list)
     for s in strs:
         key = tuple(sorted(s))
@@ -206,7 +208,9 @@ export const groupAnagrams: Algorithm = {
       description:
         'Instead of sorting each word (O(k log k)) to build the group key, count its letters into an int[26] signature in O(k) — anagrams produce identical counts.',
       code: {
-        python: `def groupAnagrams(strs):
+        python: `from collections import defaultdict
+
+def groupAnagrams(strs):
     res = defaultdict(list)
     for s in strs:
         count = [0] * 26
@@ -244,14 +248,15 @@ export const groupAnagrams: Algorithm = {
       run: runGroupAnagramsCharCount,
       lineExplanations: {
         python: {
-          1: 'Define function taking list of strings',
-          2: 'Create defaultdict mapping count signatures to groups',
-          3: 'Iterate over each string',
-          4: 'Fresh int[26] letter counter for this word',
-          5: 'Loop over each character of the word',
-          6: "Increment the slot for this letter (ord maps 'a'-'z' to 0-25)",
-          7: 'Use the count tuple as the key — anagrams collide, no sorting',
-          8: 'Return all grouped anagram lists',
+          1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+          3: 'Define function taking list of strings',
+          4: 'Create defaultdict mapping count signatures to groups',
+          5: 'Iterate over each string',
+          6: 'Fresh int[26] letter counter for this word',
+          7: 'Loop over each character of the word',
+          8: "Increment the slot for this letter (ord maps 'a'-'z' to 0-25)",
+          9: 'Use the count tuple as the key — anagrams collide, no sorting',
+          10: 'Return all grouped anagram lists',
         },
         javascript: {
           1: 'Define function taking array of strings',
@@ -282,12 +287,13 @@ export const groupAnagrams: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking list of strings',
-      2: 'Create defaultdict mapping keys to groups',
-      3: 'Iterate over each string',
-      4: 'Sort chars to create anagram key',
-      5: 'Append string to its anagram group',
-      6: 'Return all grouped anagram lists',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Define function taking list of strings',
+      4: 'Create defaultdict mapping keys to groups',
+      5: 'Iterate over each string',
+      6: 'Sort chars to create anagram key',
+      7: 'Append string to its anagram group',
+      8: 'Return all grouped anagram lists',
     },
     javascript: {
       1: 'Define function taking array of strings',

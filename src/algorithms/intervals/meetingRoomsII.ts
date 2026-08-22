@@ -308,7 +308,9 @@ export const meetingRoomsII: Algorithm = {
       description:
         'Instead of counting with separate start/end arrays, simulate the rooms directly: a min-heap of end times tells each meeting whether the earliest-finishing room is free to reuse or a new room must open.',
       code: {
-        python: `def minMeetingRooms(intervals):
+        python: `import heapq
+
+def minMeetingRooms(intervals):
     intervals.sort(key=lambda i: i[0])
     heap = []  # end times of occupied rooms
 
@@ -350,15 +352,16 @@ export const meetingRoomsII: Algorithm = {
       run: runMeetingRoomsIIMinHeap,
       lineExplanations: {
         python: {
-          1: 'Define function taking intervals list',
-          2: 'Sort meetings by start time',
-          3: 'Min-heap of end times — one entry per occupied room',
-          5: 'Process meetings in chronological start order',
-          6: 'Earliest-ending room already free when this meeting starts?',
-          7: 'Reuse that room: swap its end time for this meeting’s end',
-          8: 'Otherwise every room is busy',
-          9: 'Open a new room ending at this meeting’s end',
-          11: 'Heap size = rooms ever needed simultaneously',
+          1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+          3: 'Define function taking intervals list',
+          4: 'Sort meetings by start time',
+          5: 'Min-heap of end times — one entry per occupied room',
+          7: 'Process meetings in chronological start order',
+          8: 'Earliest-ending room already free when this meeting starts?',
+          9: 'Reuse that room: swap its end time for this meeting’s end',
+          10: 'Otherwise every room is busy',
+          11: 'Open a new room ending at this meeting’s end',
+          13: 'Heap size = rooms ever needed simultaneously',
         },
         javascript: {
           1: 'Define function taking intervals array',

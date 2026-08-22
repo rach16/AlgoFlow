@@ -334,7 +334,9 @@ export const cheapestFlightsKStops: Algorithm = {
       description:
         'Where Bellman-Ford relaxes every edge blindly each round, BFS expands outward from the source one flight per level, so the stop limit maps directly onto the number of BFS levels explored.',
       code: {
-        python: `def findCheapestPrice(n, flights, src, dst, k):
+        python: `from collections import defaultdict, deque
+
+def findCheapestPrice(n, flights, src, dst, k):
     adj = defaultdict(list)
     for u, v, w in flights:
         adj[u].append((v, w))
@@ -413,23 +415,24 @@ export const cheapestFlightsKStops: Algorithm = {
       run: runCheapestFlightsBFS,
       lineExplanations: {
         python: {
-          1: 'Define function with cities, flights, src, dst, k',
-          2: 'Build adjacency list of outgoing flights',
-          3: 'Process each flight edge',
-          4: 'Store (destination, price) per source city',
-          6: 'Cheapest known cost to reach each city',
-          7: 'Source city costs nothing to reach',
-          8: 'Queue holds (city, cost so far)',
-          9: 'Count how many levels (flights) taken',
-          11: 'Each BFS level = one more flight, cap at k+1',
-          12: 'Expand only the nodes from this level',
-          13: 'Dequeue a city and its running cost',
-          14: 'Try every outgoing flight',
-          15: 'Only continue if strictly cheaper — prunes exploded paths',
-          16: 'Record the new cheapest cost',
-          17: 'Enqueue for the next level',
-          18: 'Whole level done: one more flight used',
-          20: 'Return best cost to dst, or -1 if unreachable',
+          1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check; deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function with cities, flights, src, dst, k',
+          4: 'Build adjacency list of outgoing flights',
+          5: 'Process each flight edge',
+          6: 'Store (destination, price) per source city',
+          8: 'Cheapest known cost to reach each city',
+          9: 'Source city costs nothing to reach',
+          10: 'Queue holds (city, cost so far)',
+          11: 'Count how many levels (flights) taken',
+          13: 'Each BFS level = one more flight, cap at k+1',
+          14: 'Expand only the nodes from this level',
+          15: 'Dequeue a city and its running cost',
+          16: 'Try every outgoing flight',
+          17: 'Only continue if strictly cheaper — prunes exploded paths',
+          18: 'Record the new cheapest cost',
+          19: 'Enqueue for the next level',
+          20: 'Whole level done: one more flight used',
+          22: 'Return best cost to dst, or -1 if unreachable',
         },
         javascript: {
           1: 'Define function with cities, flights, src, dst, k',

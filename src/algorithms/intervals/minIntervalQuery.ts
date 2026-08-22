@@ -286,7 +286,9 @@ export const minIntervalQuery: Algorithm = {
     'You are given a 2D integer array intervals, where intervals[i] = [lefti, righti] describes the ith interval starting at lefti and ending at righti (inclusive). The size of an interval is defined as the number of integers it contains, or more formally righti - lefti + 1. You are also given an integer array queries. The answer to the jth query is the size of the smallest interval i such that lefti <= queries[j] <= righti. If no such interval exists, the answer is -1.',
   problemUrl: 'https://leetcode.com/problems/minimum-interval-to-include-each-query/',
   code: {
-    python: `def minInterval(intervals, queries):
+    python: `import heapq
+
+def minInterval(intervals, queries):
     intervals.sort()
     sortedQueries = sorted(enumerate(queries), key=lambda x: x[1])
     result = [-1] * len(queries)
@@ -461,21 +463,22 @@ export const minIntervalQuery: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function with intervals and queries',
-      2: 'Sort intervals by start time',
-      3: 'Sort queries keeping original indices',
-      4: 'Init result array with -1 defaults',
-      5: 'Min-heap stores (interval size, end)',
-      6: 'Pointer for intervals array',
-      8: 'Process each query in sorted order',
-      9: 'Add intervals starting at or before query',
-      10: 'Extract left and right of interval',
-      11: 'Push interval size and end to heap',
-      12: 'Move to next interval',
-      13: 'Remove expired intervals ending before query',
-      14: 'Pop intervals that cannot contain query',
-      15: 'Answer is smallest valid interval or -1',
-      17: 'Return result array in original order',
+      1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+      3: 'Define function with intervals and queries',
+      4: 'Sort intervals by start time',
+      5: 'Sort queries keeping original indices',
+      6: 'Init result array with -1 defaults',
+      7: 'Min-heap stores (interval size, end)',
+      8: 'Pointer for intervals array',
+      10: 'Process each query in sorted order',
+      11: 'Add intervals starting at or before query',
+      12: 'Extract left and right of interval',
+      13: 'Push interval size and end to heap',
+      14: 'Move to next interval',
+      15: 'Remove expired intervals ending before query',
+      16: 'Pop intervals that cannot contain query',
+      17: 'Answer is smallest valid interval or -1',
+      19: 'Return result array in original order',
     },
     javascript: {
       1: 'Define function with intervals and queries',

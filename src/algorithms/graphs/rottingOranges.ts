@@ -256,7 +256,9 @@ export const rottingOranges: Algorithm = {
     'You are given an m x n grid where 0 = empty, 1 = fresh orange, 2 = rotten orange. Every minute, any fresh orange adjacent (4-directionally) to a rotten orange becomes rotten. Return the minimum minutes until no fresh orange remains, or -1 if impossible.',
   problemUrl: 'https://leetcode.com/problems/rotting-oranges/',
   code: {
-    python: `def orangesRotting(grid):
+    python: `from collections import deque
+
+def orangesRotting(grid):
     rows, cols = len(grid), len(grid[0])
     queue = deque()
     fresh = 0
@@ -522,31 +524,32 @@ export const rottingOranges: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking the grid',
-      2: 'Get grid dimensions',
-      3: 'Initialize BFS queue with deque',
-      4: 'Count fresh oranges',
-      6: 'Scan grid for initial rotten and fresh',
-      7: 'Iterate through each column',
-      8: 'If cell is rotten, add to queue',
-      9: 'Seed BFS queue with rotten orange',
-      10: 'If cell is fresh, increment counter',
-      11: 'Count fresh oranges for tracking',
-      13: 'Initialize minutes counter',
-      14: 'Define four directional offsets',
-      15: 'BFS while queue has items and fresh remain',
-      16: 'Process all oranges at current time step',
-      17: 'Dequeue one rotten orange',
-      18: 'Try each of four directions',
-      19: 'Calculate neighbor coordinates',
-      20: 'Check row bounds',
-      21: 'Check column bounds',
-      22: 'Check if neighbor is fresh',
-      23: 'Rot the fresh orange',
-      24: 'Decrement fresh count',
-      25: 'Add newly rotten to queue',
-      26: 'Increment time after processing level',
-      28: 'Return -1 if fresh remain, else minutes',
+      1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+      3: 'Define function taking the grid',
+      4: 'Get grid dimensions',
+      5: 'Initialize BFS queue with deque',
+      6: 'Count fresh oranges',
+      8: 'Scan grid for initial rotten and fresh',
+      9: 'Iterate through each column',
+      10: 'If cell is rotten, add to queue',
+      11: 'Seed BFS queue with rotten orange',
+      12: 'If cell is fresh, increment counter',
+      13: 'Count fresh oranges for tracking',
+      15: 'Initialize minutes counter',
+      16: 'Define four directional offsets',
+      17: 'BFS while queue has items and fresh remain',
+      18: 'Process all oranges at current time step',
+      19: 'Dequeue one rotten orange',
+      20: 'Try each of four directions',
+      21: 'Calculate neighbor coordinates',
+      22: 'Check row bounds',
+      23: 'Check column bounds',
+      24: 'Check if neighbor is fresh',
+      25: 'Rot the fresh orange',
+      26: 'Decrement fresh count',
+      27: 'Add newly rotten to queue',
+      28: 'Increment time after processing level',
+      30: 'Return -1 if fresh remain, else minutes',
     },
     javascript: {
       1: 'Define function taking the grid',

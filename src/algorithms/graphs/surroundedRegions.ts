@@ -421,7 +421,9 @@ private void dfs(char[][] board, int r, int c) {
       description:
         'Marks the same border-connected regions with an explicit queue instead of recursion — the safe zone grows level by level, and there is no risk of stack overflow on large boards.',
       code: {
-        python: `def solve(board):
+        python: `from collections import deque
+
+def solve(board):
     rows, cols = len(board), len(board[0])
     queue = deque()
 
@@ -519,30 +521,31 @@ private void dfs(char[][] board, int r, int c) {
       run: runSurroundedRegionsBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking the board in-place',
-          2: 'Get board dimensions',
-          3: 'Queue of safe cells to expand from',
-          5: 'Scan every row...',
-          6: '...and every column',
-          7: 'Looking for "O" cells...',
-          8: '...that sit on the border',
-          9: 'Enqueue border "O" as a BFS source',
-          10: 'Mark it "T" immediately so it is not re-added',
-          12: 'Four directional offsets',
-          13: 'Expand the safe zone until the queue empties',
-          14: 'Dequeue the next known-safe cell',
-          15: 'Look at all four neighbors',
-          16: 'Compute neighbor coordinates',
-          17: 'Neighbor must be inside the board',
-          18: 'Only untouched "O" cells spread the marking',
-          19: 'Neighbor is border-connected too — mark "T"',
-          20: 'Enqueue it so BFS keeps spreading inward',
-          22: 'Second pass: resolve every cell',
-          23: 'Iterate through each column',
-          24: 'Still "O" means BFS never reached it',
-          25: 'Surrounded — capture by flipping to "X"',
-          26: '"T" means border-connected',
-          27: 'Restore safe cell back to "O"',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking the board in-place',
+          4: 'Get board dimensions',
+          5: 'Queue of safe cells to expand from',
+          7: 'Scan every row...',
+          8: '...and every column',
+          9: 'Looking for "O" cells...',
+          10: '...that sit on the border',
+          11: 'Enqueue border "O" as a BFS source',
+          12: 'Mark it "T" immediately so it is not re-added',
+          14: 'Four directional offsets',
+          15: 'Expand the safe zone until the queue empties',
+          16: 'Dequeue the next known-safe cell',
+          17: 'Look at all four neighbors',
+          18: 'Compute neighbor coordinates',
+          19: 'Neighbor must be inside the board',
+          20: 'Only untouched "O" cells spread the marking',
+          21: 'Neighbor is border-connected too — mark "T"',
+          22: 'Enqueue it so BFS keeps spreading inward',
+          24: 'Second pass: resolve every cell',
+          25: 'Iterate through each column',
+          26: 'Still "O" means BFS never reached it',
+          27: 'Surrounded — capture by flipping to "X"',
+          28: '"T" means border-connected',
+          29: 'Restore safe cell back to "O"',
         },
         javascript: {
           1: 'Define function taking the board in-place',

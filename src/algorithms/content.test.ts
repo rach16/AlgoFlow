@@ -291,6 +291,27 @@ describe.each(variants.map((v) => [v.label, v] as const))('%s — approach', (_l
     }
   });
 
+  // Python snippets are meant to be copy-paste runnable. A bare heapq./deque() reads as
+  // correct but raises NameError the moment someone actually pastes it into a REPL.
+  it('imports every Python module its code uses', () => {
+    const code = approach.code.python;
+    const missing: string[] = [];
+    const needsModule = (used: RegExp, importLine: RegExp, label: string) => {
+      if (used.test(code) && !importLine.test(code)) missing.push(label);
+    };
+    needsModule(/\bheapq\./, /^\s*import heapq\s*$/m, 'import heapq');
+    needsModule(/\bbisect\./, /^\s*import bisect\s*$/m, 'import bisect');
+    needsModule(/\bmath\./, /^\s*import math\s*$/m, 'import math');
+    for (const name of ['deque', 'defaultdict', 'Counter', 'OrderedDict'] as const) {
+      needsModule(
+        new RegExp(`\\b${name}\\(`),
+        new RegExp(`from collections import[^\n]*\\b${name}\\b`),
+        `from collections import ${name}`
+      );
+    }
+    expect(missing, 'python code references an unimported name').toEqual([]);
+  });
+
   it('produces steps for its default input', () => {
     const steps = runApproach(algorithm, approachId);
     expect(steps.length).toBeGreaterThan(0);

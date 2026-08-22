@@ -264,7 +264,9 @@ private static int dfs(TreeNode node, int maxVal) {
       description:
         'Same counting logic, but level by level with an explicit queue that carries each node\'s path-maximum — no recursion, at the cost of O(n) queue space instead of O(h) stack space.',
       code: {
-        python: `def goodNodes(root):
+        python: `from collections import deque
+
+def goodNodes(root):
     if not root:
         return 0
     count = 0
@@ -313,21 +315,22 @@ private static int dfs(TreeNode node, int maxVal) {
       run: runCountGoodNodesBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking tree root',
-          2: 'Base case: empty tree',
-          3: 'Return 0 good nodes for null root',
-          4: 'Init counter of good nodes',
-          5: 'Queue holds (node, max value on its root path) pairs',
-          6: 'Process until queue is empty',
-          7: 'Dequeue a node with the max seen on its path',
-          8: 'Node is good if nothing bigger sits above it',
-          9: 'Count this good node',
-          10: 'Children inherit the updated path max',
-          11: 'If left child exists...',
-          12: 'Enqueue left child with the new max',
-          13: 'If right child exists...',
-          14: 'Enqueue right child with the new max',
-          15: 'Return total good nodes',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking tree root',
+          4: 'Base case: empty tree',
+          5: 'Return 0 good nodes for null root',
+          6: 'Init counter of good nodes',
+          7: 'Queue holds (node, max value on its root path) pairs',
+          8: 'Process until queue is empty',
+          9: 'Dequeue a node with the max seen on its path',
+          10: 'Node is good if nothing bigger sits above it',
+          11: 'Count this good node',
+          12: 'Children inherit the updated path max',
+          13: 'If left child exists...',
+          14: 'Enqueue left child with the new max',
+          15: 'If right child exists...',
+          16: 'Enqueue right child with the new max',
+          17: 'Return total good nodes',
         },
         javascript: {
           1: 'Define function taking tree root',

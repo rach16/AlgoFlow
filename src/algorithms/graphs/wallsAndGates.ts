@@ -222,7 +222,9 @@ export const wallsAndGates: Algorithm = {
     'You are given an m x n grid rooms initialized with INF (empty room), -1 (wall), or 0 (gate). Fill each empty room with the distance to its nearest gate. Use multi-source BFS starting from all gates simultaneously.',
   problemUrl: 'https://leetcode.com/problems/walls-and-gates/',
   code: {
-    python: `def wallsAndGates(rooms):
+    python: `from collections import deque
+
+def wallsAndGates(rooms):
     if not rooms:
         return
     rows, cols = len(rooms), len(rooms[0])
@@ -429,26 +431,27 @@ private void dfs(int[][] rooms, int r, int c, int dist) {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking rooms grid in-place',
-      2: 'Handle empty grid edge case',
-      3: 'Return early for empty input',
-      4: 'Get grid dimensions',
-      5: 'Define INF constant for empty rooms',
-      6: 'Initialize BFS queue with deque',
-      8: 'Scan grid to find all gate cells',
-      9: 'Iterate through each column',
-      10: 'If cell is a gate (value 0)',
-      11: 'Add gate to BFS queue as start point',
-      13: 'Define four directional offsets',
-      14: 'BFS loop processes queue level by level',
-      15: 'Dequeue one gate/room position',
-      16: 'Try each of four directions',
-      17: 'Calculate neighbor coordinates',
-      18: 'Check row bounds',
-      19: 'Check column bounds',
-      20: 'Check if neighbor is empty room',
-      21: 'Set distance = current + 1',
-      22: 'Add updated room to queue',
+      1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+      3: 'Define function taking rooms grid in-place',
+      4: 'Handle empty grid edge case',
+      5: 'Return early for empty input',
+      6: 'Get grid dimensions',
+      7: 'Define INF constant for empty rooms',
+      8: 'Initialize BFS queue with deque',
+      10: 'Scan grid to find all gate cells',
+      11: 'Iterate through each column',
+      12: 'If cell is a gate (value 0)',
+      13: 'Add gate to BFS queue as start point',
+      15: 'Define four directional offsets',
+      16: 'BFS loop processes queue level by level',
+      17: 'Dequeue one gate/room position',
+      18: 'Try each of four directions',
+      19: 'Calculate neighbor coordinates',
+      20: 'Check row bounds',
+      21: 'Check column bounds',
+      22: 'Check if neighbor is empty room',
+      23: 'Set distance = current + 1',
+      24: 'Add updated room to queue',
     },
     javascript: {
       1: 'Define function taking rooms grid in-place',

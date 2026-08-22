@@ -331,7 +331,9 @@ export const evaluateDivision: Algorithm = {
     'You are given equations like a / b = 2.0 and a list of queries such as a / c. Model each equation as a weighted edge (a → b with weight 2.0 and b → a with weight 0.5), then answer each query by multiplying the weights along a path. Return -1.0 when no path exists.',
   problemUrl: 'https://leetcode.com/problems/evaluate-division/',
   code: {
-    python: `def calcEquation(equations, values, queries):
+    python: `from collections import defaultdict
+
+def calcEquation(equations, values, queries):
     graph = defaultdict(dict)
     for (a, b), v in zip(equations, values):
         graph[a][b] = v
@@ -603,24 +605,25 @@ private static String find(String x, Map<String, String> parent, Map<String, Dou
   ],
   lineExplanations: {
     python: {
-      1: 'Equations, their values, and the queries',
-      2: 'Adjacency map of variable -> {neighbour: ratio}',
-      3: 'Pair each equation with its value',
-      4: 'a / b = v becomes edge a → b weighted v',
-      5: 'The reverse edge carries the reciprocal',
-      7: 'DFS carrying the product accumulated so far',
-      8: 'A variable never seen in any equation...',
-      9: '...makes the query unanswerable',
-      10: 'Reached the destination variable',
-      11: 'The accumulated product IS the ratio',
-      12: 'Mark src so the walk cannot loop',
-      13: 'Try every neighbour and its ratio',
-      14: 'Skip variables already on the path',
-      15: 'Recurse, folding this edge into the product',
-      16: 'A real answer came back',
-      17: 'Bubble it straight up',
-      18: 'Exhausted this branch: no path',
-      20: 'Run one fresh DFS per query',
+      1: 'defaultdict creates the empty value on first touch, so no "is this key here?" check',
+      3: 'Equations, their values, and the queries',
+      4: 'Adjacency map of variable -> {neighbour: ratio}',
+      5: 'Pair each equation with its value',
+      6: 'a / b = v becomes edge a → b weighted v',
+      7: 'The reverse edge carries the reciprocal',
+      9: 'DFS carrying the product accumulated so far',
+      10: 'A variable never seen in any equation...',
+      11: '...makes the query unanswerable',
+      12: 'Reached the destination variable',
+      13: 'The accumulated product IS the ratio',
+      14: 'Mark src so the walk cannot loop',
+      15: 'Try every neighbour and its ratio',
+      16: 'Skip variables already on the path',
+      17: 'Recurse, folding this edge into the product',
+      18: 'A real answer came back',
+      19: 'Bubble it straight up',
+      20: 'Exhausted this branch: no path',
+      22: 'Run one fresh DFS per query',
     },
     javascript: {
       1: 'Equations, their values, and the queries',

@@ -377,7 +377,9 @@ private void dfs(int[][] heights, int r, int c, boolean[][] visit, int prevHeigh
       description:
         'Same reverse traversal from the ocean borders, but with an iterative BFS frontier instead of recursive DFS — no recursion-depth risk, and reachability spreads outward in visible rings.',
       code: {
-        python: `def pacificAtlantic(heights):
+        python: `from collections import deque
+
+def pacificAtlantic(heights):
     rows, cols = len(heights), len(heights[0])
     pac, atl = set(), set()
     dirs = [(1,0),(-1,0),(0,1),(0,-1)]
@@ -488,27 +490,28 @@ private void bfs(int[][] heights, Queue<int[]> queue, boolean[][] visit) {
       run: runPacificAtlanticBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking height matrix',
-          2: 'Get matrix dimensions',
-          3: 'Sets of cells that can reach each ocean',
-          4: 'Four directional offsets',
-          6: 'BFS helper taking start cells and a visited set',
-          7: 'Queue starts with every border cell at once',
-          8: 'All starts are trivially reachable — mark visited',
-          9: 'Expand the frontier until it stops growing',
-          10: 'Dequeue the next reachable cell',
-          11: 'Try each of the four directions',
-          12: 'Compute neighbor coordinates',
-          13: 'Neighbor must be inside the grid',
-          14: 'Skip cells already known reachable',
-          15: 'Only climb: neighbor must be same height or higher',
-          16: 'Mark neighbor as able to drain to this ocean',
-          17: 'Enqueue it so BFS continues from there',
-          19: 'Pacific BFS: seed with the top row...',
-          20: '...plus the left column border cells',
-          21: 'Atlantic BFS: seed with the bottom row...',
-          22: '...plus the right column border cells',
-          24: 'Answer = intersection of the two reachable sets',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking height matrix',
+          4: 'Get matrix dimensions',
+          5: 'Sets of cells that can reach each ocean',
+          6: 'Four directional offsets',
+          8: 'BFS helper taking start cells and a visited set',
+          9: 'Queue starts with every border cell at once',
+          10: 'All starts are trivially reachable — mark visited',
+          11: 'Expand the frontier until it stops growing',
+          12: 'Dequeue the next reachable cell',
+          13: 'Try each of the four directions',
+          14: 'Compute neighbor coordinates',
+          15: 'Neighbor must be inside the grid',
+          16: 'Skip cells already known reachable',
+          17: 'Only climb: neighbor must be same height or higher',
+          18: 'Mark neighbor as able to drain to this ocean',
+          19: 'Enqueue it so BFS continues from there',
+          21: 'Pacific BFS: seed with the top row...',
+          22: '...plus the left column border cells',
+          23: 'Atlantic BFS: seed with the bottom row...',
+          24: '...plus the right column border cells',
+          26: 'Answer = intersection of the two reachable sets',
         },
         javascript: {
           1: 'Define function taking height matrix',

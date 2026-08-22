@@ -226,7 +226,9 @@ export const maxDepthBinaryTree: Algorithm = {
       description:
         'Instead of recursing down (DFS), traverse the tree level by level with a queue and count the levels — no recursion, but the queue can hold up to n/2 nodes.',
       code: {
-        python: `def maxDepth(root):
+        python: `from collections import deque
+
+def maxDepth(root):
     if not root:
         return 0
     depth = 0
@@ -275,20 +277,21 @@ export const maxDepthBinaryTree: Algorithm = {
       run: runMaxDepthBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking tree root node',
-          2: 'Base case: empty tree',
-          3: 'Empty tree has depth 0',
-          4: 'Depth counter — one increment per level',
-          5: 'Queue seeded with the root (level 1)',
-          6: 'Keep going while some level still has nodes',
-          7: 'A new level is starting — count it',
-          8: 'Process exactly the nodes of the current level',
-          9: 'Dequeue the next node of this level',
-          10: 'If it has a left child, it belongs to the next level',
-          11: 'Enqueue left child',
-          12: 'If it has a right child, it belongs to the next level',
-          13: 'Enqueue right child',
-          14: 'Number of levels processed = maximum depth',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking tree root node',
+          4: 'Base case: empty tree',
+          5: 'Empty tree has depth 0',
+          6: 'Depth counter — one increment per level',
+          7: 'Queue seeded with the root (level 1)',
+          8: 'Keep going while some level still has nodes',
+          9: 'A new level is starting — count it',
+          10: 'Process exactly the nodes of the current level',
+          11: 'Dequeue the next node of this level',
+          12: 'If it has a left child, it belongs to the next level',
+          13: 'Enqueue left child',
+          14: 'If it has a right child, it belongs to the next level',
+          15: 'Enqueue right child',
+          16: 'Number of levels processed = maximum depth',
         },
         javascript: {
           1: 'Define function taking tree root node',

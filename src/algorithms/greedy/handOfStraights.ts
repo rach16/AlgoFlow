@@ -239,7 +239,9 @@ export const handOfStraights: Algorithm = {
     'Alice has some number of cards and she wants to rearrange the cards into groups so that each group is of size groupSize, and consists of groupSize consecutive cards. Given an integer array hand where hand[i] is the value written on the ith card and an integer groupSize, return true if she can rearrange the cards, or false otherwise.',
   problemUrl: 'https://leetcode.com/problems/hand-of-straights/',
   code: {
-    python: `def isNStraightHand(hand, groupSize):
+    python: `from collections import Counter
+
+def isNStraightHand(hand, groupSize):
     if len(hand) % groupSize:
         return False
     count = Counter(hand)
@@ -306,7 +308,10 @@ export const handOfStraights: Algorithm = {
       description:
         'Instead of scanning all sorted values, keep unique cards in a min-heap and repeatedly build a group from the current minimum, popping values as they run out.',
       code: {
-        python: `def isNStraightHand(hand, groupSize):
+        python: `import heapq
+from collections import Counter
+
+def isNStraightHand(hand, groupSize):
     if len(hand) % groupSize:
         return False
     count = Counter(hand)
@@ -363,23 +368,25 @@ export const handOfStraights: Algorithm = {
       run: runHandOfStraightsMinHeap,
       lineExplanations: {
         python: {
-          1: 'Define function taking hand and groupSize',
-          2: 'Hand must divide evenly into groups',
-          3: 'Not divisible, return false',
-          4: 'Counter walks the input once and returns the whole {value: count} map',
-          5: 'Collect the unique card values',
-          6: 'Heapify so the smallest value is always on top',
-          7: 'Keep forming groups until every card is used',
-          8: 'The heap minimum must start the next group',
-          9: 'The group needs groupSize consecutive cards',
-          10: 'A needed card has no copies left',
-          11: 'Group cannot be completed, return false',
-          12: 'Consume one copy of this card',
-          13: 'Did this card just run out?',
-          14: 'A smaller card still needs groups passing through here',
-          15: 'That smaller card can never finish its groups, return false',
-          16: 'Exhausted card was the minimum — pop it off the heap',
-          17: 'Heap empty: every card fit into a group',
+          1: 'Import heapq — Python ships a min-heap only, so max-heaps use negated values',
+          2: 'Counter walks the input once and returns the whole {value: count} map',
+          4: 'Define function taking hand and groupSize',
+          5: 'Hand must divide evenly into groups',
+          6: 'Not divisible, return false',
+          7: 'Counter walks the input once and returns the whole {value: count} map',
+          8: 'Collect the unique card values',
+          9: 'Heapify so the smallest value is always on top',
+          10: 'Keep forming groups until every card is used',
+          11: 'The heap minimum must start the next group',
+          12: 'The group needs groupSize consecutive cards',
+          13: 'A needed card has no copies left',
+          14: 'Group cannot be completed, return false',
+          15: 'Consume one copy of this card',
+          16: 'Did this card just run out?',
+          17: 'A smaller card still needs groups passing through here',
+          18: 'That smaller card can never finish its groups, return false',
+          19: 'Exhausted card was the minimum — pop it off the heap',
+          20: 'Heap empty: every card fit into a group',
         },
         javascript: {
           1: 'Define function taking hand and groupSize',
@@ -418,18 +425,19 @@ export const handOfStraights: Algorithm = {
   ],
   lineExplanations: {
     python: {
-      1: 'Define function taking hand and groupSize',
-      2: 'Check if hand size is divisible by groupSize',
-      3: 'Not divisible, return false',
-      4: 'Counter walks the input once and returns the whole {value: count} map',
-      6: 'Iterate through sorted unique card values',
-      7: 'Skip cards already fully used',
-      8: 'Number of groups starting from this card',
-      9: 'Check each consecutive card in the group',
-      10: 'Not enough cards to form group, return false',
-      11: 'Return false immediately',
-      12: 'Subtract used cards from count',
-      14: 'All groups formed successfully',
+      1: 'Counter walks the input once and returns the whole {value: count} map',
+      3: 'Define function taking hand and groupSize',
+      4: 'Check if hand size is divisible by groupSize',
+      5: 'Not divisible, return false',
+      6: 'Counter walks the input once and returns the whole {value: count} map',
+      8: 'Iterate through sorted unique card values',
+      9: 'Skip cards already fully used',
+      10: 'Number of groups starting from this card',
+      11: 'Check each consecutive card in the group',
+      12: 'Not enough cards to form group, return false',
+      13: 'Return false immediately',
+      14: 'Subtract used cards from count',
+      16: 'All groups formed successfully',
     },
     javascript: {
       1: 'Define function taking hand and groupSize',

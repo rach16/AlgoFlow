@@ -311,7 +311,9 @@ private int dfs(int[][] grid, int r, int c, boolean[][] visited) {
       description:
         'Measures each island with an explicit queue that expands outward ring by ring, avoiding the deep recursion of DFS (no stack-overflow risk on huge islands).',
       code: {
-        python: `def maxAreaOfIsland(grid):
+        python: `from collections import deque
+
+def maxAreaOfIsland(grid):
     rows, cols = len(grid), len(grid[0])
     visited = set()
     max_area = 0
@@ -397,27 +399,28 @@ private int dfs(int[][] grid, int r, int c, boolean[][] visited) {
       run: runMaxAreaOfIslandBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking integer grid',
-          2: 'Get grid dimensions',
-          3: 'Track visited cells using a set',
-          4: 'Best island area seen so far',
-          6: 'Iterate through each row',
-          7: 'Iterate through each column',
-          8: 'Unvisited land cell starts a new island',
-          9: 'Seed the BFS queue with this cell',
-          10: 'Mark it visited when enqueued, not dequeued',
-          11: 'This island has area 0 so far',
-          12: 'Expand until the frontier is empty',
-          13: 'Take the next cell off the queue',
-          14: 'Count it toward the island area',
-          15: 'Try all four neighbor directions',
-          16: 'Compute the neighbor coordinates',
-          17: 'Neighbor must be in bounds...',
-          18: '...and unvisited land',
-          19: 'Mark visited immediately to avoid double-adds',
-          20: 'Add it to the expanding frontier',
-          21: 'Island measured — update the maximum',
-          22: 'Return the largest island area found',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking integer grid',
+          4: 'Get grid dimensions',
+          5: 'Track visited cells using a set',
+          6: 'Best island area seen so far',
+          8: 'Iterate through each row',
+          9: 'Iterate through each column',
+          10: 'Unvisited land cell starts a new island',
+          11: 'Seed the BFS queue with this cell',
+          12: 'Mark it visited when enqueued, not dequeued',
+          13: 'This island has area 0 so far',
+          14: 'Expand until the frontier is empty',
+          15: 'Take the next cell off the queue',
+          16: 'Count it toward the island area',
+          17: 'Try all four neighbor directions',
+          18: 'Compute the neighbor coordinates',
+          19: 'Neighbor must be in bounds...',
+          20: '...and unvisited land',
+          21: 'Mark visited immediately to avoid double-adds',
+          22: 'Add it to the expanding frontier',
+          23: 'Island measured — update the maximum',
+          24: 'Return the largest island area found',
         },
         javascript: {
           1: 'Define function taking integer grid',

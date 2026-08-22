@@ -305,7 +305,9 @@ export const invertBinaryTree: Algorithm = {
       description:
         'Swap children level by level with an explicit queue instead of recursion — same O(n) work, but queue space grows to the widest level (O(n)) rather than the tree height.',
       code: {
-        python: `def invertTree(root):
+        python: `from collections import deque
+
+def invertTree(root):
     if not root:
         return None
     queue = deque([root])
@@ -348,18 +350,19 @@ export const invertBinaryTree: Algorithm = {
       run: runInvertBinaryTreeBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking tree root',
-          2: 'Base case: empty tree',
-          3: 'Return None for null root',
-          4: 'Init queue with the root node',
-          5: 'Process until queue is empty',
-          6: 'Dequeue the next node',
-          7: 'Swap its left and right children in place',
-          8: 'If the (new) left child exists...',
-          9: 'Enqueue it so its children get swapped too',
-          10: 'If the (new) right child exists...',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking tree root',
+          4: 'Base case: empty tree',
+          5: 'Return None for null root',
+          6: 'Init queue with the root node',
+          7: 'Process until queue is empty',
+          8: 'Dequeue the next node',
+          9: 'Swap its left and right children in place',
+          10: 'If the (new) left child exists...',
           11: 'Enqueue it so its children get swapped too',
-          12: 'All nodes processed — return the inverted root',
+          12: 'If the (new) right child exists...',
+          13: 'Enqueue it so its children get swapped too',
+          14: 'All nodes processed — return the inverted root',
         },
         javascript: {
           1: 'Define function taking tree root',

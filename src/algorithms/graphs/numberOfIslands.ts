@@ -328,7 +328,9 @@ private static void dfs(char[][] grid, int r, int c, Set<String> visited,
       description:
         'Sinks each island with an explicit queue expanding ring by ring instead of recursing — the queue holds at most one BFS frontier, O(min(m,n)) cells, versus a DFS stack that can hold a whole island.',
       code: {
-        python: `def numIslands(grid):
+        python: `from collections import deque
+
+def numIslands(grid):
     if not grid:
         return 0
     rows, cols = len(grid), len(grid[0])
@@ -412,27 +414,28 @@ private static void dfs(char[][] grid, int r, int c, Set<String> visited,
       run: runNumberOfIslandsBFS,
       lineExplanations: {
         python: {
-          1: 'Define function taking 2D grid of land/water',
-          2: 'Handle empty grid',
-          3: 'No grid means no islands',
-          4: 'Get grid dimensions',
-          5: 'Track visited cells using a set',
-          6: 'Initialize island counter',
-          8: 'Iterate through each row',
-          9: 'Iterate through each column',
-          10: 'Unvisited land cell = new island discovered',
-          11: 'Count the new island',
-          12: 'Seed the BFS queue with this cell',
-          13: 'Mark it visited when enqueued, not dequeued',
-          14: 'Flood outward until the frontier is empty',
-          15: 'Take the next cell off the queue',
-          16: 'Try all four neighbor directions',
-          17: 'Compute the neighbor coordinates',
-          18: 'Neighbor must be in bounds...',
-          19: '...and unvisited land',
-          20: 'Mark visited immediately to avoid double-adds',
-          21: 'Add it to the expanding frontier',
-          22: 'Return total number of islands',
+          1: 'deque pops from the front in O(1); a plain list is O(n) per popleft',
+          3: 'Define function taking 2D grid of land/water',
+          4: 'Handle empty grid',
+          5: 'No grid means no islands',
+          6: 'Get grid dimensions',
+          7: 'Track visited cells using a set',
+          8: 'Initialize island counter',
+          10: 'Iterate through each row',
+          11: 'Iterate through each column',
+          12: 'Unvisited land cell = new island discovered',
+          13: 'Count the new island',
+          14: 'Seed the BFS queue with this cell',
+          15: 'Mark it visited when enqueued, not dequeued',
+          16: 'Flood outward until the frontier is empty',
+          17: 'Take the next cell off the queue',
+          18: 'Try all four neighbor directions',
+          19: 'Compute the neighbor coordinates',
+          20: 'Neighbor must be in bounds...',
+          21: '...and unvisited land',
+          22: 'Mark visited immediately to avoid double-adds',
+          23: 'Add it to the expanding frontier',
+          24: 'Return total number of islands',
         },
         javascript: {
           1: 'Define function taking 2D grid',
