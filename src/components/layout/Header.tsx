@@ -10,6 +10,7 @@ interface HeaderProps {
   onMenuClick: () => void;
   view: View;
   onViewChange: (view: View) => void;
+  onSearchClick: () => void;
 }
 
 const TABS: { id: View; label: string }[] = [
@@ -19,7 +20,7 @@ const TABS: { id: View; label: string }[] = [
   { id: 'methods', label: 'Methods' },
 ];
 
-export function Header({ onMenuClick, view, onViewChange }: HeaderProps) {
+export function Header({ onMenuClick, view, onViewChange, onSearchClick }: HeaderProps) {
   const { currentAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [showInfo, setShowInfo] = useState(false);
@@ -60,6 +61,19 @@ export function Header({ onMenuClick, view, onViewChange }: HeaderProps) {
           </button>
         ))}
       </div>
+
+      {/* Search trigger — the shortcut is useless if nobody knows it exists */}
+      <button
+        onClick={onSearchClick}
+        title="Search problems"
+        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors flex-shrink-0"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span className="hidden sm:inline text-xs">Search</span>
+        <kbd className="hidden md:inline text-[10px] border border-slate-600 rounded px-1">⌘K</kbd>
+      </button>
 
       {/* Current algorithm — hidden on mobile (info bar shows it) */}
       {currentAlgorithm && view === 'visualizer' && (
