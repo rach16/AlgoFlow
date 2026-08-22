@@ -30,7 +30,7 @@ function App() {
   }, []);
 
   return (
-    <div className="h-dvh flex flex-col">
+    <div className="h-dvh flex flex-col overflow-x-hidden">
       <Header
         onMenuClick={() => setSidebarOpen(true)}
         view={view}

@@ -30,7 +30,7 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
   const [showInfo, setShowInfo] = useState(false);
 
   return (
-    <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center px-4 gap-4">
+    <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center px-3 sm:px-4 gap-2 sm:gap-4 overflow-hidden">
       {/* Mobile menu button */}
       <button
         onClick={onMenuClick}
@@ -42,22 +42,22 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
       </button>
 
       {/* Logo */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
           <span className="text-white font-bold text-sm">AF</span>
         </div>
-        <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+        <h1 className="hidden sm:block text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
           AlgoFlow
         </h1>
       </div>
 
       {/* View tabs */}
-      <div className="flex bg-slate-700 rounded-lg p-1 flex-shrink-0">
+      <div className="flex bg-slate-700 rounded-lg p-1 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onViewChange(tab.id)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex-shrink-0 ${
               view === tab.id ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white'
             }`}
           >

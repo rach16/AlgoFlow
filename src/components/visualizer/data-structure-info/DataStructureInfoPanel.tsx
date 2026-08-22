@@ -16,7 +16,7 @@ export function DataStructureInfoPanel({ activeTypes }: DataStructureInfoPanelPr
     setExpanded((prev) => ({ ...prev, [type]: !prev[type] }));
 
   return (
-    <div className="mt-4 space-y-2">
+    <div className="space-y-2">
       <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
         Data Structure Reference
       </h4>

@@ -148,10 +148,10 @@ export function VisualizerPage() {
 
   return (
     <div ref={containerRef} className="flex flex-col lg:flex-row lg:h-full gap-4 lg:gap-0 p-4 lg:overflow-hidden">
-      {/* Visualization Panel */}
-      <div className="flex flex-col gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden lg:mr-1">
+      {/* Visualization column — a single scroll region, so panels never clip mid-content */}
+      <div className="flex flex-col gap-3 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:mr-1 lg:pr-1">
         {/* Algorithm info bar — compact on mobile */}
-        <div className="bg-slate-800 rounded-xl p-3 lg:p-4 flex flex-wrap gap-2 lg:gap-3 items-center text-sm">
+        <div className="shrink-0 bg-slate-800 rounded-xl p-3 lg:p-4 flex flex-wrap gap-2 lg:gap-3 items-center text-sm">
           <span className="font-medium lg:hidden truncate max-w-[160px]">{currentAlgorithm.name}</span>
           <span className={`px-2 py-0.5 rounded font-medium ${
             currentAlgorithm.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
@@ -171,7 +171,6 @@ export function VisualizerPage() {
               {showWhy ? 'Hide why' : 'Why?'}
             </button>
           )}
-          <span className="hidden sm:inline text-slate-400">|</span>
           <span className="hidden sm:inline text-indigo-400 font-medium">{currentAlgorithm.pattern}</span>
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
             {/* Code toggle (mobile only) */}
@@ -210,36 +209,9 @@ export function VisualizerPage() {
           <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{activeApproach.spaceComplexity}</span></span>
           <span className="text-indigo-400">{currentAlgorithm.pattern}</span>
         </div>
-        {/* Spaced-repetition rating — the study loop, so it stays visible rather than hidden
-            behind a toggle. Rating also marks the problem solved, except "Again". */}
-        <div className="bg-slate-800 rounded-xl p-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-400 mr-1">
-            {reviewRecord ? 'Rate again — currently ' : 'How did that go?'}
-            {reviewRecord && (
-              <span className="text-slate-200">{dueLabel(reviewRecord, now)}</span>
-            )}
-          </span>
-          {CONFIDENCE_META.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => rateProblem(currentAlgorithm.id, c.id)}
-              title={c.hint}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${c.accent}`}
-            >
-              {c.label}
-            </button>
-          ))}
-          {reviewRecord && (
-            <span className="text-[10px] text-slate-500 ml-auto">
-              box {reviewRecord.streak} · {reviewRecord.reviews} review
-              {reviewRecord.reviews === 1 ? '' : 's'}
-            </span>
-          )}
-        </div>
-
         {/* Derivation for the selected approach */}
         {showWhy && complexityNote && (
-          <div className="bg-slate-800 rounded-xl p-4">
+          <div className="shrink-0 bg-slate-800 rounded-xl p-4">
             <div className="flex items-baseline gap-2 mb-3 flex-wrap">
               <h3 className="text-sm font-semibold text-slate-200">
                 Why {activeApproach.timeComplexity} time and {activeApproach.spaceComplexity} space?
@@ -258,8 +230,10 @@ export function VisualizerPage() {
         )}
 
         {/* Visualization area (hidden on mobile when showing code) */}
-        <div className={`${showCode ? 'hidden' : ''} lg:block lg:flex-1 bg-slate-800 rounded-xl p-4 overflow-y-auto lg:min-h-0`}>
-          <h3 className="text-sm font-medium text-slate-400 mb-4">Visualization</h3>
+        <div className={`${showCode ? 'hidden' : ''} lg:block shrink-0 bg-slate-800 rounded-xl p-4 lg:min-h-[340px]`}>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            Visualization
+          </h3>
 
           {/* Array visualization */}
           {nums && Array.isArray(nums) && (
@@ -432,8 +406,6 @@ export function VisualizerPage() {
             )}
           </div>
 
-          {/* Data Structure Reference Panels */}
-          <DataStructureInfoPanel activeTypes={activeDataStructures} />
 
           {/* Result */}
           {result !== undefined && result !== null && typeof state?.result !== 'undefined' && (
@@ -445,13 +417,50 @@ export function VisualizerPage() {
             </div>
           )}
 
-          {/* Step message */}
-          <div className="mt-6 p-4 bg-slate-700/50 rounded-lg">
-            <p className="text-slate-200">{currentStep?.message}</p>
-          </div>
+        </div>
+
+        {/* What is happening right now — pinned under the visualization it describes */}
+        <div className="shrink-0 bg-indigo-500/10 border border-indigo-500/25 rounded-xl px-4 py-3">
+          <p className="text-slate-100 text-sm leading-relaxed">{currentStep?.message}</p>
         </div>
 
         <Controls />
+
+        {/* Spaced-repetition rating. Placed after the controls because rating is what you do
+            once you have watched it and solved it — above the visualization it just pushed the
+            main content down. */}
+        <div className="shrink-0 bg-slate-800 rounded-xl px-4 py-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-slate-400 mr-1">
+            {reviewRecord ? 'Rate again — currently ' : 'How did that go?'}
+            {reviewRecord && (
+              <span className="text-slate-200">{dueLabel(reviewRecord, now)}</span>
+            )}
+          </span>
+          {CONFIDENCE_META.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => rateProblem(currentAlgorithm.id, c.id)}
+              title={c.hint}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${c.accent}`}
+            >
+              {c.label}
+            </button>
+          ))}
+          {reviewRecord && (
+            <span className="text-[10px] text-slate-500 ml-auto">
+              box {reviewRecord.streak} · {reviewRecord.reviews} review
+              {reviewRecord.reviews === 1 ? '' : 's'}
+            </span>
+          )}
+        </div>
+
+        {/* Method reference for whatever structures this problem uses. Last, because it is
+            lookup material rather than something you watch. */}
+        {activeDataStructures.length > 0 && (
+          <div className="shrink-0 bg-slate-800 rounded-xl px-4 py-3">
+            <DataStructureInfoPanel activeTypes={activeDataStructures} />
+          </div>
+        )}
       </div>
 
       {/* Drag Handle — desktop only */}

@@ -20,7 +20,7 @@ export function Controls() {
   const isAtEnd = currentStepIndex >= steps.length - 1;
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-slate-800 rounded-lg">
+    <div className="shrink-0 flex flex-col gap-4 p-4 bg-slate-800 rounded-lg">
       {/* Progress */}
       <div className="flex items-center gap-4">
         <span className="text-sm text-slate-400">
