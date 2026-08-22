@@ -1,4 +1,5 @@
-import type { Algorithm, Category } from '../types/algorithm';
+import type { Algorithm } from '../types/algorithm';
+import type { AlgorithmMeta, CategoryMeta } from '../algorithms/manifestTypes';
 
 /** Extract the core pattern name from the pattern hint string */
 export function getPatternName(algorithm: Algorithm): string {
@@ -6,15 +7,17 @@ export function getPatternName(algorithm: Algorithm): string {
   return parts[0].trim();
 }
 
-/** Get all unique patterns with their associated algorithms */
-export function getAllPatterns(categories: Category[]): Map<string, Algorithm[]> {
-  const patternMap = new Map<string, Algorithm[]>();
+/**
+ * Group problems by pattern. Operates on metadata rather than full algorithms so the Patterns
+ * view never triggers 254 module loads — `patternName` is precomputed in the manifest.
+ */
+export function getAllPatterns(categories: CategoryMeta[]): Map<string, AlgorithmMeta[]> {
+  const patternMap = new Map<string, AlgorithmMeta[]>();
   for (const category of categories) {
     for (const algo of category.algorithms) {
-      const name = getPatternName(algo);
-      const existing = patternMap.get(name) || [];
+      const existing = patternMap.get(algo.patternName) || [];
       existing.push(algo);
-      patternMap.set(name, existing);
+      patternMap.set(algo.patternName, existing);
     }
   }
   return patternMap;
@@ -25,11 +28,11 @@ export interface PatternStat {
   total: number;
   solved: number;
   /** The problems using this pattern, so the UI can list them without recomputing the map. */
-  algorithms: Algorithm[];
+  algorithms: AlgorithmMeta[];
 }
 
 /** Get pattern stats given solved problem IDs */
-export function getPatternStats(categories: Category[], solvedIds: string[]): PatternStat[] {
+export function getPatternStats(categories: CategoryMeta[], solvedIds: string[]): PatternStat[] {
   const patternMap = getAllPatterns(categories);
   const solvedSet = new Set(solvedIds);
 

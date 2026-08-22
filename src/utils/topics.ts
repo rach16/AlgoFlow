@@ -1,4 +1,5 @@
-import type { Algorithm, Category } from '../types/algorithm';
+import type { Algorithm } from '../types/algorithm';
+import type { AlgorithmMeta, CategoryMeta } from '../algorithms/manifestTypes';
 
 /**
  * Topics group problems by WHAT THE INPUT IS, which is a third axis the app was missing:
@@ -126,16 +127,21 @@ export function getTopicsFor(algorithm: Algorithm): TopicId[] {
 export interface TopicStat extends Topic {
   total: number;
   solved: number;
-  algorithms: Algorithm[];
+  algorithms: AlgorithmMeta[];
 }
 
-export function getTopicStats(categories: Category[], solvedIds: string[]): TopicStat[] {
+/**
+ * Bucket problems by topic using the manifest's precomputed `topics`. Classification itself
+ * needs defaultInput and the source (see getTopicsFor), which is exactly why it is precomputed
+ * at generation time rather than run here.
+ */
+export function getTopicStats(categories: CategoryMeta[], solvedIds: string[]): TopicStat[] {
   const solvedSet = new Set(solvedIds);
-  const buckets = new Map<TopicId, Algorithm[]>();
+  const buckets = new Map<TopicId, AlgorithmMeta[]>();
 
   for (const category of categories) {
     for (const algorithm of category.algorithms) {
-      for (const topicId of getTopicsFor(algorithm)) {
+      for (const topicId of algorithm.topics) {
         const list = buckets.get(topicId) ?? [];
         list.push(algorithm);
         buckets.set(topicId, list);

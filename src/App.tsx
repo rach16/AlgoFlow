@@ -8,7 +8,7 @@ const MethodsPage = lazy(() => import('./pages/MethodsPage').then((m) => ({ defa
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchPalette } from './components/common/SearchPalette';
-import { categories } from './algorithms';
+import { metaCategories } from './algorithms/manifest';
 
 export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
 
@@ -48,7 +48,7 @@ function App() {
       />
       <div className="flex-1 flex min-h-0">
         <Sidebar
-          categories={categories}
+          categories={metaCategories}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onSelect={() => setView('visualizer')}

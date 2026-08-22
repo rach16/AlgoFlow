@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "verify": "npm run typecheck && npm run lint && npm run test"
+    "verify": "npm run typecheck && npm run lint && npm run test",
+    "manifest": "tsx scripts/generateManifest.mts"
   },
   "dependencies": {
     "prism-react-renderer": "^2.4.1",

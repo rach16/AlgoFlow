@@ -23,7 +23,8 @@ import { CONFIDENCE_META, dueLabel } from '../utils/review';
 import { useNow } from '../utils/useNow';
 
 export function VisualizerPage() {
-  const { currentAlgorithm, steps, currentStepIndex, approachId, runError } = useVisualizerStore();
+  const { currentAlgorithm, steps, currentStepIndex, approachId, runError, loadingId, loadError } =
+    useVisualizerStore();
   const { solvedProblems, toggleSolved, reviews, rateProblem } = useProgressStore();
   const [showCode, setShowCode] = useState(false);
   const [showWhy, setShowWhy] = useState(false);
@@ -70,6 +71,29 @@ export function VisualizerPage() {
       document.body.style.cursor = '';
     };
   }, []);
+
+  if (loadingId && !currentAlgorithm) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <span className="text-sm text-slate-500">Loading problem…</span>
+      </div>
+    );
+  }
+
+  if (loadError && !currentAlgorithm) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="max-w-md bg-slate-800 border border-red-500/30 rounded-xl p-5">
+          <p className="text-sm font-medium text-red-300 mb-1">Could not load that problem</p>
+          <p className="text-xs text-slate-400 mb-2">
+            Its code chunk failed to download — usually a stale tab after a deploy. Reloading
+            fixes it.
+          </p>
+          <pre className="text-xs text-red-200/70 whitespace-pre-wrap">{loadError}</pre>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentAlgorithm) {
     return (

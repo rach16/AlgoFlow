@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { categories } from '../algorithms';
+import { metaCategories } from '../algorithms/manifest';
 import { useVisualizerStore } from '../store/visualizerStore';
 import { useProgressStore } from '../store/progressStore';
 import {
@@ -9,7 +9,7 @@ import {
   SDET_SOURCES,
   type SdetTier,
 } from '../data/sdetPrep';
-import type { Algorithm } from '../types/algorithm';
+import type { AlgorithmMeta } from '../algorithms/manifestTypes';
 
 interface SdetPrepPageProps {
   /** open a problem in the visualizer */
@@ -23,14 +23,14 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 };
 
 export function SdetPrepPage({ onOpenAlgorithm }: SdetPrepPageProps) {
-  const { setCurrentAlgorithm } = useVisualizerStore();
+  const { selectAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [showSources, setShowSources] = useState(false);
 
   // Resolve curated ids against the real algorithm list once.
   const { rows, unresolved } = useMemo(() => {
-    const byId = new Map<string, Algorithm>();
-    for (const c of categories) for (const a of c.algorithms) byId.set(a.id, a);
+    const byId = new Map<string, AlgorithmMeta>();
+    for (const c of metaCategories) for (const a of c.algorithms) byId.set(a.id, a);
     const rows = SDET_QUESTIONS.flatMap((entry) => {
       const algorithm = byId.get(entry.id);
       return algorithm ? [{ ...entry, algorithm }] : [];
@@ -39,8 +39,8 @@ export function SdetPrepPage({ onOpenAlgorithm }: SdetPrepPageProps) {
     return { rows, unresolved };
   }, []);
 
-  const open = (algorithm: Algorithm) => {
-    setCurrentAlgorithm(algorithm);
+  const open = (algorithm: AlgorithmMeta) => {
+    void selectAlgorithm(algorithm.id);
     onOpenAlgorithm();
   };
 
@@ -59,7 +59,7 @@ export function SdetPrepPage({ onOpenAlgorithm }: SdetPrepPageProps) {
         <div className="bg-slate-800 rounded-xl p-5">
           <h2 className="text-xl font-bold mb-1">SDET interview prep</h2>
           <p className="text-sm text-slate-400 mb-4">
-            {rows.length} problems from the {categories.reduce((n, c) => n + c.algorithms.length, 0)} in
+            {rows.length} problems from the {metaCategories.reduce((n, c) => n + c.algorithms.length, 0)} in
             AlgoFlow, filtered and ranked for Software Development Engineer in Test loops.
           </p>
 

@@ -1,11 +1,17 @@
 import { create } from 'zustand';
 import type { Algorithm, AlgorithmStep } from '../types/algorithm';
+import { loadAlgorithm, getLoaded } from '../algorithms/registry';
 import { getActiveApproach, OPTIMAL_APPROACH_ID } from '../utils/approaches';
 
 interface VisualizerState {
   // Current algorithm
   currentAlgorithm: Algorithm | null;
-  setCurrentAlgorithm: (algorithm: Algorithm | null) => void;
+  /** Select by id; the implementation is fetched on demand. */
+  selectAlgorithm: (id: string) => Promise<void>;
+  /** Non-null while an implementation is in flight, so the UI can show a placeholder. */
+  loadingId: string | null;
+  /** Set when loading an implementation failed (a chunk that would not download). */
+  loadError: string | null;
 
   // Input
   input: unknown;
@@ -43,11 +49,28 @@ interface VisualizerState {
 
 export const useVisualizerStore = create<VisualizerState>((set, get) => ({
   currentAlgorithm: null,
-  setCurrentAlgorithm: (algorithm) => {
-    set({ currentAlgorithm: algorithm, approachId: OPTIMAL_APPROACH_ID });
-    if (algorithm) {
-      set({ input: algorithm.defaultInput });
+  loadingId: null,
+  loadError: null,
+
+  selectAlgorithm: async (id) => {
+    // Already resolved: swap synchronously so revisiting a problem never flashes a spinner.
+    const cached = getLoaded(id);
+    if (cached) {
+      set({ currentAlgorithm: cached, approachId: OPTIMAL_APPROACH_ID, input: cached.defaultInput, loadingId: null, loadError: null });
       get().runAlgorithm();
+      return;
+    }
+
+    set({ loadingId: id, loadError: null });
+    try {
+      const algorithm = await loadAlgorithm(id);
+      // A newer selection may have started while this was in flight; that one wins.
+      if (get().loadingId !== id) return;
+      set({ currentAlgorithm: algorithm, approachId: OPTIMAL_APPROACH_ID, input: algorithm.defaultInput, loadingId: null });
+      get().runAlgorithm();
+    } catch (err) {
+      console.error(`[AlgoFlow] failed to load ${id}:`, err);
+      set({ loadingId: null, loadError: err instanceof Error ? err.message : String(err) });
     }
   },
 

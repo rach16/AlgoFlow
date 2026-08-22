@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { categories } from '../algorithms';
+import { metaCategories } from '../algorithms/manifest';
 import { useVisualizerStore } from '../store/visualizerStore';
 import { useProgressStore, selectDue, selectUpcoming } from '../store/progressStore';
 import { dueLabel, INTERVALS_DAYS, type ReviewRecord } from '../utils/review';
 import { useNow } from '../utils/useNow';
-import type { Algorithm } from '../types/algorithm';
+import type { AlgorithmMeta } from '../algorithms/manifestTypes';
 
 interface ReviewPageProps {
   onOpenAlgorithm: () => void;
@@ -24,13 +24,13 @@ const LAST_BADGE: Record<string, string> = {
 };
 
 export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
-  const { setCurrentAlgorithm } = useVisualizerStore();
+  const { selectAlgorithm } = useVisualizerStore();
   const { reviews, solvedProblems, clearReview } = useProgressStore();
   const now = useNow();
 
   const byId = useMemo(() => {
-    const m = new Map<string, Algorithm>();
-    for (const c of categories) for (const a of c.algorithms) m.set(a.id, a);
+    const m = new Map<string, AlgorithmMeta>();
+    for (const c of metaCategories) for (const a of c.algorithms) m.set(a.id, a);
     return m;
   }, []);
 
@@ -38,8 +38,8 @@ export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
   const upcoming = selectUpcoming(reviews, now);
   const rated = Object.keys(reviews).length;
 
-  const open = (algorithm: Algorithm) => {
-    setCurrentAlgorithm(algorithm);
+  const open = (algorithm: AlgorithmMeta) => {
+    void selectAlgorithm(algorithm.id);
     onOpenAlgorithm();
   };
 

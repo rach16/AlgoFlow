@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore, selectDue } from '../../store/progressStore';
 import { useNow } from '../../utils/useNow';
-import { categories } from '../../algorithms';
+import { metaCategories } from '../../algorithms/manifest';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 
 type View = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
@@ -145,7 +145,7 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
             {/* Pattern context */}
             {(() => {
               const patternName = getPatternName(currentAlgorithm);
-              const allPatterns = getAllPatterns(categories);
+              const allPatterns = getAllPatterns(metaCategories);
               const patternAlgos = allPatterns.get(patternName) || [];
               const solvedCount = patternAlgos.filter((a) => solvedProblems.includes(a.id)).length;
 

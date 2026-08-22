@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { categories } from '../../algorithms';
+import { metaCategories } from '../../algorithms/manifest';
 import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore } from '../../store/progressStore';
-import { getPatternName } from '../../utils/patterns';
-import { getTopicsFor, TOPICS } from '../../utils/topics';
-import type { Algorithm } from '../../types/algorithm';
+import { TOPICS } from '../../utils/topics';
+import type { AlgorithmMeta } from '../../algorithms/manifestTypes';
 
 interface SearchPaletteProps {
   onClose: () => void;
@@ -13,7 +12,7 @@ interface SearchPaletteProps {
 }
 
 interface Entry {
-  algorithm: Algorithm;
+  algorithm: AlgorithmMeta;
   category: string;
   pattern: string;
   topics: string;
@@ -51,7 +50,7 @@ function score(entry: Entry, tokens: string[]): number {
 }
 
 export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
-  const { setCurrentAlgorithm } = useVisualizerStore();
+  const { selectAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
@@ -60,12 +59,10 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
 
   const entries = useMemo<Entry[]>(() => {
     const topicName = new Map(TOPICS.map((t) => [t.id, t.name]));
-    return categories.flatMap((c) =>
+    return metaCategories.flatMap((c) =>
       c.algorithms.map((algorithm) => {
-        const pattern = getPatternName(algorithm);
-        const topics = getTopicsFor(algorithm)
-          .map((id) => topicName.get(id) ?? id)
-          .join(' ');
+        const pattern = algorithm.patternName;
+        const topics = algorithm.topics.map((id) => topicName.get(id) ?? id).join(' ');
         return {
           algorithm,
           category: c.name,
@@ -101,8 +98,8 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
     listRef.current?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' });
   }, [selected, results]);
 
-  const pick = (algorithm: Algorithm) => {
-    setCurrentAlgorithm(algorithm);
+  const pick = (algorithm: AlgorithmMeta) => {
+    void selectAlgorithm(algorithm.id);
     onPick();
     onClose();
   };

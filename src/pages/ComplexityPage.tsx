@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
-import { categories } from '../algorithms';
+import { metaCategories } from '../algorithms/manifest';
 import { useVisualizerStore } from '../store/visualizerStore';
-import { getApproaches } from '../utils/approaches';
 import { COMPLEXITY_METHOD, COMPLEXITY_NOTES } from '../data/complexity';
 import { noteKey } from '../data/complexityTypes';
 import { DerivationBody } from '../components/common/DerivationBody';
-import type { Algorithm } from '../types/algorithm';
+import type { AlgorithmMeta } from '../algorithms/manifestTypes';
 
 interface ComplexityPageProps {
   onOpenAlgorithm: () => void;
@@ -18,16 +17,16 @@ const DIFFICULTY_BADGE: Record<string, string> = {
 };
 
 export function ComplexityPage({ onOpenAlgorithm }: ComplexityPageProps) {
-  const { setCurrentAlgorithm } = useVisualizerStore();
+  const { selectAlgorithm } = useVisualizerStore();
   const [openMethod, setOpenMethod] = useState<string | null>(COMPLEXITY_METHOD[0]?.id ?? null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [onlyWithNotes, setOnlyWithNotes] = useState(true);
   const [query, setQuery] = useState('');
 
   const rows = useMemo(() => {
-    const all = categories.flatMap((c) =>
+    const all = metaCategories.flatMap((c) =>
       c.algorithms.map((algorithm) => {
-        const approaches = getApproaches(algorithm);
+        const approaches = algorithm.approaches;
         const withNotes = approaches.filter((a) => COMPLEXITY_NOTES[noteKey(algorithm.id, a.id)]);
         return { algorithm, approaches, noteCount: withNotes.length, category: c.name };
       })
@@ -45,8 +44,8 @@ export function ComplexityPage({ onOpenAlgorithm }: ComplexityPageProps) {
     return r.algorithm.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
   });
 
-  const open = (algorithm: Algorithm) => {
-    setCurrentAlgorithm(algorithm);
+  const open = (algorithm: AlgorithmMeta) => {
+    void selectAlgorithm(algorithm.id);
     onOpenAlgorithm();
   };
 

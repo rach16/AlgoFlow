@@ -3,10 +3,10 @@ import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore } from '../../store/progressStore';
 import { getPatternStats } from '../../utils/patterns';
 import { getTopicStats, type TopicId } from '../../utils/topics';
-import type { Category, Algorithm } from '../../types/algorithm';
+import type { AlgorithmMeta, CategoryMeta } from '../../algorithms/manifestTypes';
 
 interface SidebarProps {
-  categories: Category[];
+  categories: CategoryMeta[];
   isOpen: boolean;
   onClose: () => void;
   /** fired after an algorithm is picked, so the shell can switch back to the visualizer */
@@ -35,7 +35,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps) {
-  const { currentAlgorithm, setCurrentAlgorithm } = useVisualizerStore();
+  const { currentAlgorithm, selectAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     categories.map((c) => c.id)
@@ -62,8 +62,8 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
       prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name]
     );
 
-  const selectAlgorithm = (algorithm: Algorithm) => {
-    setCurrentAlgorithm(algorithm);
+  const pick = (algorithm: AlgorithmMeta) => {
+    void selectAlgorithm(algorithm.id);
     onSelect?.();
     onClose();
   };
@@ -74,11 +74,11 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
     algorithm,
     showCategory,
   }: {
-    algorithm: Algorithm;
+    algorithm: AlgorithmMeta;
     showCategory?: boolean;
   }) => (
     <button
-      onClick={() => selectAlgorithm(algorithm)}
+      onClick={() => pick(algorithm)}
       title={`${algorithm.name} — ${algorithm.category} — ${algorithm.difficulty}`}
       className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-sm transition-colors ${
         currentAlgorithm?.id === algorithm.id
@@ -215,7 +215,7 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
                     {category.algorithms.map((algorithm) => (
                       <button
                         key={algorithm.id}
-                        onClick={() => selectAlgorithm(algorithm)}
+                        onClick={() => pick(algorithm)}
                         className={`
                           w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm
                           transition-colors
