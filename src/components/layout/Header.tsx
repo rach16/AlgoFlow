@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useVisualizerStore } from '../../store/visualizerStore';
-import { useProgressStore } from '../../store/progressStore';
+import { useProgressStore, selectDue } from '../../store/progressStore';
+import { useNow } from '../../utils/useNow';
 import { categories } from '../../algorithms';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 
-type View = 'visualizer' | 'sdet' | 'complexity' | 'methods';
+type View = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -18,11 +19,14 @@ const TABS: { id: View; label: string }[] = [
   { id: 'sdet', label: 'SDET Prep' },
   { id: 'complexity', label: 'Complexity' },
   { id: 'methods', label: 'Methods' },
+  { id: 'review', label: 'Review' },
 ];
 
 export function Header({ onMenuClick, view, onViewChange, onSearchClick }: HeaderProps) {
   const { currentAlgorithm } = useVisualizerStore();
-  const { solvedProblems } = useProgressStore();
+  const { solvedProblems, reviews } = useProgressStore();
+  const now = useNow();
+  const dueCount = selectDue(reviews, now).length;
   const [showInfo, setShowInfo] = useState(false);
 
   return (
@@ -58,6 +62,11 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
             }`}
           >
             {tab.label}
+            {tab.id === 'review' && dueCount > 0 && (
+              <span className="ml-1.5 px-1 py-0.5 rounded bg-indigo-500 text-white text-[9px] font-bold">
+                {dueCount}
+              </span>
+            )}
           </button>
         ))}
       </div>

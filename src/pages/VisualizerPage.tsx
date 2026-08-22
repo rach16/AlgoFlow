@@ -18,12 +18,15 @@ import { getActiveApproach } from '../utils/approaches';
 import { COMPLEXITY_NOTES, noteKey } from '../data/complexity';
 import { DerivationBody } from '../components/common/DerivationBody';
 import { useProgressStore } from '../store/progressStore';
+import { CONFIDENCE_META, dueLabel } from '../utils/review';
+import { useNow } from '../utils/useNow';
 
 export function VisualizerPage() {
   const { currentAlgorithm, steps, currentStepIndex, approachId } = useVisualizerStore();
-  const { solvedProblems, toggleSolved } = useProgressStore();
+  const { solvedProblems, toggleSolved, reviews, rateProblem } = useProgressStore();
   const [showCode, setShowCode] = useState(false);
   const [showWhy, setShowWhy] = useState(false);
+  const now = useNow();
   const [codePanelWidth, setCodePanelWidth] = useState(400);
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +83,7 @@ export function VisualizerPage() {
   const state = currentStep?.state as Record<string, unknown> | undefined;
   const activeApproach = getActiveApproach(currentAlgorithm, approachId);
   const complexityNote = COMPLEXITY_NOTES[noteKey(currentAlgorithm.id, activeApproach.id)];
+  const reviewRecord = reviews[currentAlgorithm.id];
 
   const nums = state?.nums as number[] | undefined;
   const chars = state?.chars as string[] | undefined;
@@ -205,6 +209,32 @@ export function VisualizerPage() {
           <span className="text-slate-400">T: <span className="text-slate-300 font-mono">{activeApproach.timeComplexity}</span></span>
           <span className="text-slate-400">S: <span className="text-slate-300 font-mono">{activeApproach.spaceComplexity}</span></span>
           <span className="text-indigo-400">{currentAlgorithm.pattern}</span>
+        </div>
+        {/* Spaced-repetition rating — the study loop, so it stays visible rather than hidden
+            behind a toggle. Rating also marks the problem solved, except "Again". */}
+        <div className="bg-slate-800 rounded-xl p-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-slate-400 mr-1">
+            {reviewRecord ? 'Rate again — currently ' : 'How did that go?'}
+            {reviewRecord && (
+              <span className="text-slate-200">{dueLabel(reviewRecord, now)}</span>
+            )}
+          </span>
+          {CONFIDENCE_META.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => rateProblem(currentAlgorithm.id, c.id)}
+              title={c.hint}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${c.accent}`}
+            >
+              {c.label}
+            </button>
+          ))}
+          {reviewRecord && (
+            <span className="text-[10px] text-slate-500 ml-auto">
+              box {reviewRecord.streak} · {reviewRecord.reviews} review
+              {reviewRecord.reviews === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
 
         {/* Derivation for the selected approach */}

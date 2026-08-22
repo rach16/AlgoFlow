@@ -5,10 +5,11 @@ import { VisualizerPage } from './pages/VisualizerPage';
 import { SdetPrepPage } from './pages/SdetPrepPage';
 import { ComplexityPage } from './pages/ComplexityPage';
 import { MethodsPage } from './pages/MethodsPage';
+import { ReviewPage } from './pages/ReviewPage';
 import { SearchPalette } from './components/common/SearchPalette';
 import { categories } from './algorithms';
 
-export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods';
+export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,6 +51,7 @@ function App() {
             <ComplexityPage onOpenAlgorithm={() => setView('visualizer')} />
           )}
           {view === 'methods' && <MethodsPage />}
+          {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
         </main>
       </div>
 
