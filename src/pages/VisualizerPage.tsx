@@ -10,6 +10,7 @@ import { MatrixView } from '../components/visualizer/MatrixView';
 import { DPTableView } from '../components/visualizer/DPTableView';
 import { IntervalView } from '../components/visualizer/IntervalView';
 import { BitView } from '../components/visualizer/BitView';
+import { CharRow } from '../components/visualizer/CharRow';
 import { Controls } from '../components/visualizer/Controls';
 import { CodeBlock } from '../components/common/CodeBlock';
 import { DataStructureInfoPanel } from '../components/visualizer/data-structure-info/DataStructureInfoPanel';
@@ -84,6 +85,17 @@ export function VisualizerPage() {
   const activeApproach = getActiveApproach(currentAlgorithm, approachId);
   const complexityNote = COMPLEXITY_NOTES[noteKey(currentAlgorithm.id, activeApproach.id)];
   const reviewRecord = reviews[currentAlgorithm.id];
+
+  // Several string problems keep their input in `s`/`t`/`word1`... which no view rendered, so
+  // they showed a hash map and never the words being compared. Render those as indexed rows.
+  // Deliberately a fixed list: status strings (phase, operation, maxSum) would just be noise.
+  const STRING_KEYS = ['s', 't', 'p', 'str', 'word', 'word1', 'word2', 'text1', 'text2', 'currentWord'];
+  const stringRows = STRING_KEYS.flatMap((key) => {
+    const v = state?.[key];
+    return typeof v === 'string' && v.length > 0 && v.length <= 40
+      ? [{ key, chars: [...v] }]
+      : [];
+  });
 
   const nums = state?.nums as number[] | undefined;
   const chars = state?.chars as string[] | undefined;
@@ -247,23 +259,26 @@ export function VisualizerPage() {
 
           {/* Character array */}
           {chars && Array.isArray(chars) && (
-            <div className="flex justify-center gap-1 mb-4 flex-wrap">
-              {chars.map((char, idx) => (
-                <div
-                  key={idx}
-                  className={`
-                    w-10 h-10 flex items-center justify-center rounded-lg font-mono text-lg
-                    transition-all duration-300
-                    ${currentStep?.highlights?.includes(idx) ? 'bg-indigo-500 scale-110' : ''}
-                    ${currentStep?.secondary?.includes(idx) ? 'bg-green-500' : ''}
-                    ${!currentStep?.highlights?.includes(idx) && !currentStep?.secondary?.includes(idx) ? 'bg-slate-700' : ''}
-                  `}
-                >
-                  {char}
-                </div>
-              ))}
-            </div>
+            <CharRow
+              chars={chars}
+              highlights={currentStep?.highlights}
+              secondary={currentStep?.secondary}
+              pointers={currentStep?.pointers}
+            />
           )}
+
+          {/* Raw string state. `highlights` marks a position in the first row and `secondary`
+              in the second, which is the convention these algorithms already emit. */}
+          {stringRows.map((row, i) => (
+            <CharRow
+              key={row.key}
+              label={row.key}
+              chars={row.chars}
+              highlights={i === 0 ? currentStep?.highlights : []}
+              secondary={i === 1 ? currentStep?.secondary : []}
+              pointers={i === 0 ? currentStep?.pointers : {}}
+            />
+          ))}
 
           {/* Linked List */}
           {linkedList && Array.isArray(linkedList) && (
