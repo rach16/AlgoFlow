@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 /**
  * Derivations for Greedy, Math & Geometry, and Bit Manipulation.

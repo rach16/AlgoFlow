@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 /**
  * Complexity derivations for the Graphs and Advanced Graphs categories.

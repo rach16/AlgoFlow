@@ -27,6 +27,9 @@ interface VisualizerState {
   language: 'python' | 'javascript' | 'java';
   setLanguage: (lang: 'python' | 'javascript' | 'java') => void;
 
+  /** Set when the active approach's run() threw, so the UI can say so. */
+  runError: string | null;
+
   // Solution approach ('optimal' = the algorithm's flat/default solution)
   approachId: string;
   setApproachId: (id: string) => void;
@@ -67,6 +70,8 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
   language: 'python',
   setLanguage: (lang) => set({ language: lang }),
 
+  runError: null,
+
   approachId: OPTIMAL_APPROACH_ID,
   setApproachId: (id) => {
     set({ approachId: id });
@@ -95,10 +100,21 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
 
   runAlgorithm: () => {
     const { currentAlgorithm, input, approachId } = get();
-    if (currentAlgorithm && input !== null) {
-      const approach = getActiveApproach(currentAlgorithm, approachId);
+    if (!currentAlgorithm || input === null) return;
+    const approach = getActiveApproach(currentAlgorithm, approachId);
+    try {
       const steps = approach.run(input);
-      set({ steps, currentStepIndex: 0, isPlaying: false });
+      set({ steps, currentStepIndex: 0, isPlaying: false, runError: null });
+    } catch (err) {
+      // Clear the steps so the previous problem's visualization cannot be mistaken for this
+      // one's, and surface the failure instead of failing silently.
+      console.error(`[AlgoFlow] ${currentAlgorithm.id} / ${approach.id} threw while generating steps:`, err);
+      set({
+        steps: [],
+        currentStepIndex: 0,
+        isPlaying: false,
+        runError: err instanceof Error ? err.message : String(err),
+      });
     }
   },
 }));

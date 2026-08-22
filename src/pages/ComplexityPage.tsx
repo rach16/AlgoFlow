@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { categories } from '../algorithms';
 import { useVisualizerStore } from '../store/visualizerStore';
 import { getApproaches } from '../utils/approaches';
-import { COMPLEXITY_METHOD, COMPLEXITY_NOTES, noteKey } from '../data/complexity';
+import { COMPLEXITY_METHOD, COMPLEXITY_NOTES } from '../data/complexity';
+import { noteKey } from '../data/complexityTypes';
 import { DerivationBody } from '../components/common/DerivationBody';
 import type { Algorithm } from '../types/algorithm';
 

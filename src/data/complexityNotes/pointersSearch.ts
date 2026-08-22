@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 /**
  * Complexity derivations for the Two Pointers, Sliding Window and Binary Search categories.

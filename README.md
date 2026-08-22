@@ -4,7 +4,7 @@
 
 **Interactive Algorithm Visualizer for NeetCode 250**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge)](https://algoflow.vercel.app)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge)](https://algoflow-ruby.vercel.app)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
@@ -12,7 +12,7 @@
 
 A comprehensive web application that visualizes **254 algorithm problems** — all of NeetCode 250, plus four extra questions that dominate SDET interviews — with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations. Every problem ships with multiple solution approaches, each independently animated.
 
-[Live Demo](https://algoflow.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
+[Live Demo](https://algoflow-ruby.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
 </div>
 
@@ -20,32 +20,28 @@ A comprehensive web application that visualizes **254 algorithm problems** — a
 
 ## ✨ Features
 
-- 🎯 **254 Algorithms** across 18 categories (Arrays, Trees, Graphs, DP, etc.) — all of NeetCode 250 plus 4 SDET staples
-- 🧠 **Multiple approaches per problem** - compare competing solutions side by side, each with its own animation and complexity
-- 🧪 **SDET Prep tab** - the subset of problems that SDET interviews actually ask, tiered by how consistently public interview reports name them, with sources cited
-- 🔄 **Step-by-step visualization** with interactive playback controls
-- 💻 **Multi-language support**: Python, JavaScript, and Java
-- 🎨 **Syntax highlighting** with real-time code execution tracking
-- 📱 **Responsive design** optimized for desktop and mobile
-- ⚡ **Pattern recognition** - each problem includes algorithm pattern hints
-- 🔗 **LeetCode integration** - direct links to original problems
+- 🎯 **254 problems** across 18 categories — all of NeetCode 250, plus 4 staples that SDET interviews ask constantly but the list omits
+- 🧠 **Two approaches per problem**, each independently animated, so you can compare a hash map against sorting rather than reading about it
+- 🔄 **Step-by-step playback** with the current line highlighted and a per-line explanation
+- 💻 **Python, JavaScript and Java** for every approach
+- 🧮 **Complexity derivations** for all 508 approaches — how the bound is reached, not just what it is, plus the mistake people make on each
+- 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
+- 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
+- 🧪 **SDET Prep** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
+- 🔁 **Spaced repetition** — rate a problem and it returns on a schedule; all local, no account
+- 🔍 **Search** (<kbd>⌘K</kbd>) across name, category, pattern and topic
+- 📱 Works on mobile
+- ✅ **7,900+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
 
-## 📸 Screenshots
+## 🧭 The four views
 
-<div align="center">
-
-### Algorithm Visualization
-*Step-by-step execution with syntax highlighting and interactive controls*
-
-### Multi-Language Support
-*Switch between Python, JavaScript, and Java implementations*
-
-### Responsive Design
-*Optimized for both desktop and mobile devices*
-
-</div>
-
-> **Note**: Add screenshots of your app here! Take screenshots from https://algoflow.vercel.app and upload them to GitHub.
+| View | What it is for |
+|---|---|
+| **Visualizer** | Watch an approach run step by step against the code, with a "Why?" panel deriving its complexity |
+| **SDET Prep** | The ~67 problems SDET interviews actually ask, in three tiers |
+| **Complexity** | How to derive a bound yourself, plus a worked derivation for all 508 approaches |
+| **Methods** | Language-aware API reference — what the method is *called* in Python vs JavaScript vs Java |
+| **Review** | Spaced-repetition queue of what is due |
 
 ## 🎓 Algorithm Categories
 
@@ -75,6 +71,7 @@ A comprehensive web application that visualizes **254 algorithm problems** — a
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
 - **Syntax Highlighting**: Prism React Renderer
+- **Testing**: Vitest — 7,900+ tests, run in CI on every push
 - **Deployment**: Vercel
 
 ## 📦 Installation

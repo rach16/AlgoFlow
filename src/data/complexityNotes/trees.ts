@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 /**
  * Trees. The time answer is almost always O(n) — every node once. The lesson in this

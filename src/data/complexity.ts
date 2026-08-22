@@ -1,3 +1,7 @@
+import type { ComplexityNote, MethodSection } from './complexityTypes';
+export { noteKey } from './complexityTypes';
+export type { ComplexityNote, MethodSection } from './complexityTypes';
+
 /**
  * Complexity derivations.
  *
@@ -24,28 +28,6 @@ import { pointersSearchNotes } from './complexityNotes/pointersSearch';
 import { backtrackingTriesNotes } from './complexityNotes/backtrackingTries';
 import { heapIntervalsNotes } from './complexityNotes/heapIntervals';
 import { greedyMathBitsNotes } from './complexityNotes/greedyMathBits';
-
-/** Key format for COMPLEXITY_NOTES: the algorithm id and the approach id. */
-export const noteKey = (algorithmId: string, approachId: string) => `${algorithmId}:${approachId}`;
-
-export interface ComplexityNote {
-  /** Ordered steps building to the time bound. Each is one short claim. */
-  time: string[];
-  /** Ordered steps building to the space bound. */
-  space: string[];
-  /** The specific mistake people make on THIS problem, if there is one. */
-  gotcha?: string;
-}
-
-export interface MethodSection {
-  id: string;
-  title: string;
-  intro: string;
-  /** Optional two-column rows: a code shape / rule, and what it costs. */
-  rows?: { left: string; right: string }[];
-  /** Optional prose paragraphs after the rows. */
-  notes?: string[];
-}
 
 export const COMPLEXITY_METHOD: MethodSection[] = [
   {

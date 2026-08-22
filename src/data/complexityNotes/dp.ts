@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 /**
  * Complexity derivations for the 1-D and 2-D dynamic programming categories.

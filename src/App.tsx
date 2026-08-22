@@ -1,15 +1,24 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { VisualizerPage } from './pages/VisualizerPage';
-import { SdetPrepPage } from './pages/SdetPrepPage';
-import { ComplexityPage } from './pages/ComplexityPage';
-import { MethodsPage } from './pages/MethodsPage';
-import { ReviewPage } from './pages/ReviewPage';
+const SdetPrepPage = lazy(() => import('./pages/SdetPrepPage').then((m) => ({ default: m.SdetPrepPage })));
+const ComplexityPage = lazy(() => import('./pages/ComplexityPage').then((m) => ({ default: m.ComplexityPage })));
+const MethodsPage = lazy(() => import('./pages/MethodsPage').then((m) => ({ default: m.MethodsPage })));
+const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchPalette } from './components/common/SearchPalette';
 import { categories } from './algorithms';
 
 export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
+
+function PaneLoading() {
+  return (
+    <div className="h-full flex items-center justify-center">
+      <span className="text-sm text-slate-500">Loading…</span>
+    </div>
+  );
+}
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,13 +54,17 @@ function App() {
           onSelect={() => setView('visualizer')}
         />
         <main className="flex-1 overflow-y-auto lg:overflow-hidden min-w-0">
-          {view === 'visualizer' && <VisualizerPage />}
-          {view === 'sdet' && <SdetPrepPage onOpenAlgorithm={() => setView('visualizer')} />}
-          {view === 'complexity' && (
-            <ComplexityPage onOpenAlgorithm={() => setView('visualizer')} />
-          )}
-          {view === 'methods' && <MethodsPage />}
-          {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
+          <ErrorBoundary area={`the ${view} view`} resetKey={view}>
+            <Suspense fallback={<PaneLoading />}>
+              {view === 'visualizer' && <VisualizerPage />}
+              {view === 'sdet' && <SdetPrepPage onOpenAlgorithm={() => setView('visualizer')} />}
+              {view === 'complexity' && (
+                <ComplexityPage onOpenAlgorithm={() => setView('visualizer')} />
+              )}
+              {view === 'methods' && <MethodsPage />}
+              {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
 

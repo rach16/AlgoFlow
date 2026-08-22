@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../complexity';
+import type { ComplexityNote } from '../complexityTypes';
 
 export const arraysHashingNotes: Record<string, ComplexityNote> = {
   // ---- two sizes: how many strings, and how long each one is ----------------------

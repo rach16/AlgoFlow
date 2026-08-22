@@ -1,4 +1,4 @@
-import type { ComplexityNote } from '../../data/complexity';
+import type { ComplexityNote } from '../../data/complexityTypes';
 
 /** One approach's complexity derivation: the numbered steps that build to the stated bound,
  *  plus the mistake people make on that specific problem. Shared by the Complexity tab and
