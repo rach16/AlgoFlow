@@ -7,6 +7,12 @@ const ComplexityPage = lazy(() => import('./pages/ComplexityPage').then((m) => (
 const MethodsPage = lazy(() => import('./pages/MethodsPage').then((m) => ({ default: m.MethodsPage })));
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 const DrillPage = lazy(() => import('./pages/DrillPage').then((m) => ({ default: m.DrillPage })));
+const TestDesignPage = lazy(() =>
+  import('./pages/TestDesignPage').then((m) => ({ default: m.TestDesignPage }))
+);
+const TestabilityPage = lazy(() =>
+  import('./pages/TestabilityPage').then((m) => ({ default: m.TestabilityPage }))
+);
 const BehavioralPage = lazy(() =>
   import('./pages/BehavioralPage').then((m) => ({ default: m.BehavioralPage }))
 );
@@ -73,6 +79,8 @@ function App() {
               )}
               {view === 'methods' && <MethodsPage />}
               {view === 'drill' && <DrillPage onOpenAlgorithm={() => setView('visualizer')} />}
+              {view === 'testdesign' && <TestDesignPage />}
+              {view === 'testability' && <TestabilityPage />}
               {view === 'behavioral' && <BehavioralPage />}
               {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
             </Suspense>

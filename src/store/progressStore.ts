@@ -23,7 +23,8 @@ interface ProgressState {
   /** Record how a problem went, and schedule the next review. */
   rateProblem: (algorithmId: string, confidence: Confidence, now?: number) => void;
   /**
-   * Schedule a review for something that is not a problem — currently a behavioral story.
+   * Schedule a review for something that is not a problem — a behavioral story, or a test-design
+   * exercise.
    * Deliberately does NOT touch `solvedProblems`: that list feeds the "N / 254" progress bar, so
    * putting a story id in it would quietly make the count wrong.
    */

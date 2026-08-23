@@ -12,7 +12,7 @@
 
 SDET interview prep that shows you the algorithm running instead of describing it. **254 problems** — all of NeetCode 250 plus four staples SDET loops ask constantly — each with two independently animated approaches in **Python**, **JavaScript** and **Java**, a derivation of its complexity, and a spaced-repetition schedule so it comes back before you forget it.
 
-The animated visualizer is called **AlgoFlow** and lives under Practice. Tools (Playwright, Selenium, API, CI) and behavioral prep are planned — see [the build plan](#-roadmap).
+The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling craft (Playwright, Selenium, CI) and AI in testing are still to come — see [the build plan](#-roadmap).
 
 [Live Demo](https://algoflow-ruby.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
@@ -30,6 +30,8 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tools (
 - 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
 - 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
 - 🎯 **Filter by who asks** — big tech, staffing agencies or startups, across every browse axis and the review queue
+- 🧭 **Test design** — 173 reference cases across 8 “how would you test X?” exercises. Write your list first, then compare and mark what you had; the score that matters is which *dimensions* you never reached, tracked across every attempt
+- 🏗️ **Testability reference** — six case-design techniques with their traps, where each case belongs and what it costs there, ten design-for-testability levers, and the flake arithmetic that makes the argument
 - 🗣️ **Behavioral bank** — all 16 Amazon Leadership Principles, what each is really probing, the anti-patterns, and a STAR scaffold you fill in; one story can cover several principles, and finished stories join the review queue
 - ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
@@ -50,6 +52,8 @@ Three sections. Practice holds the reference material you reach for mid-problem.
 | | Methods | Language-aware API reference — what the method is *called* in Python vs JavaScript vs Java |
 | **Coding round** | | The ~67 problems SDET interviews actually ask, in three tiers, with sources cited |
 | **Drill** | | Timed, hint-free practice against the clock — the coding round as it is actually run |
+| **Test design** | Exercises | “How would you test X?” — enumerate first, then compare against the reference and find your blind spots |
+| | Testability | Technique, layer and design-for-testability: the questions asked once your list is on the table |
 | **Behavioral** | | Amazon's 16 Leadership Principles, with STAR scaffolds you fill in yourself |
 | **Review** | | Spaced-repetition queue of what is due |
 
@@ -63,8 +67,8 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 | 2 | Company and audience tags — filter the catalogue and review queue by who asks | ✅ done |
 | 3 | Timed drill mode — plain editor, no autocomplete, 2 problems in 45 min | ✅ done |
 | 4 | Amazon Leadership Principles story bank | ✅ done |
-| 5 | Test design and design-for-testability | next |
-| 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | planned |
+| 5 | Test design and design-for-testability | ✅ done |
+| 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | next |
 | 7 | AI in testing | planned |
 | 8 | SQL and twenty-minute build exercises | planned |
 
@@ -96,7 +100,7 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
 - **Syntax Highlighting**: Prism React Renderer
-- **Testing**: Vitest — 7,900+ tests, run in CI on every push
+- **Testing**: Vitest — 9,500+ tests, run in CI on every push
 - **Deployment**: Vercel
 
 ## 📦 Installation

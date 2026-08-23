@@ -16,10 +16,18 @@ export type AppView =
   | 'complexity'
   | 'methods'
   | 'drill'
+  | 'testdesign'
+  | 'testability'
   | 'behavioral'
   | 'review';
 
-export type SectionId = 'practice' | 'coding' | 'drill' | 'behavioral' | 'review';
+export type SectionId =
+  | 'practice'
+  | 'coding'
+  | 'drill'
+  | 'testdesign'
+  | 'behavioral'
+  | 'review';
 
 export interface NavView {
   id: AppView;
@@ -52,6 +60,16 @@ export const SECTIONS: NavSection[] = [
     id: 'drill',
     label: 'Drill',
     views: [{ id: 'drill', label: 'Drill' }],
+  },
+  {
+    // Two views, because the exercises are something you do and the reference is something you
+    // read — mixing them on one page buries the part that needs your attention.
+    id: 'testdesign',
+    label: 'Test design',
+    views: [
+      { id: 'testdesign', label: 'Exercises' },
+      { id: 'testability', label: 'Testability' },
+    ],
   },
   {
     id: 'behavioral',

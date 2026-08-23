@@ -6,6 +6,7 @@ import { metaCategories } from '../../algorithms/manifest';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 import { SECTIONS, sectionForView, entryViewFor, type AppView } from './navigation';
 import { useDrillStore } from '../../store/drillStore';
+import { useTestDesignStore } from '../../store/testDesignStore';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -25,8 +26,9 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
   const dueCount = selectDue(reviews, now).length;
   const [showInfo, setShowInfo] = useState(false);
   const activeSection = sectionForView(view);
-  // A drill left running is easy to lose track of after a reload, which drops you on Practice.
+  // Work left in progress is easy to lose track of after a reload, which drops you on Practice.
   const drillRunning = useDrillStore((s) => s.active !== null);
+  const designRunning = useTestDesignStore((s) => s.active !== null);
 
   return (
     <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center px-3 sm:px-4 gap-2 sm:gap-4 overflow-hidden">
@@ -75,6 +77,12 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
                   <span
                     className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-yellow-400 align-middle"
                     title="A drill session is still running"
+                  />
+                )}
+                {section.id === 'testdesign' && designRunning && (
+                  <span
+                    className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-yellow-400 align-middle"
+                    title="A test-design attempt is still open"
                   />
                 )}
               </button>
