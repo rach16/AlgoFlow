@@ -436,7 +436,7 @@ private static boolean valid(String s, int k, int length) {
       12: 'Decrement count of leftmost char',
       13: 'Shrink window from the left',
       15: 'Window is valid, update max length',
-      18: 'Return the longest valid window length',
+      19: 'Return the longest valid window length',
     },
     java: {
       1: 'Define function taking string s and int k',

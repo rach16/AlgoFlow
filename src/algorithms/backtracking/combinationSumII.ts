@@ -455,8 +455,8 @@ private static void backtrack(int start, List<Integer> current, int remaining, i
       16: 'Choose: add candidate to current combo',
       17: 'Recurse from next index (no reuse)',
       18: 'Unchoose: remove last candidate',
-      20: 'Start backtracking from index 0',
-      21: 'Return all valid combinations',
+      21: 'Start backtracking from index 0',
+      22: 'Return all valid combinations',
     },
     javascript: {
       1: 'Define function taking candidates and target',
@@ -474,8 +474,8 @@ private static void backtrack(int start, List<Integer> current, int remaining, i
       16: 'Choose: add candidate to current combo',
       17: 'Recurse from next index (no reuse)',
       18: 'Unchoose: remove last candidate',
-      22: 'Start backtracking from index 0',
-      23: 'Return all valid combinations',
+      23: 'Start backtracking from index 0',
+      24: 'Return all valid combinations',
     },
     java: {
       1: 'Define method returning list of combinations',

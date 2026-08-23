@@ -425,8 +425,8 @@ private static int dfs(TreeNode node) {
       8: 'Compute path sum through this node',
       9: 'Update global max if this path is better',
       10: 'Return gain with best single child to parent',
-      12: 'Start DFS from root',
-      13: 'Return the maximum path sum found',
+      13: 'Start DFS from root',
+      14: 'Return the maximum path sum found',
     },
     java: {
       1: 'Declare max sum as class field',

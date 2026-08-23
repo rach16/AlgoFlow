@@ -341,7 +341,7 @@ export const meetingRooms: Algorithm = {
       4: 'Loop through consecutive meeting pairs',
       5: 'If current meeting starts before previous ends',
       6: 'Overlap found, cannot attend all meetings',
-      9: 'No overlaps, can attend all meetings',
+      10: 'No overlaps, can attend all meetings',
     },
     java: {
       1: 'Define method taking 2D intervals array',

@@ -360,7 +360,7 @@ export const carFleet: Algorithm = {
       6: 'Calculate time to reach target for this car',
       8: 'If stack empty or car is slower than fleet ahead',
       9: 'Push time onto stack as new fleet',
-      11: 'Return number of fleets (stack size)',
+      12: 'Return number of fleets (stack size)',
     },
     javascript: {
       1: 'Define function with target, position, speed',

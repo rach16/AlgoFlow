@@ -506,7 +506,7 @@ def findCheapestPrice(n, flights, src, dst, k):
       9: 'Check if cheaper path exists through u',
       10: 'Update temp price for destination',
       13: 'Replace prices with temp for next round',
-      15: 'Return -1 if unreachable, else cheapest price',
+      16: 'Return -1 if unreachable, else cheapest price',
     },
     java: {
       1: 'Define method with cities, flights, src, dst, k',

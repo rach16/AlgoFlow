@@ -435,8 +435,8 @@ private static void backtrack(List<String> result, StringBuilder current, int op
       17: 'Push close paren to current combination',
       18: 'Recurse with incremented close count',
       19: 'Backtrack by removing last character',
-      22: 'Start backtracking from empty state',
-      23: 'Return all valid combinations',
+      23: 'Start backtracking from empty state',
+      24: 'Return all valid combinations',
     },
     java: {
       1: 'Define method returning list of strings',

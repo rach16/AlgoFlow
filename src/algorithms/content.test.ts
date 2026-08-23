@@ -291,6 +291,21 @@ describe.each(variants.map((v) => [v.label, v] as const))('%s — approach', (_l
     }
   });
 
+  // A lineExplanations map that is shifted relative to its code still passes the range check
+  // above, but renders every annotation against the wrong line. A key landing on a blank line is
+  // the detectable symptom of that, and 45 of them had accumulated across 23 problems.
+  it('annotates real code lines, not blank ones', () => {
+    if (!approach.lineExplanations) return;
+    for (const lang of LANGUAGES) {
+      // CodeBlock renders code.trim(), so line 1 is the first non-empty line.
+      const lines = approach.code[lang].trim().split('\n');
+      const blank = Object.keys(approach.lineExplanations[lang] ?? {})
+        .map(Number)
+        .filter((n) => lines[n - 1] !== undefined && lines[n - 1].trim() === '');
+      expect(blank, `${lang} annotates blank lines`).toEqual([]);
+    }
+  });
+
   // Python snippets are meant to be copy-paste runnable. A bare heapq./deque() reads as
   // correct but raises NameError the moment someone actually pastes it into a REPL.
   it('imports every Python module its code uses', () => {

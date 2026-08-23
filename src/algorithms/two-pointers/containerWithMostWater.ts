@@ -356,7 +356,7 @@ export const containerWithMostWater: Algorithm = {
       12: 'Move right pointer left to try taller line',
       13: 'Heights are equal',
       14: 'Move both pointers inward',
-      16: 'Return the maximum area found',
+      17: 'Return the maximum area found',
     },
     javascript: {
       1: 'Define function taking height array',
