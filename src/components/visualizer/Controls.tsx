@@ -1,6 +1,14 @@
 import { useVisualizerStore } from '../../store/visualizerStore';
 import { useAnimationControl } from '../../hooks/useAnimationControl';
 
+const SHORTCUT_HINTS = [
+  { keys: ['\u2190', '\u2192'], label: 'step' },
+  { keys: ['space'], label: 'play' },
+  { keys: ['r'], label: 'reset' },
+  { keys: ['1', '2', '3'], label: 'language' },
+  { keys: ['[', ']'], label: 'approach' },
+] as const;
+
 export function Controls() {
   useAnimationControl();
 
@@ -41,7 +49,7 @@ export function Controls() {
           onClick={reset}
           className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
           disabled={isAtStart}
-          title="Reset"
+          title="Reset (r)"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -53,7 +61,7 @@ export function Controls() {
           onClick={prevStep}
           className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
           disabled={isAtStart}
-          title="Previous step"
+          title="Previous step (←)"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -65,7 +73,7 @@ export function Controls() {
           onClick={() => setIsPlaying(!isPlaying)}
           className="p-3 rounded-full bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50"
           disabled={isAtEnd && !isPlaying}
-          title={isPlaying ? 'Pause' : 'Play'}
+          title={isPlaying ? 'Pause (space)' : 'Play (space)'}
         >
           {isPlaying ? (
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +91,7 @@ export function Controls() {
           onClick={nextStep}
           className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
           disabled={isAtEnd}
-          title="Next step"
+          title="Next step (→)"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -104,6 +112,24 @@ export function Controls() {
           className="flex-1 accent-indigo-500"
         />
         <span className="text-sm font-mono w-12 text-right">{speed}x</span>
+      </div>
+
+      {/* Keys are the whole point of having them — say so where the controls are.
+          Hidden on touch layouts, which have no keyboard to use them with. */}
+      <div className="hidden sm:flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+        {SHORTCUT_HINTS.map(({ keys, label }) => (
+          <span key={label} className="flex items-center gap-1">
+            {keys.map((k) => (
+              <kbd
+                key={k}
+                className="px-1.5 py-0.5 rounded border border-slate-600 bg-slate-900/60 font-mono text-slate-400"
+              >
+                {k}
+              </kbd>
+            ))}
+            <span>{label}</span>
+          </span>
+        ))}
       </div>
     </div>
   );
