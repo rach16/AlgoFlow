@@ -7,6 +7,9 @@ const ComplexityPage = lazy(() => import('./pages/ComplexityPage').then((m) => (
 const MethodsPage = lazy(() => import('./pages/MethodsPage').then((m) => ({ default: m.MethodsPage })));
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 const DrillPage = lazy(() => import('./pages/DrillPage').then((m) => ({ default: m.DrillPage })));
+const BehavioralPage = lazy(() =>
+  import('./pages/BehavioralPage').then((m) => ({ default: m.BehavioralPage }))
+);
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchPalette } from './components/common/SearchPalette';
 import { metaCategories } from './algorithms/manifest';
@@ -70,6 +73,7 @@ function App() {
               )}
               {view === 'methods' && <MethodsPage />}
               {view === 'drill' && <DrillPage onOpenAlgorithm={() => setView('visualizer')} />}
+              {view === 'behavioral' && <BehavioralPage />}
               {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
             </Suspense>
           </ErrorBoundary>

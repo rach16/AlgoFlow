@@ -8,7 +8,9 @@ import {
 } from './navigation';
 
 /** Every member of the AppView union, listed so the compiler fails if one is added. */
-const ALL_VIEWS: AppView[] = ['visualizer', 'sdet', 'complexity', 'methods', 'drill', 'review'];
+const ALL_VIEWS: AppView[] = [
+  'visualizer', 'sdet', 'complexity', 'methods', 'drill', 'behavioral', 'review',
+];
 
 describe('navigation', () => {
   it('places every view in exactly one section', () => {

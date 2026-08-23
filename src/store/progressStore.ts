@@ -22,6 +22,12 @@ interface ProgressState {
   toggleSolved: (algorithmId: string) => void;
   /** Record how a problem went, and schedule the next review. */
   rateProblem: (algorithmId: string, confidence: Confidence, now?: number) => void;
+  /**
+   * Schedule a review for something that is not a problem — currently a behavioral story.
+   * Deliberately does NOT touch `solvedProblems`: that list feeds the "N / 254" progress bar, so
+   * putting a story id in it would quietly make the count wrong.
+   */
+  rateOther: (reviewId: string, confidence: Confidence, now?: number) => void;
   clearReview: (algorithmId: string) => void;
   clearProgress: () => void;
 }
@@ -54,6 +60,16 @@ export const useProgressStore = create<ProgressState>()(
             confidence === 'again' || solvedProblems.includes(algorithmId)
               ? solvedProblems
               : [...solvedProblems, algorithmId],
+        });
+      },
+
+      rateOther: (reviewId, confidence, now = Date.now()) => {
+        const { reviews } = get();
+        set({
+          reviews: {
+            ...reviews,
+            [reviewId]: applyRating(reviews[reviewId], confidence, now),
+          },
         });
       },
 
