@@ -10,8 +10,9 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchPalette } from './components/common/SearchPalette';
 import { metaCategories } from './algorithms/manifest';
 import { useVisualizerShortcuts } from './hooks/useVisualizerShortcuts';
+import { DEFAULT_VIEW, type AppView } from './components/layout/navigation';
 
-export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
+export type { AppView };
 
 function PaneLoading() {
   return (
@@ -23,7 +24,7 @@ function PaneLoading() {
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [view, setView] = useState<AppView>('visualizer');
+  const [view, setView] = useState<AppView>(DEFAULT_VIEW);
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Playback keys only make sense on the visualizer, and the palette owns the keyboard

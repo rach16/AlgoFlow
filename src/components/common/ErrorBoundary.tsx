@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     // No telemetry in this app, so the console is the only record. Keep it, it is what a
     // bug report will be pasted from.
-    console.error(`[AlgoFlow] error in ${this.props.area ?? 'the app'}:`, error, info.componentStack);
+    console.error(`[SDETPrep] error in ${this.props.area ?? 'the app'}:`, error, info.componentStack);
   }
 
   render() {

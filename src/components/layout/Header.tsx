@@ -4,23 +4,18 @@ import { useProgressStore, selectDue } from '../../store/progressStore';
 import { useNow } from '../../utils/useNow';
 import { metaCategories } from '../../algorithms/manifest';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
-
-type View = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
+import { SECTIONS, sectionForView, entryViewFor, type AppView } from './navigation';
 
 interface HeaderProps {
   onMenuClick: () => void;
-  view: View;
-  onViewChange: (view: View) => void;
+  view: AppView;
+  onViewChange: (view: AppView) => void;
   onSearchClick: () => void;
 }
 
-const TABS: { id: View; label: string }[] = [
-  { id: 'visualizer', label: 'Visualizer' },
-  { id: 'sdet', label: 'SDET Prep' },
-  { id: 'complexity', label: 'Complexity' },
-  { id: 'methods', label: 'Methods' },
-  { id: 'review', label: 'Review' },
-];
+const TAB = 'px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex-shrink-0';
+const TAB_ON = 'bg-slate-600 text-white';
+const TAB_OFF = 'text-slate-400 hover:text-white';
 
 export function Header({ onMenuClick, view, onViewChange, onSearchClick }: HeaderProps) {
   const { currentAlgorithm } = useVisualizerStore();
@@ -28,6 +23,7 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
   const now = useNow();
   const dueCount = selectDue(reviews, now).length;
   const [showInfo, setShowInfo] = useState(false);
+  const activeSection = sectionForView(view);
 
   return (
     <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center px-3 sm:px-4 gap-2 sm:gap-4 overflow-hidden">
@@ -44,32 +40,54 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
       {/* Logo */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">AF</span>
+          <span className="text-white font-bold text-sm">SP</span>
         </div>
         <h1 className="hidden sm:block text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          AlgoFlow
+          SDETPrep
         </h1>
       </div>
 
-      {/* View tabs */}
-      <div className="flex bg-slate-700 rounded-lg p-1 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onViewChange(tab.id)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap flex-shrink-0 ${
-              view === tab.id ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            {tab.label}
-            {tab.id === 'review' && dueCount > 0 && (
-              <span className="ml-1.5 px-1 py-0.5 rounded bg-indigo-500 text-white text-[9px] font-bold">
-                {dueCount}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Navigation: sections first, then the active section's views when it has more than one */}
+      <nav
+        aria-label="Sections"
+        className="flex items-center gap-2 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div className="flex bg-slate-700 rounded-lg p-1 flex-shrink-0">
+          {SECTIONS.map((section) => {
+            const isActive = section.id === activeSection.id;
+            return (
+              <button
+                key={section.id}
+                onClick={() => onViewChange(entryViewFor(section))}
+                aria-current={isActive ? 'page' : undefined}
+                className={`${TAB} ${isActive ? TAB_ON : TAB_OFF}`}
+              >
+                {section.label}
+                {section.id === 'review' && dueCount > 0 && (
+                  <span className="ml-1.5 px-1 py-0.5 rounded bg-indigo-500 text-white text-[9px] font-bold">
+                    {dueCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {activeSection.views.length > 1 && (
+          <div className="flex bg-slate-900/40 rounded-lg p-1 flex-shrink-0">
+            {activeSection.views.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => onViewChange(sub.id)}
+                aria-current={view === sub.id ? 'page' : undefined}
+                className={`${TAB} ${view === sub.id ? TAB_ON : TAB_OFF}`}
+              >
+                {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </nav>
 
       {/* Search trigger — the shortcut is useless if nobody knows it exists */}
       <button

@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🌊 AlgoFlow
+# 🧪 SDETPrep
 
-**Interactive Algorithm Visualizer for NeetCode 250**
+**One place to prepare for an SDET interview loop**
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=for-the-badge)](https://algoflow-ruby.vercel.app)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
@@ -10,7 +10,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-7-646cff?style=for-the-badge&logo=vite)](https://vite.dev)
 
-A comprehensive web application that visualizes **254 algorithm problems** — all of NeetCode 250, plus four extra questions that dominate SDET interviews — with step-by-step execution, supporting **Python**, **JavaScript**, and **Java** implementations. Every problem ships with multiple solution approaches, each independently animated.
+SDET interview prep that shows you the algorithm running instead of describing it. **254 problems** — all of NeetCode 250 plus four staples SDET loops ask constantly — each with two independently animated approaches in **Python**, **JavaScript** and **Java**, a derivation of its complexity, and a spaced-repetition schedule so it comes back before you forget it.
+
+The animated visualizer is called **AlgoFlow** and lives under Practice. Tools (Playwright, Selenium, API, CI) and behavioral prep are planned — see [the build plan](#-roadmap).
 
 [Live Demo](https://algoflow-ruby.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
@@ -27,21 +29,36 @@ A comprehensive web application that visualizes **254 algorithm problems** — a
 - 🧮 **Complexity derivations** for all 508 approaches — how the bound is reached, not just what it is, plus the mistake people make on each
 - 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
 - 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
-- 🧪 **SDET Prep** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
+- 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
 - 🔁 **Spaced repetition** — rate a problem and it returns on a schedule; all local, no account
 - 🔍 **Search** (<kbd>⌘K</kbd>) across name, category, pattern and topic
+- ⌨️ **Keyboard driven** — arrows step, <kbd>space</kbd> plays, <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> switches language, <kbd>[</kbd><kbd>]</kbd> switches approach
 - 📱 Works on mobile
-- ✅ **7,900+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
+- ✅ **8,900+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
 
-## 🧭 The four views
+## 🧭 Navigation
 
-| View | What it is for |
-|---|---|
-| **Visualizer** | Watch an approach run step by step against the code, with a "Why?" panel deriving its complexity |
-| **SDET Prep** | The ~67 problems SDET interviews actually ask, in three tiers |
-| **Complexity** | How to derive a bound yourself, plus a worked derivation for all 508 approaches |
-| **Methods** | Language-aware API reference — what the method is *called* in Python vs JavaScript vs Java |
-| **Review** | Spaced-repetition queue of what is due |
+Three sections. Practice holds the reference material you reach for mid-problem.
+
+| Section | View | What it is for |
+|---|---|---|
+| **Practice** | AlgoFlow | Watch an approach run step by step against the code, with a "Why?" panel deriving its complexity |
+| | Complexity | How to derive a bound yourself, plus a worked derivation for all 508 approaches |
+| | Methods | Language-aware API reference — what the method is *called* in Python vs JavaScript vs Java |
+| **Coding round** | | The ~67 problems SDET interviews actually ask, in three tiers, with sources cited |
+| **Review** | | Spaced-repetition queue of what is due |
+
+## 🗺️ Roadmap
+
+Planned, in dependency order. Each phase exists to de-risk the next.
+
+| # | Phase | State |
+|---|---|---|
+| 1 | Rename and restructure navigation | ✅ done |
+| 2 | Waits & flakiness, end to end — cards, two animations, wired into Review | next |
+| 3 | Fill the tool topics — Playwright, Selenium, API, CI/CD, framework design | planned |
+| 4 | Behavioral bank — scaffolds you fill in, saved locally | planned |
+| 5 | SQL and test design as interactive exercises | planned |
 
 ## 🎓 Algorithm Categories
 
@@ -93,12 +110,11 @@ npm run build
 
 ## 🎮 Usage
 
-1. **Select an algorithm** from the sidebar categories
-2. **Choose your language** (Python, JavaScript, or Java) using the tabs
-3. **Customize input** if the algorithm supports it
-4. **Play/pause** the visualization to see step-by-step execution
-5. **Adjust speed** using the playback controls
-6. **View complexity** - time and space complexity displayed for each algorithm
+1. **Select a problem** from the sidebar — browse by Categories, Patterns or Topics, or hit <kbd>⌘K</kbd>
+2. **Step through it** with the arrow keys; <kbd>space</kbd> plays, <kbd>r</kbd> resets
+3. **Switch language** with <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>, and approaches with <kbd>[</kbd> <kbd>]</kbd>
+4. **Open "Why?"** for the complexity derivation and the mistake people make on it
+5. **Rate it** when you are done — it returns on a spaced-repetition schedule
 
 ## 📂 Project Structure
 
@@ -114,7 +130,7 @@ src/
 │   └── ...
 ├── components/
 │   ├── common/         # Reusable components
-│   ├── layout/         # Layout components
+│   ├── layout/         # Header, sidebar, navigation model
 │   └── visualizers/    # Algorithm visualizers
 ├── store/              # Zustand state management
 └── types/              # TypeScript type definitions

@@ -195,7 +195,7 @@ export function SdetPrepPage({ onOpenAlgorithm }: SdetPrepPageProps) {
         <div className="bg-slate-800 rounded-xl p-5">
           <h3 className="text-lg font-bold mb-1">What this list does not cover</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Roughly half of an SDET loop is not algorithms. AlgoFlow can not help with these, but
+            Roughly half of an SDET loop is not algorithms. SDETPrep does not cover these yet, but
             do not walk in having only ground DSA:
           </p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-slate-300">

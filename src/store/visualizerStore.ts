@@ -69,7 +69,7 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
       set({ currentAlgorithm: algorithm, approachId: OPTIMAL_APPROACH_ID, input: algorithm.defaultInput, loadingId: null });
       get().runAlgorithm();
     } catch (err) {
-      console.error(`[AlgoFlow] failed to load ${id}:`, err);
+      console.error(`[SDETPrep] failed to load ${id}:`, err);
       set({ loadingId: null, loadError: err instanceof Error ? err.message : String(err) });
     }
   },
@@ -131,7 +131,7 @@ export const useVisualizerStore = create<VisualizerState>((set, get) => ({
     } catch (err) {
       // Clear the steps so the previous problem's visualization cannot be mistaken for this
       // one's, and surface the failure instead of failing silently.
-      console.error(`[AlgoFlow] ${currentAlgorithm.id} / ${approach.id} threw while generating steps:`, err);
+      console.error(`[SDETPrep] ${currentAlgorithm.id} / ${approach.id} threw while generating steps:`, err);
       set({
         steps: [],
         currentStepIndex: 0,
