@@ -10,9 +10,9 @@
  * how the views are grouped for navigation.
  */
 
-export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'review';
+export type AppView = 'visualizer' | 'sdet' | 'complexity' | 'methods' | 'drill' | 'review';
 
-export type SectionId = 'practice' | 'coding' | 'review';
+export type SectionId = 'practice' | 'coding' | 'drill' | 'review';
 
 export interface NavView {
   id: AppView;
@@ -40,6 +40,11 @@ export const SECTIONS: NavSection[] = [
     id: 'coding',
     label: 'Coding round',
     views: [{ id: 'sdet', label: 'Coding round' }],
+  },
+  {
+    id: 'drill',
+    label: 'Drill',
+    views: [{ id: 'drill', label: 'Drill' }],
   },
   {
     id: 'review',

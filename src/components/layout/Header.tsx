@@ -5,6 +5,7 @@ import { useNow } from '../../utils/useNow';
 import { metaCategories } from '../../algorithms/manifest';
 import { getPatternName, getAllPatterns } from '../../utils/patterns';
 import { SECTIONS, sectionForView, entryViewFor, type AppView } from './navigation';
+import { useDrillStore } from '../../store/drillStore';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -24,6 +25,8 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
   const dueCount = selectDue(reviews, now).length;
   const [showInfo, setShowInfo] = useState(false);
   const activeSection = sectionForView(view);
+  // A drill left running is easy to lose track of after a reload, which drops you on Practice.
+  const drillRunning = useDrillStore((s) => s.active !== null);
 
   return (
     <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center px-3 sm:px-4 gap-2 sm:gap-4 overflow-hidden">
@@ -67,6 +70,12 @@ export function Header({ onMenuClick, view, onViewChange, onSearchClick }: Heade
                   <span className="ml-1.5 px-1 py-0.5 rounded bg-indigo-500 text-white text-[9px] font-bold">
                     {dueCount}
                   </span>
+                )}
+                {section.id === 'drill' && drillRunning && (
+                  <span
+                    className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-yellow-400 align-middle"
+                    title="A drill session is still running"
+                  />
                 )}
               </button>
             );

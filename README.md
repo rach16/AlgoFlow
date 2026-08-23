@@ -30,12 +30,13 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tools (
 - 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
 - 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
 - 🎯 **Filter by who asks** — big tech, staffing agencies or startups, across every browse axis and the review queue
+- ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
 - 🔁 **Spaced repetition** — rate a problem and it returns on a schedule; all local, no account
 - 🔍 **Search** (<kbd>⌘K</kbd>) across name, category, pattern and topic
 - ⌨️ **Keyboard driven** — arrows step, <kbd>space</kbd> plays, <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> switches language, <kbd>[</kbd><kbd>]</kbd> switches approach
 - 📱 Works on mobile
-- ✅ **9,400+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
+- ✅ **9,480+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
 
 ## 🧭 Navigation
 
@@ -47,6 +48,7 @@ Three sections. Practice holds the reference material you reach for mid-problem.
 | | Complexity | How to derive a bound yourself, plus a worked derivation for all 508 approaches |
 | | Methods | Language-aware API reference — what the method is *called* in Python vs JavaScript vs Java |
 | **Coding round** | | The ~67 problems SDET interviews actually ask, in three tiers, with sources cited |
+| **Drill** | | Timed, hint-free practice against the clock — the coding round as it is actually run |
 | **Review** | | Spaced-repetition queue of what is due |
 
 ## 🗺️ Roadmap
@@ -57,8 +59,8 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 |---|---|---|
 | 1 | Rename and restructure navigation | ✅ done |
 | 2 | Company and audience tags — filter the catalogue and review queue by who asks | ✅ done |
-| 3 | Timed drill mode — plain editor, no autocomplete, 2 problems in 45 min | next |
-| 4 | Amazon Leadership Principles story bank | planned |
+| 3 | Timed drill mode — plain editor, no autocomplete, 2 problems in 45 min | ✅ done |
+| 4 | Amazon Leadership Principles story bank | next |
 | 5 | Test design and design-for-testability | planned |
 | 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | planned |
 | 7 | AI in testing | planned |
