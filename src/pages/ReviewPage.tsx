@@ -5,6 +5,9 @@ import { useProgressStore, selectDue, selectUpcoming } from '../store/progressSt
 import { dueLabel, INTERVALS_DAYS, type ReviewRecord } from '../utils/review';
 import { useNow } from '../utils/useNow';
 import type { AlgorithmMeta } from '../algorithms/manifestTypes';
+import { useFilterStore } from '../store/filterStore';
+import { matchesAudience } from '../utils/audienceFilter';
+import { AUDIENCES } from '../data/audiences';
 
 interface ReviewPageProps {
   onOpenAlgorithm: () => void;
@@ -26,6 +29,7 @@ const LAST_BADGE: Record<string, string> = {
 export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
   const { selectAlgorithm } = useVisualizerStore();
   const { reviews, solvedProblems, clearReview } = useProgressStore();
+  const { audiences } = useFilterStore();
   const now = useNow();
 
   const byId = useMemo(() => {
@@ -34,9 +38,20 @@ export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
     return m;
   }, []);
 
-  const due = selectDue(reviews, now);
-  const upcoming = selectUpcoming(reviews, now);
+  // The sidebar's audience filter applies here too, so "revise the staffing set" narrows the
+  // queue rather than only the catalogue. A queued problem whose metadata has since disappeared
+  // stays visible — dropping it silently would hide a real data problem.
+  const inScope = (id: string) => {
+    const algorithm = byId.get(id);
+    return !algorithm || matchesAudience(algorithm.audiences, audiences);
+  };
+  const due = selectDue(reviews, now).filter(({ id }) => inScope(id));
+  const upcoming = selectUpcoming(reviews, now).filter(({ id }) => inScope(id));
   const rated = Object.keys(reviews).length;
+  const hiddenByFilter =
+    audiences.length === 0
+      ? 0
+      : selectDue(reviews, now).length + selectUpcoming(reviews, now).length - due.length - upcoming.length;
 
   const open = (algorithm: AlgorithmMeta) => {
     void selectAlgorithm(algorithm.id);
@@ -88,6 +103,14 @@ export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
             <span className="px-2 py-1 rounded bg-slate-700 text-slate-300">
               {rated} rated of {solvedProblems.length} solved
             </span>
+            {audiences.length > 0 && (
+              <span className="px-2 py-1 rounded bg-indigo-500/20 text-indigo-300 font-medium">
+                {audiences
+                  .map((a) => AUDIENCES.find((x) => x.id === a)?.label ?? a)
+                  .join(' + ')}
+                {hiddenByFilter > 0 && ` · ${hiddenByFilter} hidden`}
+              </span>
+            )}
           </div>
         </div>
 

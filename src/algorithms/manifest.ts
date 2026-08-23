@@ -19,6 +19,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/twoSum",
       approaches: [
       { id: "sort-two-pointers", name: "Sort + Two Pointers", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -35,6 +36,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/containsDuplicate",
       approaches: [
       { id: "sorting", name: "Sorting", timeComplexity: "O(n log n)", spaceComplexity: "O(1)" },
@@ -51,6 +53,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/validAnagram",
       approaches: [
       { id: "count-array", name: "Count Array", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -67,6 +70,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·k log k)",
       spaceComplexity: "O(n·k)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/groupAnagrams",
       approaches: [
       { id: "char-count-key", name: "Char Count Key", timeComplexity: "O(n·k)", spaceComplexity: "O(n·k)" },
@@ -83,6 +87,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/topKFrequent",
       approaches: [
       { id: "sort-by-frequency", name: "Sort by Frequency", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -99,6 +104,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/encodeDecode",
       approaches: [
       { id: "escape-delimiter", name: "Escape Delimiter", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -115,6 +121,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/productExceptSelf",
       approaches: [
       { id: "prefix-suffix-arrays", name: "Prefix & Suffix Arrays", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -131,6 +138,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(1)",
       topics: ["grids"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/validSudoku",
       approaches: [
       { id: "bitmask", name: "Bitmask", timeComplexity: "O(1)", spaceComplexity: "O(1)" },
@@ -147,6 +155,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/longestConsecutive",
       approaches: [
       { id: "sorting", name: "Sorting", timeComplexity: "O(n log n)", spaceComplexity: "O(1)" },
@@ -163,6 +172,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/concatenationOfArray",
       approaches: [
       { id: "modulo-single-pass", name: "Modulo Single Pass", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -179,6 +189,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(S)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/longestCommonPrefix",
       approaches: [
       { id: "binary-search-length", name: "Binary Search on Length", timeComplexity: "O(S log m)", spaceComplexity: "O(1)" },
@@ -195,6 +206,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/removeElement",
       approaches: [
       { id: "swap-with-end", name: "Swap With End", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -211,6 +223,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/majorityElement",
       approaches: [
       { id: "hash-map-counting", name: "Hash Map Counting", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -227,6 +240,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n / k) average per operation",
       spaceComplexity: "O(n + k)",
       topics: ["design"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/designHashSet",
       approaches: [
       { id: "boolean-array", name: "Boolean Array", timeComplexity: "O(1) worst case per operation", spaceComplexity: "O(range)" },
@@ -243,6 +257,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n / k) average per operation",
       spaceComplexity: "O(n + k)",
       topics: ["design"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/designHashMap",
       approaches: [
       { id: "direct-address-array", name: "Direct Address Array", timeComplexity: "O(1) worst case per operation", spaceComplexity: "O(range)" },
@@ -259,6 +274,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/sortColors",
       approaches: [
       { id: "counting-sort", name: "Counting Sort", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -275,6 +291,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/sortAnArray",
       approaches: [
       { id: "quick-sort", name: "Quick Sort", timeComplexity: "O(n log n) average, O(n²) worst", spaceComplexity: "O(log n)" },
@@ -291,6 +308,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n) build, O(1) per query",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers", "design"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/rangeSumQuery2D",
       approaches: [
       { id: "row-prefix-sums", name: "Per-Row Prefix Sums", timeComplexity: "O(m·n) build, O(rows) per query", spaceComplexity: "O(m·n)" },
@@ -307,6 +325,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/buySellStockII",
       approaches: [
       { id: "peak-valley", name: "Peak & Valley", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -323,6 +342,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/majorityElementII",
       approaches: [
       { id: "hash-map-count", name: "Hash Map Counting", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -339,6 +359,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./arrays-hashing/subarraySumEqualsK",
       approaches: [
       { id: "cumulative-array", name: "Cumulative Array", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -355,6 +376,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./arrays-hashing/firstMissingPositive",
       approaches: [
       { id: "hash-set-probe", name: "Hash Set", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -371,6 +393,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/moveZeroes",
       approaches: [
       { id: "count-then-fill", name: "Overwrite + Pad Tail", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -387,6 +410,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/firstUniqueCharacter",
       approaches: [
       { id: "count-array-26", name: "int[26] Count Array", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -403,6 +427,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n + m)",
       spaceComplexity: "O(min(n, m))",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./arrays-hashing/intersectionOfTwoArrays",
       approaches: [
       { id: "sort-two-pointers", name: "Sort + Two Pointers", timeComplexity: "O(n log n + m log m)", spaceComplexity: "O(1)" },
@@ -426,6 +451,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/validPalindrome",
       approaches: [
       { id: "reversed-string", name: "Reversed String", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -442,6 +468,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/twoSumII",
       approaches: [
       { id: "binary-search", name: "Binary Search", timeComplexity: "O(n log n)", spaceComplexity: "O(1)" },
@@ -458,6 +485,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/threeSum",
       approaches: [
       { id: "hash-set", name: "Hash Set", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -474,6 +502,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/containerWithMostWater",
       approaches: [
       { id: "brute-force-pairs", name: "Brute Force Pairs", timeComplexity: "O(n²)", spaceComplexity: "O(1)" },
@@ -490,6 +519,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./two-pointers/trappingRainWater",
       approaches: [
       { id: "prefix-max-arrays", name: "Prefix Max Arrays", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -506,6 +536,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/reverseString",
       approaches: [
       { id: "recursion", name: "Recursion", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -522,6 +553,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/validPalindromeII",
       approaches: [
       { id: "helper-greedy-check", name: "Helper Greedy Check", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -538,6 +570,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m + n)",
       spaceComplexity: "O(m + n)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/mergeStringsAlternately",
       approaches: [
       { id: "single-index-loop", name: "Single Index Loop", timeComplexity: "O(m + n)", spaceComplexity: "O(m + n)" },
@@ -554,6 +587,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m + n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/mergeSortedArray",
       approaches: [
       { id: "merge-into-copy", name: "Merge Into Copy", timeComplexity: "O(m + n)", spaceComplexity: "O(m + n)" },
@@ -570,6 +604,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./two-pointers/removeDuplicatesFromSortedArray",
       approaches: [
       { id: "neighbour-count-scan", name: "Neighbour Count Scan", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -586,6 +621,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/rotateArray",
       approaches: [
       { id: "extra-array-modulo", name: "Extra Array (Modulo)", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -602,6 +638,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n³)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/fourSum",
       approaches: [
       { id: "ksum-recursion", name: "kSum Recursion", timeComplexity: "O(n³)", spaceComplexity: "O(n)" },
@@ -618,6 +655,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./two-pointers/boatsToSavePeople",
       approaches: [
       { id: "counting-sort", name: "Counting Sort", timeComplexity: "O(n + limit)", spaceComplexity: "O(limit)" },
@@ -641,6 +679,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./stack/validParentheses",
       approaches: [
       { id: "string-replacement", name: "String Replacement", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -657,6 +696,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/minStack",
       approaches: [
       { id: "single-stack-pairs", name: "Single Stack of Pairs", timeComplexity: "O(1)", spaceComplexity: "O(n)" },
@@ -673,6 +713,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/evalRPN",
       approaches: [
       { id: "recursive-from-end", name: "Recursion from the End", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -689,6 +730,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(4ⁿ/√n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/generateParentheses",
       approaches: [
       { id: "iterative-bfs", name: "Iterative BFS", timeComplexity: "O(4ⁿ/√n)", spaceComplexity: "O(4ⁿ/√n)" },
@@ -705,6 +747,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/dailyTemperatures",
       approaches: [
       { id: "reverse-jump", name: "Reverse Iteration + Jumps", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -721,6 +764,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/carFleet",
       approaches: [
       { id: "sorted-times-scan", name: "Sorted Times Scan", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -737,6 +781,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./stack/largestRectHistogram",
       approaches: [
       { id: "divide-and-conquer", name: "Divide & Conquer", timeComplexity: "O(n log n) avg, O(n²) worst", spaceComplexity: "O(n)" },
@@ -753,6 +798,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./stack/baseballGame",
       approaches: [
       { id: "write-index-array", name: "Array with Write Index", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -769,6 +815,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n) push, O(1) pop/top/empty",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./stack/implementStackUsingQueues",
       approaches: [
       { id: "two-queues", name: "Two Queues", timeComplexity: "O(n) push, O(1) pop/top/empty", spaceComplexity: "O(n)" },
@@ -785,6 +832,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1) push, O(1) amortized pop/peek",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./stack/implementQueueUsingStacks",
       approaches: [
       { id: "costly-push", name: "Costly Push", timeComplexity: "O(n) push, O(1) pop/peek/empty", spaceComplexity: "O(n)" },
@@ -801,6 +849,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/asteroidCollision",
       approaches: [
       { id: "in-place-write-index", name: "In-Place Write Index", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -817,6 +866,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1) amortized per call, O(n) total",
       spaceComplexity: "O(n)",
       topics: ["numbers", "design"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/onlineStockSpan",
       approaches: [
       { id: "span-jump-array", name: "Span Jump Array", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -833,6 +883,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/simplifyPath",
       approaches: [
       { id: "in-place-rewrite", name: "In-Place Rewrite", timeComplexity: "O(n)", spaceComplexity: "O(n) for the split, O(1) extra" },
@@ -849,6 +900,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n · maxRepeat)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./stack/decodeString",
       approaches: [
       { id: "recursive-descent", name: "Recursive Descent", timeComplexity: "O(n · maxRepeat)", spaceComplexity: "O(d) call stack for nesting depth d" },
@@ -865,6 +917,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1) per push and pop",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech"],
       module: "./stack/maxFrequencyStack",
       approaches: [
       { id: "max-heap-priority", name: "Max-Heap by (Freq, Order)", timeComplexity: "O(log n) per push and pop", spaceComplexity: "O(n)" },
@@ -888,6 +941,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./sliding-window/bestTimeToBuySellStock",
       approaches: [
       { id: "min-price-tracking", name: "Track Minimum Price", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -904,6 +958,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(min(n,m))",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./sliding-window/longestSubstringWithoutRepeating",
       approaches: [
       { id: "hash-set-shrink", name: "Hash Set + Shrink", timeComplexity: "O(n)", spaceComplexity: "O(min(n,m))" },
@@ -920,6 +975,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings", "numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./sliding-window/longestRepeatingCharReplacement",
       approaches: [
       { id: "binary-search-length", name: "Binary Search on Length", timeComplexity: "O(n log n)", spaceComplexity: "O(m)" },
@@ -936,6 +992,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./sliding-window/permutationInString",
       approaches: [
       { id: "match-counter-array", name: "26-Slot Match Counter", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -952,6 +1009,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(m)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./sliding-window/minimumWindowSubstring",
       approaches: [
       { id: "filtered-string", name: "Filtered String", timeComplexity: "O(m + n)", spaceComplexity: "O(m + n)" },
@@ -968,6 +1026,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(k)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./sliding-window/slidingWindowMaximum",
       approaches: [
       { id: "max-heap-lazy-removal", name: "Max-Heap (Lazy Removal)", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -984,6 +1043,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(k)",
       topics: ["numbers"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./sliding-window/containsDuplicateII",
       approaches: [
       { id: "last-seen-index-map", name: "Last-Seen Index Map", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1000,6 +1060,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./sliding-window/minSizeSubarraySum",
       approaches: [
       { id: "prefix-sum-binary-search", name: "Prefix Sum + Binary Search", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -1016,6 +1077,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log(n - k) + k)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./sliding-window/findKClosestElements",
       approaches: [
       { id: "two-pointer-shrink", name: "Two Pointers Shrink", timeComplexity: "O(n - k)", spaceComplexity: "O(1)" },
@@ -1039,6 +1101,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/binarySearch",
       approaches: [
       { id: "linear-scan", name: "Linear Scan", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1055,6 +1118,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log(m·n))",
       spaceComplexity: "O(1)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/search2DMatrix",
       approaches: [
       { id: "staircase-search", name: "Staircase Search", timeComplexity: "O(m + n)", spaceComplexity: "O(1)" },
@@ -1071,6 +1135,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log m)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/kokoEatingBananas",
       approaches: [
       { id: "linear-scan-speeds", name: "Linear Scan of Speeds", timeComplexity: "O(n · m)", spaceComplexity: "O(1)" },
@@ -1087,6 +1152,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/findMinRotatedSorted",
       approaches: [
       { id: "linear-scan-inflection", name: "Linear Scan for Drop", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1103,6 +1169,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/searchRotatedSorted",
       approaches: [
       { id: "find-pivot-then-search", name: "Find Pivot + Binary Search", timeComplexity: "O(log n)", spaceComplexity: "O(1)" },
@@ -1119,6 +1186,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/timeBasedKeyValue",
       approaches: [
       { id: "linear-scan-timestamps", name: "Linear Scan of Timestamps", timeComplexity: "O(n) per get", spaceComplexity: "O(n)" },
@@ -1135,6 +1203,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log(min(m,n)))",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./binary-search/medianTwoSortedArrays",
       approaches: [
       { id: "merge-two-pointers", name: "Two-Pointer Merge", timeComplexity: "O(m + n)", spaceComplexity: "O(1)" },
@@ -1151,6 +1220,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/searchInsertPosition",
       approaches: [
       { id: "linear-scan-insert", name: "Linear Scan", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1167,6 +1237,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/guessNumber",
       approaches: [
       { id: "ternary-search-guess", name: "Ternary Search", timeComplexity: "O(log₃ n)", spaceComplexity: "O(1)" },
@@ -1183,6 +1254,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log x)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/sqrtX",
       approaches: [
       { id: "newtons-method", name: "Newton's Method", timeComplexity: "O(log x)", spaceComplexity: "O(1)" },
@@ -1199,6 +1271,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log(sum − max))",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/capacityToShipPackages",
       approaches: [
       { id: "linear-scan-capacity", name: "Linear Scan of Capacities", timeComplexity: "O(n · (sum − max))", spaceComplexity: "O(1)" },
@@ -1215,6 +1288,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n) average, O(n) worst case",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./binary-search/searchRotatedSortedII",
       approaches: [
       { id: "linear-scan-duplicates", name: "Linear Scan", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1231,6 +1305,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log(sum))",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./binary-search/splitArrayLargestSum",
       approaches: [
       { id: "interval-dp", name: "2-D DP", timeComplexity: "O(n^2 * k)", spaceComplexity: "O(n * k)" },
@@ -1247,6 +1322,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./binary-search/findInMountainArray",
       approaches: [
       { id: "linear-peak-scan", name: "Linear Peak + Ordered Scan", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1270,6 +1346,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./linked-list/reverseLinkedList",
       approaches: [
       { id: "recursive", name: "Recursion", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1286,6 +1363,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n+m)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./linked-list/mergeTwoSortedLists",
       approaches: [
       { id: "recursive", name: "Recursion", timeComplexity: "O(n+m)", spaceComplexity: "O(n+m)" },
@@ -1302,6 +1380,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/reorderList",
       approaches: [
       { id: "array-of-nodes", name: "Array of Nodes", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1318,6 +1397,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/removeNthFromEnd",
       approaches: [
       { id: "two-pass-length", name: "Two Pass — Count Length", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1334,6 +1414,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/copyListRandomPointer",
       approaches: [
       { id: "interleaved-nodes", name: "Interleaved Nodes (O(1) Space)", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1350,6 +1431,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(max(m,n))",
       spaceComplexity: "O(max(m,n))",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/addTwoNumbers",
       approaches: [
       { id: "recursive", name: "Recursion", timeComplexity: "O(max(m,n))", spaceComplexity: "O(max(m,n))" },
@@ -1366,6 +1448,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./linked-list/linkedListCycle",
       approaches: [
       { id: "hash-set", name: "Hash Set", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1382,6 +1465,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/findDuplicateNumber",
       approaches: [
       { id: "hash-set", name: "Hash Set", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1398,6 +1482,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(n)",
       topics: ["linked-lists", "design"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/lruCache",
       approaches: [
       { id: "array-scan", name: "Array Scan (O(n) ops)", timeComplexity: "O(n) per op", spaceComplexity: "O(n)" },
@@ -1414,6 +1499,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log k)",
       spaceComplexity: "O(k)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech"],
       module: "./linked-list/mergeKSortedLists",
       approaches: [
       { id: "min-heap", name: "Min-Heap", timeComplexity: "O(n log k)", spaceComplexity: "O(k)" },
@@ -1430,6 +1516,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech"],
       module: "./linked-list/reverseNodesKGroup",
       approaches: [
       { id: "stack-per-group", name: "Stack per Group", timeComplexity: "O(n)", spaceComplexity: "O(k)" },
@@ -1446,6 +1533,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/reverseLinkedListII",
       approaches: [
       { id: "collect-values-rewrite", name: "Collect Values then Rewrite", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1462,6 +1550,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1) per operation",
       spaceComplexity: "O(k)",
       topics: ["linked-lists", "design"],
+      audiences: ["big-tech", "startup"],
       module: "./linked-list/designCircularQueue",
       approaches: [
       { id: "linked-nodes-counter", name: "Linked Nodes + Size Counter", timeComplexity: "O(1) per operation", spaceComplexity: "O(k)" },
@@ -1478,6 +1567,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(n)",
       topics: ["linked-lists", "design"],
+      audiences: ["big-tech"],
       module: "./linked-list/lfuCache",
       approaches: [
       { id: "linear-scan-eviction", name: "Hash Map + Linear-Scan Eviction", timeComplexity: "O(1) get/put, O(n) eviction", spaceComplexity: "O(n)" },
@@ -1494,6 +1584,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "linked-lists"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./linked-list/palindromeLinkedList",
       approaches: [
       { id: "copy-to-array", name: "Copy to Array + Two Pointers", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -1517,6 +1608,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·2ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/subsets",
       approaches: [
       { id: "iterative-cascading", name: "Iterative (Cascading)", timeComplexity: "O(n·2ⁿ)", spaceComplexity: "O(2ⁿ)" },
@@ -1533,6 +1625,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(2^target)",
       spaceComplexity: "O(target)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/combinationSum",
       approaches: [
       { id: "bottom-up-dp", name: "Bottom-Up DP", timeComplexity: "O(n·target·k)", spaceComplexity: "O(target·k)" },
@@ -1549,6 +1642,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·n!)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/permutations",
       approaches: [
       { id: "iterative-insertion", name: "Iterative Insertion", timeComplexity: "O(n·n!)", spaceComplexity: "O(n·n!)" },
@@ -1565,6 +1659,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·2ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/subsetsII",
       approaches: [
       { id: "iterative-cascading-dedup", name: "Iterative (Cascading)", timeComplexity: "O(n·2ⁿ)", spaceComplexity: "O(2ⁿ)" },
@@ -1581,6 +1676,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(2ⁿ)",
       spaceComplexity: "O(target)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/combinationSumII",
       approaches: [
       { id: "iterative-explicit-stack", name: "Iterative (Explicit Stack)", timeComplexity: "O(2ⁿ)", spaceComplexity: "O(2ⁿ)" },
@@ -1597,6 +1693,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n·4^L)",
       spaceComplexity: "O(L)",
       topics: ["strings", "grids"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/wordSearch",
       approaches: [
       { id: "iterative-dfs-stack", name: "Iterative DFS (Explicit Stack)", timeComplexity: "O(m·n·4^L)", spaceComplexity: "O(m·n + L²)" },
@@ -1613,6 +1710,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·2ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/palindromePartitioning",
       approaches: [
       { id: "dp-table-dfs", name: "DP Table + DFS", timeComplexity: "O(n·2ⁿ)", spaceComplexity: "O(n²)" },
@@ -1629,6 +1727,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(4ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/letterCombinations",
       approaches: [
       { id: "iterative-bfs-product", name: "Iterative BFS Product", timeComplexity: "O(4ⁿ)", spaceComplexity: "O(4ⁿ)" },
@@ -1645,6 +1744,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n!)",
       spaceComplexity: "O(n²)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./backtracking/nQueens",
       approaches: [
       { id: "bitmask", name: "Bitmask Backtracking", timeComplexity: "O(n!)", spaceComplexity: "O(n²)" },
@@ -1661,6 +1761,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(2ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/subsetXorTotal",
       approaches: [
       { id: "bit-math-or", name: "Bit Math (OR then Shift)", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1677,6 +1778,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(k·C(n, k))",
       spaceComplexity: "O(k)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/combinations",
       approaches: [
       { id: "iterative-odometer", name: "Iterative Odometer", timeComplexity: "O(k·C(n, k))", spaceComplexity: "O(k)" },
@@ -1693,6 +1795,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·n!)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/permutationsII",
       approaches: [
       { id: "frequency-counter", name: "Frequency Counter", timeComplexity: "O(n·n!)", spaceComplexity: "O(n)" },
@@ -1709,6 +1812,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(4ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/matchsticksToSquare",
       approaches: [
       { id: "bitmask-dp", name: "Bitmask DP over Subsets", timeComplexity: "O(n·2ⁿ)", spaceComplexity: "O(2ⁿ)" },
@@ -1725,6 +1829,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(k·2ⁿ)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./backtracking/partitionKEqualSubsets",
       approaches: [
       { id: "bitmask-dp", name: "Bitmask DP over Subsets", timeComplexity: "O(n·2ⁿ)", spaceComplexity: "O(2ⁿ)" },
@@ -1741,6 +1846,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n!)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./backtracking/nQueensII",
       approaches: [
       { id: "hash-set-diagonals", name: "Hash Sets (col / diag)", timeComplexity: "O(n!)", spaceComplexity: "O(n)" },
@@ -1757,6 +1863,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n² + 2ⁿ) — the 2ⁿ only when that many sentences exist",
       spaceComplexity: "O(n² + output)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./backtracking/wordBreakII",
       approaches: [
       { id: "dp-breakpoints-reconstruct", name: "DP Breakpoints + Reconstruct", timeComplexity: "O(n² + output)", spaceComplexity: "O(n² + output)" },
@@ -1780,6 +1887,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings", "design"],
+      audiences: ["big-tech"],
       module: "./tries/implementTrie",
       approaches: [
       { id: "prefix-hash-sets", name: "Two Hash Sets", timeComplexity: "O(L²) insert, O(L) lookup", spaceComplexity: "O(N·L²)" },
@@ -1796,6 +1904,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings", "design"],
+      audiences: ["big-tech"],
       module: "./tries/addSearchWords",
       approaches: [
       { id: "length-buckets", name: "Length Buckets + Scan", timeComplexity: "O(1) add, O(N·L) search", spaceComplexity: "O(N·L)" },
@@ -1812,6 +1921,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n·4^L)",
       spaceComplexity: "O(W·L)",
       topics: ["strings", "grids", "design"],
+      audiences: ["big-tech"],
       module: "./tries/wordSearchII",
       approaches: [
       { id: "per-word-dfs", name: "DFS per Word (No Trie)", timeComplexity: "O(W·m·n·4^L)", spaceComplexity: "O(L)" },
@@ -1828,6 +1938,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n² + m·L)",
       spaceComplexity: "O(m·L + n)",
       topics: ["strings", "design"],
+      audiences: ["big-tech"],
       module: "./tries/extraCharactersInString",
       approaches: [
       { id: "hash-set-dp", name: "DP + Hash Set", timeComplexity: "O(n²·L)", spaceComplexity: "O(m·L + n)" },
@@ -1851,6 +1962,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log k)",
       spaceComplexity: "O(k)",
       topics: ["numbers", "design"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/kthLargestStream",
       approaches: [
       { id: "sorted-window", name: "Sorted Window", timeComplexity: "O(n log n + m·k)", spaceComplexity: "O(k)" },
@@ -1867,6 +1979,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/lastStoneWeight",
       approaches: [
       { id: "sorted-list-insertion", name: "Sorted List + Binary Insert", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -1883,6 +1996,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n + k log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/kClosestPoints",
       approaches: [
       { id: "sort-by-distance", name: "Sort by Distance", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -1899,6 +2013,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n) avg",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/kthLargestElement",
       approaches: [
       { id: "min-heap-size-k", name: "Min-Heap of Size K", timeComplexity: "O(n log k)", spaceComplexity: "O(k)" },
@@ -1915,6 +2030,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings", "numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/taskScheduler",
       approaches: [
       { id: "greedy-math-formula", name: "Greedy Math Formula", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -1931,6 +2047,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(k log k)",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/designTwitter",
       approaches: [
       { id: "collect-and-sort", name: "Collect + Sort", timeComplexity: "O(T log T)", spaceComplexity: "O(T)" },
@@ -1947,6 +2064,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "design"],
+      audiences: ["big-tech"],
       module: "./heap/findMedianDataStream",
       approaches: [
       { id: "sorted-list-insertion", name: "Sorted List + Binary Insert", timeComplexity: "O(n) per add", spaceComplexity: "O(n)" },
@@ -1963,6 +2081,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/singleThreadedCPU",
       approaches: [
       { id: "sorted-list-scan", name: "Simulation + Linear Scan", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -1979,6 +2098,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log k)",
       spaceComplexity: "O(k)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/reorganizeString",
       approaches: [
       { id: "even-odd-slot-fill", name: "Sorted Even/Odd Slot Fill", timeComplexity: "O(n + k log k)", spaceComplexity: "O(n)" },
@@ -1995,6 +2115,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log 3) ≈ O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/longestHappyString",
       approaches: [
       { id: "three-counter-greedy", name: "Three-Counter Greedy", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2011,6 +2132,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n + maxStop)",
       spaceComplexity: "O(maxStop)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./heap/carPooling",
       approaches: [
       { id: "min-heap-dropoffs", name: "Min-Heap of Drop-Offs", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -2027,6 +2149,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./heap/ipo",
       approaches: [
       { id: "linear-scan-best-project", name: "Repeated Linear Scan", timeComplexity: "O(n · k)", spaceComplexity: "O(n)" },
@@ -2050,6 +2173,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/invertBinaryTree",
       approaches: [
       { id: "iterative-bfs", name: "Iterative BFS", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2066,6 +2190,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/maxDepthBinaryTree",
       approaches: [
       { id: "bfs-level-counting", name: "BFS Level Counting", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2082,6 +2207,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/diameterBinaryTree",
       approaches: [
       { id: "brute-force-heights", name: "Brute Force Heights", timeComplexity: "O(n²)", spaceComplexity: "O(h)" },
@@ -2098,6 +2224,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/balancedBinaryTree",
       approaches: [
       { id: "top-down-recursion", name: "Top-Down Recursion", timeComplexity: "O(n²)", spaceComplexity: "O(h)" },
@@ -2114,6 +2241,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/sameTree",
       approaches: [
       { id: "iterative-stack-of-pairs", name: "Iterative Stack of Pairs", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2130,6 +2258,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/subtreeOfAnotherTree",
       approaches: [
       { id: "serialize-string-matching", name: "Serialize + String Matching", timeComplexity: "O(m + n)", spaceComplexity: "O(m + n)" },
@@ -2146,6 +2275,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(h)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/lowestCommonAncestorBST",
       approaches: [
       { id: "recursive-descent", name: "Recursive Descent", timeComplexity: "O(h)", spaceComplexity: "O(h)" },
@@ -2162,6 +2292,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/levelOrderTraversal",
       approaches: [
       { id: "dfs-by-depth", name: "DFS by Depth", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2178,6 +2309,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/rightSideView",
       approaches: [
       { id: "dfs-right-first", name: "DFS Right-First", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2194,6 +2326,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/countGoodNodes",
       approaches: [
       { id: "iterative-bfs", name: "Iterative BFS", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2210,6 +2343,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/validateBST",
       approaches: [
       { id: "inorder-traversal", name: "Inorder Traversal", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2226,6 +2360,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(h+k)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/kthSmallestBST",
       approaches: [
       { id: "recursive-inorder", name: "Recursive Inorder", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2242,6 +2377,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/constructFromPreorderInorder",
       approaches: [
       { id: "array-slicing", name: "Array Slicing", timeComplexity: "O(n²)", spaceComplexity: "O(n²)" },
@@ -2258,6 +2394,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech"],
       module: "./trees/maxPathSum",
       approaches: [
       { id: "iterative-postorder", name: "Iterative Post-order", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2274,6 +2411,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["trees", "design"],
+      audiences: ["big-tech"],
       module: "./trees/serializeDeserialize",
       approaches: [
       { id: "bfs-level-order", name: "BFS Level Order", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2290,6 +2428,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/inorderTraversal",
       approaches: [
       { id: "morris-threading", name: "Morris Threading", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2306,6 +2445,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/preorderTraversal",
       approaches: [
       { id: "recursive-dfs", name: "Recursive DFS", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2322,6 +2462,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "staffing", "startup"],
       module: "./trees/postorderTraversal",
       approaches: [
       { id: "recursive-dfs", name: "Recursive DFS", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2338,6 +2479,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(h)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/insertIntoBST",
       approaches: [
       { id: "recursive-insert", name: "Recursive Insert", timeComplexity: "O(h)", spaceComplexity: "O(h)" },
@@ -2354,6 +2496,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(h)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/deleteNodeBST",
       approaches: [
       { id: "iterative-parent-pointer", name: "Iterative + Parent Pointer", timeComplexity: "O(h)", spaceComplexity: "O(1)" },
@@ -2370,6 +2513,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/houseRobberIII",
       approaches: [
       { id: "memoized-recursion", name: "Memoized Recursion", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2386,6 +2530,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(h)",
       topics: ["numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/deleteLeavesGivenValue",
       approaches: [
       { id: "iterative-postorder-stack", name: "Iterative Post-order Stack", timeComplexity: "O(n)", spaceComplexity: "O(h)" },
@@ -2402,6 +2547,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n^2 log n)",
       spaceComplexity: "O(log n)",
       topics: ["grids", "numbers", "trees"],
+      audiences: ["big-tech", "startup"],
       module: "./trees/constructQuadTree",
       approaches: [
       { id: "prefix-sum-uniformity", name: "Prefix Sum Uniformity", timeComplexity: "O(n^2)", spaceComplexity: "O(n^2)" },
@@ -2425,6 +2571,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/climbingStairs",
       approaches: [
       { id: "fibonacci-variables", name: "Fibonacci Variables", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2441,6 +2588,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/minCostClimbingStairs",
       approaches: [
       { id: "reverse-in-place", name: "In-Place Reverse DP", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2457,6 +2605,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/houseRobber",
       approaches: [
       { id: "rolling-variables", name: "Rolling Variables", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2473,6 +2622,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/houseRobberII",
       approaches: [
       { id: "top-down-memoization", name: "Top-Down Memoization", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2489,6 +2639,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/longestPalindromicSubstring",
       approaches: [
       { id: "dp-table", name: "DP Table", timeComplexity: "O(n²)", spaceComplexity: "O(n²)" },
@@ -2505,6 +2656,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/palindromicSubstrings",
       approaches: [
       { id: "dp-table", name: "DP Table", timeComplexity: "O(n²)", spaceComplexity: "O(n²)" },
@@ -2521,6 +2673,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/decodeWays",
       approaches: [
       { id: "top-down-memoization", name: "Top-Down Memoization", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2537,6 +2690,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·amount)",
       spaceComplexity: "O(amount)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/coinChange",
       approaches: [
       { id: "bfs-level-order", name: "BFS (Level Order)", timeComplexity: "O(n·amount)", spaceComplexity: "O(amount)" },
@@ -2553,6 +2707,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/maxProductSubarray",
       approaches: [
       { id: "prefix-suffix-scan", name: "Prefix & Suffix Products", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2569,6 +2724,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²·m)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/wordBreak",
       approaches: [
       { id: "bfs-over-indices", name: "BFS over Indices", timeComplexity: "O(n²·m)", spaceComplexity: "O(n)" },
@@ -2585,6 +2741,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/longestIncreasingSubsequence",
       approaches: [
       { id: "binary-search-patience", name: "Patience Sorting (Binary Search)", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -2601,6 +2758,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·sum)",
       spaceComplexity: "O(sum)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/partitionEqualSubsetSum",
       approaches: [
       { id: "reachable-sums-set", name: "Reachable Sums Set", timeComplexity: "O(n·sum)", spaceComplexity: "O(sum)" },
@@ -2617,6 +2775,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/tribonacci",
       approaches: [
       { id: "dp-array-table", name: "DP Array", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2633,6 +2792,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(target·n)",
       spaceComplexity: "O(target)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/combinationSumIV",
       approaches: [
       { id: "top-down-memo", name: "Top-Down Memoization", timeComplexity: "O(target·n)", spaceComplexity: "O(target)" },
@@ -2649,6 +2809,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·√n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/perfectSquares",
       approaches: [
       { id: "bfs-level-order", name: "BFS (Level Order)", timeComplexity: "O(n·√n)", spaceComplexity: "O(n)" },
@@ -2665,6 +2826,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./dp-1d/integerBreak",
       approaches: [
       { id: "math-threes", name: "Math (Peel Off 3s)", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2681,6 +2843,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-1d/stoneGameIII",
       approaches: [
       { id: "top-down-memo", name: "Top-Down Memoization", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2704,6 +2867,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/uniquePaths",
       approaches: [
       { id: "math-combination", name: "Math Combination", timeComplexity: "O(min(m, n))", spaceComplexity: "O(1)" },
@@ -2720,6 +2884,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./dp-2d/longestCommonSubsequence",
       approaches: [
       { id: "rolling-1d-array", name: "Rolling 1-D Array", timeComplexity: "O(m·n)", spaceComplexity: "O(n)" },
@@ -2736,6 +2901,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/buySellStockCooldown",
       approaches: [
       { id: "top-down-memo-dfs", name: "Top-Down Memoized DFS", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2752,6 +2918,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·amount)",
       spaceComplexity: "O(n·amount)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/coinChangeII",
       approaches: [
       { id: "one-d-knapsack", name: "1-D Unbounded Knapsack", timeComplexity: "O(n·amount)", spaceComplexity: "O(amount)" },
@@ -2768,6 +2935,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·sum)",
       spaceComplexity: "O(n·sum)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/targetSum",
       approaches: [
       { id: "one-d-subset-sum", name: "1-D Subset Sum", timeComplexity: "O(n·sum)", spaceComplexity: "O(sum)" },
@@ -2784,6 +2952,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./dp-2d/interleavingString",
       approaches: [
       { id: "rolling-1d-dp", name: "Rolling 1-D DP", timeComplexity: "O(m·n)", spaceComplexity: "O(n)" },
@@ -2800,6 +2969,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/longestIncreasingPathMatrix",
       approaches: [
       { id: "topological-peeling", name: "Topological Sort (Peel Layers)", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -2816,6 +2986,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./dp-2d/distinctSubsequences",
       approaches: [
       { id: "top-down-memo", name: "Top-Down Memoization", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -2832,6 +3003,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./dp-2d/editDistance",
       approaches: [
       { id: "rolling-rows", name: "Rolling Rows (1-D)", timeComplexity: "O(m·n)", spaceComplexity: "O(n)" },
@@ -2848,6 +3020,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n³)",
       spaceComplexity: "O(n²)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/burstBalloons",
       approaches: [
       { id: "top-down-memo", name: "Top-Down Memoization", timeComplexity: "O(n³)", spaceComplexity: "O(n²)" },
@@ -2864,6 +3037,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./dp-2d/regexMatching",
       approaches: [
       { id: "top-down-memo", name: "Top-Down Memoization", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -2880,6 +3054,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/uniquePathsII",
       approaches: [
       { id: "rolling-row-1d", name: "1-D Rolling Row", timeComplexity: "O(m·n)", spaceComplexity: "O(n)" },
@@ -2896,6 +3071,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/minimumPathSum",
       approaches: [
       { id: "rolling-row-1d", name: "1-D Rolling Row", timeComplexity: "O(m·n)", spaceComplexity: "O(n)" },
@@ -2912,6 +3088,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·total)",
       spaceComplexity: "O(n·total)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/lastStoneWeightII",
       approaches: [
       { id: "reachable-sums-set", name: "Reachable Sums Set", timeComplexity: "O(n·total)", spaceComplexity: "O(total)" },
@@ -2928,6 +3105,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(n²)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/stoneGame",
       approaches: [
       { id: "parity-math", name: "Parity Argument", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2944,6 +3122,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n³)",
       spaceComplexity: "O(n²)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./dp-2d/stoneGameII",
       approaches: [
       { id: "bottom-up-table", name: "Bottom-Up Table", timeComplexity: "O(n³)", spaceComplexity: "O(n²)" },
@@ -2967,6 +3146,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/maximumSubarray",
       approaches: [
       { id: "dp-tabulation", name: "Dynamic Programming", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -2983,6 +3163,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/jumpGame",
       approaches: [
       { id: "greedy-forward", name: "Greedy (Forward Max-Reach)", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -2999,6 +3180,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/jumpGameII",
       approaches: [
       { id: "dp-min-jumps", name: "Dynamic Programming", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -3015,6 +3197,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/gasStation",
       approaches: [
       { id: "prefix-minimum", name: "Prefix Sum Minimum", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3031,6 +3214,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/handOfStraights",
       approaches: [
       { id: "min-heap", name: "Min-Heap", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3047,6 +3231,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/mergeTriplets",
       approaches: [
       { id: "merged-maxima", name: "Build Merged Triplet", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3063,6 +3248,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/partitionLabels",
       approaches: [
       { id: "interval-merging", name: "Interval Merging", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3079,6 +3265,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/validParenthesisString",
       approaches: [
       { id: "two-pass", name: "Two-Pass Counting", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3095,6 +3282,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/lemonadeChange",
       approaches: [
       { id: "drawer-simulation", name: "Drawer Simulation", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -3111,6 +3299,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/maxSumCircularSubarray",
       approaches: [
       { id: "prefix-deque", name: "Prefix Sums + Monotonic Deque", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -3127,6 +3316,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/longestTurbulentSubarray",
       approaches: [
       { id: "sliding-window-signs", name: "Sliding Window (Sign Tracking)", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3143,6 +3333,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings", "numbers"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/jumpGameVII",
       approaches: [
       { id: "bfs-ranges", name: "BFS Over Ranges", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -3159,6 +3350,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["strings"],
+      audiences: ["big-tech", "startup"],
       module: "./greedy/dota2Senate",
       approaches: [
       { id: "pending-ban-counters", name: "Pending-Ban Counters", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3175,6 +3367,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./greedy/candy",
       approaches: [
       { id: "slope-counting", name: "Single-Pass Slope Counting", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3198,6 +3391,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech", "startup"],
       module: "./intervals/insertInterval",
       approaches: [
       { id: "append-and-merge", name: "Append + Merge", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3214,6 +3408,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech", "startup"],
       module: "./intervals/mergeIntervals",
       approaches: [
       { id: "sweep-line-events", name: "Sweep Line (Events)", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3230,6 +3425,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech", "startup"],
       module: "./intervals/nonOverlappingIntervals",
       approaches: [
       { id: "sort-by-start-max-end", name: "Greedy (Sort by Start)", timeComplexity: "O(n log n)", spaceComplexity: "O(1)" },
@@ -3246,6 +3442,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech", "startup"],
       module: "./intervals/meetingRooms",
       approaches: [
       { id: "sweep-line-events", name: "Sweep Line (Events)", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3262,6 +3459,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech", "startup"],
       module: "./intervals/meetingRoomsII",
       approaches: [
       { id: "min-heap-end-times", name: "Min-Heap of End Times", timeComplexity: "O(n log n)", spaceComplexity: "O(n)" },
@@ -3278,6 +3476,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log n + q log q)",
       spaceComplexity: "O(n+q)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech"],
       module: "./intervals/minIntervalQuery",
       approaches: [
       { id: "brute-force-scan", name: "Brute Force Scan", timeComplexity: "O(n · q)", spaceComplexity: "O(q)" },
@@ -3294,6 +3493,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m log m + m log n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "intervals"],
+      audiences: ["big-tech"],
       module: "./intervals/meetingRoomsIII",
       approaches: [
       { id: "linear-room-scan", name: "Linear Room Scan", timeComplexity: "O(m log m + m·n)", spaceComplexity: "O(n)" },
@@ -3317,6 +3517,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(1)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/rotateImage",
       approaches: [
       { id: "layer-by-layer-rotation", name: "Layer-by-Layer Rotation", timeComplexity: "O(n²)", spaceComplexity: "O(1)" },
@@ -3333,6 +3534,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(1)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/spiralMatrix",
       approaches: [
       { id: "direction-vectors", name: "Direction Vectors + Visited", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3349,6 +3551,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(1)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/setMatrixZeroes",
       approaches: [
       { id: "row-col-sets", name: "Row & Column Sets", timeComplexity: "O(m·n)", spaceComplexity: "O(m+n)" },
@@ -3365,6 +3568,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/happyNumber",
       approaches: [
       { id: "floyd-cycle-detection", name: "Floyd's Cycle Detection", timeComplexity: "O(log n)", spaceComplexity: "O(1)" },
@@ -3381,6 +3585,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/plusOne",
       approaches: [
       { id: "rightmost-non-nine", name: "Rightmost Non-9 Digit", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3397,6 +3602,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(log n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/powXN",
       approaches: [
       { id: "iterative-binary-exponentiation", name: "Iterative Binary Exponentiation", timeComplexity: "O(log n)", spaceComplexity: "O(1)" },
@@ -3413,6 +3619,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m+n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./math-geometry/multiplyStrings",
       approaches: [
       { id: "partial-products-addition", name: "Schoolbook Partial Products", timeComplexity: "O(m·n + n²)", spaceComplexity: "O(m+n)" },
@@ -3429,6 +3636,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["design"],
+      audiences: ["big-tech"],
       module: "./math-geometry/detectSquares",
       approaches: [
       { id: "column-buckets", name: "X-Coordinate Buckets", timeComplexity: "O(k) per count (k = points sharing the query x)", spaceComplexity: "O(n)" },
@@ -3445,6 +3653,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(log n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/excelSheetColumnTitle",
       approaches: [
       { id: "recursive-base-26", name: "Recursion", timeComplexity: "O(log n)", spaceComplexity: "O(log n)" },
@@ -3461,6 +3670,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m + n)",
       spaceComplexity: "O(m + n)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./math-geometry/gcdOfStrings",
       approaches: [
       { id: "candidate-prefix-scan", name: "Candidate Prefix Scan", timeComplexity: "O(min(m, n) * (m + n))", spaceComplexity: "O(m + n)" },
@@ -3477,6 +3687,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m * n)",
       spaceComplexity: "O(m * n)",
       topics: ["grids", "numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/transposeMatrix",
       approaches: [
       { id: "in-place-diagonal-swap", name: "In-Place Diagonal Swap", timeComplexity: "O(n²)", spaceComplexity: "O(1)" },
@@ -3493,6 +3704,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./math-geometry/romanToInteger",
       approaches: [
       { id: "subtract-if-smaller-than-next", name: "Subtract If Smaller Than Next", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3509,6 +3721,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n log M)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./math-geometry/insertGreatestCommonDivisors",
       approaches: [
       { id: "collect-values-rebuild", name: "Collect Values, Rebuild", timeComplexity: "O(n log M)", spaceComplexity: "O(n)" },
@@ -3532,6 +3745,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/singleNumber",
       approaches: [
       { id: "hash-map-counting", name: "Hash Map Counting", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -3548,6 +3762,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/numberOf1Bits",
       approaches: [
       { id: "bit-by-bit-shift", name: "Bit-by-Bit Shift", timeComplexity: "O(1)", spaceComplexity: "O(1)" },
@@ -3564,6 +3779,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/countingBits",
       approaches: [
       { id: "dp-lowbit", name: "DP with Lowbit", timeComplexity: "O(n)", spaceComplexity: "O(n)" },
@@ -3580,6 +3796,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/reverseBits",
       approaches: [
       { id: "divide-and-conquer-masks", name: "Divide & Conquer Masks", timeComplexity: "O(1)", spaceComplexity: "O(1)" },
@@ -3596,6 +3813,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/missingNumber",
       approaches: [
       { id: "gauss-sum-formula", name: "Gauss Sum Formula", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3612,6 +3830,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(1)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/sumOfTwoIntegers",
       approaches: [
       { id: "recursive-xor-carry", name: "Recursive XOR + Carry", timeComplexity: "O(1)", spaceComplexity: "O(1)" },
@@ -3628,6 +3847,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/reverseInteger",
       approaches: [
       { id: "string-reversal", name: "String Reversal", timeComplexity: "O(log n)", spaceComplexity: "O(log n)" },
@@ -3644,6 +3864,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/bitwiseAndNumbersRange",
       approaches: [
       { id: "brian-kernighan-clear-low-bits", name: "Brian Kernighan's Trick", timeComplexity: "O(log n)", spaceComplexity: "O(1)" },
@@ -3660,6 +3881,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(max(m, n))",
       spaceComplexity: "O(max(m, n))",
       topics: ["strings"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/addBinary",
       approaches: [
       { id: "xor-and-carry-loop", name: "XOR + Carry Loop", timeComplexity: "O(max(m, n))", spaceComplexity: "O(max(m, n))" },
@@ -3676,6 +3898,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(log n)",
       spaceComplexity: "O(1)",
       topics: ["numbers"],
+      audiences: ["big-tech"],
       module: "./bit-manipulation/minimumArrayEnd",
       approaches: [
       { id: "or-increment-simulation", name: "OR + Increment Simulation", timeComplexity: "O(n)", spaceComplexity: "O(1)" },
@@ -3699,6 +3922,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/numberOfIslands",
       approaches: [
       { id: "bfs-flood-fill", name: "BFS Flood Fill", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3715,6 +3939,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/maxAreaOfIsland",
       approaches: [
       { id: "bfs-flood-fill", name: "BFS Flood Fill", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3731,6 +3956,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/cloneGraph",
       approaches: [
       { id: "bfs-hash-map", name: "BFS + Hash Map", timeComplexity: "O(V+E)", spaceComplexity: "O(V)" },
@@ -3747,6 +3973,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/wallsAndGates",
       approaches: [
       { id: "dfs-per-gate", name: "DFS per Gate", timeComplexity: "O(m·n·g)", spaceComplexity: "O(m·n)" },
@@ -3763,6 +3990,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/rottingOranges",
       approaches: [
       { id: "simulation-loop", name: "Grid Simulation", timeComplexity: "O((m·n)²)", spaceComplexity: "O(m·n)" },
@@ -3779,6 +4007,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/pacificAtlanticWaterFlow",
       approaches: [
       { id: "bfs-from-oceans", name: "BFS from Oceans", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3795,6 +4024,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(m·n)",
       topics: ["grids", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/surroundedRegions",
       approaches: [
       { id: "border-bfs", name: "Border BFS", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3811,6 +4041,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/courseSchedule",
       approaches: [
       { id: "kahns-bfs-indegree", name: "Kahn's BFS (Indegree)", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)" },
@@ -3827,6 +4058,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/courseScheduleII",
       approaches: [
       { id: "kahns-bfs-indegree", name: "Kahn's BFS (Indegree)", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)" },
@@ -3843,6 +4075,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/graphValidTree",
       approaches: [
       { id: "dfs-connectivity", name: "DFS Connectivity", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)" },
@@ -3859,6 +4092,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/connectedComponents",
       approaches: [
       { id: "dfs-traversal", name: "DFS Traversal", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)" },
@@ -3875,6 +4109,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/redundantConnection",
       approaches: [
       { id: "dfs-cycle-check", name: "DFS per Edge", timeComplexity: "O(n²)", spaceComplexity: "O(n)" },
@@ -3891,6 +4126,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m²·n)",
       spaceComplexity: "O(n·m)",
       topics: ["strings", "graphs"],
+      audiences: ["big-tech"],
       module: "./graphs/wordLadder",
       approaches: [
       { id: "bidirectional-bfs", name: "Bidirectional BFS", timeComplexity: "O(m²·n)", spaceComplexity: "O(m·n)" },
@@ -3907,6 +4143,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(m·n)",
       spaceComplexity: "O(1)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/islandPerimeter",
       approaches: [
       { id: "dfs-boundary-crossings", name: "DFS Boundary Count", timeComplexity: "O(m·n)", spaceComplexity: "O(m·n)" },
@@ -3923,6 +4160,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·k)",
       spaceComplexity: "O(1)",
       topics: ["strings", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/verifyingAlienDictionary",
       approaches: [
       { id: "translate-and-compare", name: "Translate to Ranks", timeComplexity: "O(n·k)", spaceComplexity: "O(n·k)" },
@@ -3939,6 +4177,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n + e)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/findTownJudge",
       approaches: [
       { id: "two-degree-arrays", name: "Separate Degree Arrays", timeComplexity: "O(n + e)", spaceComplexity: "O(n)" },
@@ -3955,6 +4194,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(10^4 · 4 · 10)",
       spaceComplexity: "O(10^4)",
       topics: ["strings", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/openTheLock",
       approaches: [
       { id: "bidirectional-bfs", name: "Bidirectional BFS", timeComplexity: "O(10^4 · 4 · 10)", spaceComplexity: "O(10^4)" },
@@ -3971,6 +4211,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n³ + q)",
       spaceComplexity: "O(n²)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/courseScheduleIV",
       approaches: [
       { id: "kahns-prereq-sets", name: "Kahn's BFS (Prereq Sets)", timeComplexity: "O(V·E + q)", spaceComplexity: "O(V²)" },
@@ -3987,6 +4228,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(N·α(N) + N log N)",
       spaceComplexity: "O(N)",
       topics: ["graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/accountsMerge",
       approaches: [
       { id: "email-graph-dfs", name: "Email Graph DFS", timeComplexity: "O(N log N)", spaceComplexity: "O(N)" },
@@ -4003,6 +4245,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(q·(V+E))",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/evaluateDivision",
       approaches: [
       { id: "weighted-union-find", name: "Weighted Union-Find", timeComplexity: "O((E + q)·log V)", spaceComplexity: "O(V)" },
@@ -4019,6 +4262,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(V+E)",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech", "startup"],
       module: "./graphs/minimumHeightTrees",
       approaches: [
       { id: "double-bfs-diameter", name: "Double BFS (Diameter)", timeComplexity: "O(V+E)", spaceComplexity: "O(V+E)" },
@@ -4042,6 +4286,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(E log E)",
       spaceComplexity: "O(E)",
       topics: ["graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/reconstructItinerary",
       approaches: [
       { id: "dfs-backtracking", name: "DFS Backtracking", timeComplexity: "O(E^d) worst case", spaceComplexity: "O(E)" },
@@ -4058,6 +4303,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n²)",
       spaceComplexity: "O(n)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/minCostConnectPoints",
       approaches: [
       { id: "kruskal-union-find", name: "Kruskal's + Union-Find", timeComplexity: "O(n² log n)", spaceComplexity: "O(n²)" },
@@ -4074,6 +4320,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(E log V)",
       spaceComplexity: "O(V+E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/networkDelayTime",
       approaches: [
       { id: "bellman-ford", name: "Bellman-Ford", timeComplexity: "O(V·E)", spaceComplexity: "O(V)" },
@@ -4090,6 +4337,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n² log n)",
       spaceComplexity: "O(n²)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/swimInRisingWater",
       approaches: [
       { id: "binary-search-dfs", name: "Binary Search + DFS", timeComplexity: "O(n² log n)", spaceComplexity: "O(n²)" },
@@ -4106,6 +4354,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(C)",
       spaceComplexity: "O(V+E)",
       topics: ["strings", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/alienDictionary",
       approaches: [
       { id: "dfs-topological-sort", name: "DFS Post-Order", timeComplexity: "O(C)", spaceComplexity: "O(V+E)" },
@@ -4122,6 +4371,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(E·K)",
       spaceComplexity: "O(V)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/cheapestFlightsKStops",
       approaches: [
       { id: "bfs-level-by-level", name: "BFS Level-by-Level", timeComplexity: "O(E·K)", spaceComplexity: "O(V+E)" },
@@ -4138,6 +4388,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(R·C log(R·C))",
       spaceComplexity: "O(R·C)",
       topics: ["grids", "numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/pathWithMinimumEffort",
       approaches: [
       { id: "binary-search-bfs", name: "Binary Search + BFS", timeComplexity: "O(R·C·log(maxHeight))", spaceComplexity: "O(R·C)" },
@@ -4154,6 +4405,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(E^2 · α(V))",
       spaceComplexity: "O(V + E)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/criticalPseudoCriticalEdges",
       approaches: [
       { id: "equal-weight-bridges", name: "Equal-Weight Groups + Bridges", timeComplexity: "O(E log E + E · α(V))", spaceComplexity: "O(V + E)" },
@@ -4170,6 +4422,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(k^2 + R + C)",
       spaceComplexity: "O(k^2 + R + C)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/buildMatrixWithConditions",
       approaches: [
       { id: "kahn-bfs-orderings", name: "Kahn's BFS (both orderings)", timeComplexity: "O(k^2 + R + C)", spaceComplexity: "O(k^2 + R + C)" },
@@ -4186,6 +4439,7 @@ export const metaCategories: CategoryMeta[] = [
       timeComplexity: "O(n·√max + n·α(n))",
       spaceComplexity: "O(n + P)",
       topics: ["numbers", "graphs"],
+      audiences: ["big-tech"],
       module: "./advanced-graphs/gcdTraversal",
       approaches: [
       { id: "sieve-grouping-dfs", name: "SPF Sieve + Traversal", timeComplexity: "O(M log log M + n log max)", spaceComplexity: "O(M + n)" },

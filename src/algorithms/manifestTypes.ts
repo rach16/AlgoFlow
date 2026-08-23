@@ -1,4 +1,5 @@
 import type { TopicId } from '../utils/topics';
+import type { AudienceId } from '../data/audiences';
 
 /** One approach's metadata — enough for tabs and complexity badges without its source. */
 export interface ApproachMeta {
@@ -30,6 +31,8 @@ export interface AlgorithmMeta {
   spaceComplexity: string;
   /** precomputed, because deriving topics needs defaultInput and the source */
   topics: TopicId[];
+  /** who is likely to ask this — derived in the generator, see src/data/audiences.ts */
+  audiences: AudienceId[];
   /** module path for the registry's lazy import */
   module: string;
   approaches: ApproachMeta[];

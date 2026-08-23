@@ -17,6 +17,7 @@ import { categories } from '../src/algorithms/index.ts';
 import { getApproaches } from '../src/utils/approaches.ts';
 import { getTopicsFor } from '../src/utils/topics.ts';
 import { getPatternName } from '../src/utils/patterns.ts';
+import { deriveAudiences } from '../src/data/audiences.ts';
 
 const CATEGORY_DIRS: Record<string, string> = {
   'arrays-hashing': 'arrays-hashing',
@@ -80,6 +81,7 @@ const body = categories
           `      timeComplexity: ${q(a.timeComplexity)},`,
           `      spaceComplexity: ${q(a.spaceComplexity)},`,
           `      topics: [${getTopicsFor(a).map(q).join(', ')}],`,
+          `      audiences: [${deriveAudiences(a.id, c.id, a.difficulty).map(q).join(', ')}],`,
           `      module: ${q(modulePath)},`,
           `      approaches: [`,
           ...approaches,

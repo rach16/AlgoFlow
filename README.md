@@ -29,12 +29,13 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tools (
 - 🧮 **Complexity derivations** for all 508 approaches — how the bound is reached, not just what it is, plus the mistake people make on each
 - 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
 - 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
+- 🎯 **Filter by who asks** — big tech, staffing agencies or startups, across every browse axis and the review queue
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
 - 🔁 **Spaced repetition** — rate a problem and it returns on a schedule; all local, no account
 - 🔍 **Search** (<kbd>⌘K</kbd>) across name, category, pattern and topic
 - ⌨️ **Keyboard driven** — arrows step, <kbd>space</kbd> plays, <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> switches language, <kbd>[</kbd><kbd>]</kbd> switches approach
 - 📱 Works on mobile
-- ✅ **8,900+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
+- ✅ **9,400+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable
 
 ## 🧭 Navigation
 
@@ -55,10 +56,13 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 | # | Phase | State |
 |---|---|---|
 | 1 | Rename and restructure navigation | ✅ done |
-| 2 | Waits & flakiness, end to end — cards, two animations, wired into Review | next |
-| 3 | Fill the tool topics — Playwright, Selenium, API, CI/CD, framework design | planned |
-| 4 | Behavioral bank — scaffolds you fill in, saved locally | planned |
-| 5 | SQL and test design as interactive exercises | planned |
+| 2 | Company and audience tags — filter the catalogue and review queue by who asks | ✅ done |
+| 3 | Timed drill mode — plain editor, no autocomplete, 2 problems in 45 min | next |
+| 4 | Amazon Leadership Principles story bank | planned |
+| 5 | Test design and design-for-testability | planned |
+| 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | planned |
+| 7 | AI in testing | planned |
+| 8 | SQL and twenty-minute build exercises | planned |
 
 ## 🎓 Algorithm Categories
 

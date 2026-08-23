@@ -3,6 +3,9 @@ import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore } from '../../store/progressStore';
 import { getPatternStats } from '../../utils/patterns';
 import { getTopicStats, type TopicId } from '../../utils/topics';
+import { useFilterStore } from '../../store/filterStore';
+import { AUDIENCES } from '../../data/audiences';
+import { filterByAudience, countByAudience } from '../../utils/audienceFilter';
 import type { AlgorithmMeta, CategoryMeta } from '../../algorithms/manifestTypes';
 
 interface SidebarProps {
@@ -37,6 +40,13 @@ const CATEGORY_ICONS: Record<string, string> = {
 export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps) {
   const { currentAlgorithm, selectAlgorithm } = useVisualizerStore();
   const { solvedProblems } = useProgressStore();
+  const { audiences, toggleAudience, clearAudiences } = useFilterStore();
+
+  // Filter once, here, because Categories / Patterns / Topics all derive their grouping from the
+  // same list — so one insertion point covers every browse axis.
+  const visible = filterByAudience(categories, audiences);
+  const visibleCount = visible.reduce((n, c) => n + c.algorithms.length, 0);
+
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     categories.map((c) => c.id)
   );
@@ -179,8 +189,53 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
             </button>
           </div>
 
+          {/* Audience filter — cuts across all three views above */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                Who asks it
+              </span>
+              {audiences.length > 0 && (
+                <button
+                  onClick={clearAudiences}
+                  className="text-[10px] text-indigo-400 hover:text-indigo-300"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {AUDIENCES.map((audience) => {
+                const active = audiences.includes(audience.id);
+                return (
+                  <button
+                    key={audience.id}
+                    onClick={() => toggleAudience(audience.id)}
+                    title={audience.blurb}
+                    aria-pressed={active}
+                    className={`px-2 py-1 rounded text-[11px] font-medium transition-colors border ${
+                      active
+                        ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
+                        : 'bg-slate-700/40 border-transparent text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {audience.label}
+                    <span className="ml-1 text-slate-500 tabular-nums">
+                      {countByAudience(categories, [audience.id])}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {audiences.length > 0 && (
+              <p className="mt-1.5 text-[10px] text-slate-500">
+                Showing {visibleCount} of {totalAlgorithms} problems
+              </p>
+            )}
+          </div>
+
           {/* Categories view */}
-          {viewMode === 'categories' && categories.map((category) => {
+          {viewMode === 'categories' && visible.map((category) => {
             const solvedInCategory = category.algorithms.filter((a) =>
               solvedProblems.includes(a.id)
             ).length;
@@ -251,7 +306,7 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
 
           {/* Patterns view */}
           {viewMode === 'patterns' && (() => {
-            const stats = getPatternStats(categories, solvedProblems);
+            const stats = getPatternStats(visible, solvedProblems);
             return (
               <div className="space-y-2">
                 {stats.map(({ name, total, solved, algorithms }) => {
@@ -311,7 +366,7 @@ export function Sidebar({ categories, isOpen, onClose, onSelect }: SidebarProps)
           })()}
           {/* Topics view — grouped by what the input IS, which cuts across categories */}
           {viewMode === 'topics' && (() => {
-            const stats = getTopicStats(categories, solvedProblems);
+            const stats = getTopicStats(visible, solvedProblems);
             return (
               <div className="space-y-2">
                 <p className="text-[11px] text-slate-500 leading-snug px-1 mb-1">
