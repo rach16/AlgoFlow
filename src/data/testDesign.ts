@@ -131,6 +131,28 @@ export interface ExpectedCase {
   tier: CaseTier;
 }
 
+/**
+ * A worked answer, in four parts, because the failure mode of a checklist is producing a candidate
+ * who has forty cases and no way to deliver them. Shown only after you have marked your own — an
+ * answer read first gets recited, and a recited answer collapses on the first follow-up.
+ */
+export interface ModelAnswer {
+  /** What you actually say before listing anything, clarifiers included. */
+  open: string;
+  /** How the enumeration sounds out loud. Not the full list — the narration over it. */
+  walk: string;
+  /** The three you would automate first and at which layer. The part most answers skip. */
+  prioritise: string;
+  /** The close, which is almost always observability. */
+  close: string;
+}
+
+export interface FollowUp {
+  question: string;
+  /** What a strong answer says. Try yours before opening it. */
+  answer: string;
+}
+
 export interface DesignExercise {
   id: string;
   title: string;
@@ -139,8 +161,9 @@ export interface DesignExercise {
   /** What is unstated and worth asking for. Asking is itself part of what is scored. */
   clarifiers: string[];
   expected: ExpectedCase[];
-  /** Where the interviewer takes it once you have produced a list. */
-  followUps: string[];
+  /** Where the interviewer takes it once you have produced a list, and what to say. */
+  followUps: FollowUp[];
+  modelAnswer: ModelAnswer;
 }
 
 export const EXERCISES: DesignExercise[] = [
@@ -156,10 +179,32 @@ export const EXERCISES: DesignExercise[] = [
       'Web only, or the mobile app against the same endpoint?',
     ],
     followUps: [
-      'Which three of those would you automate first, and at which layer?',
-      'Your login test is flaky in CI once a week. How do you find out why?',
-      'How would you test this if the auth service belonged to another team and had no sandbox?',
+      {
+        question: 'Your login test is flaky in CI once a week. How do you find out why?',
+        answer:
+          'Get data instead of guessing: run it in a loop in CI, not locally, and see whether it reproduces at all. Then look for what differs between runs — a fixed test user shared with another suite, a session left behind by an earlier test, a wait on a spinner rather than on the request. Print a correlation id so the failure names a server-side log. If it still will not reproduce, quarantine it with an owner and a date; adding a retry is not a fix, it just moves the flake somewhere I cannot see it.',
+      },
+      {
+        question: 'How would you test this if the auth service belonged to another team and had no sandbox?',
+        answer:
+          'Fake it at our own boundary so the suite never leaves our network — a stub returning the documented responses, including the timeout and the 500, which are the two I most want to cover and the two a real sandbox gives you least reliably. Then one contract test against their real service on its own schedule, so we find out their shape moved without every test we own going red at once. What I would not do is point the suite at their production.',
+      },
+      {
+        question: 'Support wants the lockout removed because it generates tickets. What do you say?',
+        answer:
+          'That is a real trade-off and not mine alone, but I would want the numbers first: how many lockouts are attacks and how many are a customer with an old password saved. Then I would offer the middle — exponential backoff instead of a hard lock, plus rate limiting per IP so distributed guessing is still covered. And I would name what we lose, because removing it makes credential stuffing cheap, and that shows up as account takeovers rather than as support tickets.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'Before I list anything — is password the only path, or is there SSO and 2FA behind this? Is there a lockout, and after how many attempts? And who owns the session: do we set a cookie, or does an auth service hand us a token? I will assume email and password, a lockout at five, and a cookie we set, and I will flag where that assumption changes the answer.',
+      walk:
+        'I will go in groups rather than at random. Happy path: valid credentials land you on the page you originally asked for, not the home page — the redirect-after-login is where that quietly breaks. Equivalence: wrong password, unknown email, and right-email-wrong-password should be indistinguishable to the user. Boundaries are where the density is — minimum length and either side of it, empty fields, and the lockout at N−1, at N, and a success in between to prove the counter resets. Then hostile input, then state: back button after logout, session expiry, the destination surviving it. And I want to call out concurrency specifically, because a double-click on submit can burn two attempts off the lockout with a correct password.',
+      prioritise:
+        'If I could automate three: the lockout boundary, because it locks real customers out and it is cheap to test at the service layer; the identical-error-for-every-failure case, because it is a security requirement and a one-line regression; and one end-to-end happy path including the redirect, because that is the journey whose failure means nobody can get in. Only the third needs a browser — the other two are service-level tests, and putting them in a browser would make them slow and flaky for no extra coverage.',
+      close:
+        'And I would want to know before a customer tells us: failed logins logged with a reason code and no password, and an alert on the failure rate rather than on individual errors — the signal is the rate changing, not any one failure.',
+    },
     expected: [
       { id: 'login-happy-1', dimension: 'happy', tier: 'must', text: 'Valid credentials sign in and land on the page the user originally asked for, not just the home page.' },
       { id: 'login-happy-2', dimension: 'happy', tier: 'credit', text: '“Remember me” keeps the session across a browser restart; left unchecked, it does not.' },
@@ -203,10 +248,32 @@ export const EXERCISES: DesignExercise[] = [
       'One seller per item, or several with different prices?',
     ],
     followUps: [
-      'Stock is decremented at checkout, not at add. Which of your cases changes?',
-      'How do you test the two-tabs-last-unit case without two real browsers?',
-      'Where does each of these live — unit, service, or end-to-end?',
+      {
+        question: 'Stock is decremented at checkout, not at add. Which of your cases changes?',
+        answer:
+          'Most of them get easier and one gets harder. Add stops being able to oversell, so the two-tabs-last-unit race moves out of add and into checkout — but it does not disappear, it just fails later and in front of someone who has already entered a card, which is worse. So I would keep the race test and point it at checkout, and add a case for the window itself: item in cart, stock goes to zero elsewhere, what does the cart say before you try to pay? Silently failing at payment is the bug this design creates.',
+      },
+      {
+        question: 'How do you test the two-tabs-last-unit case without two real browsers?',
+        answer:
+          'Drop below the UI. The race lives in the service, so I would fire two concurrent requests at the endpoint with the same item and assert exactly one succeeds and stock never goes below zero — that runs in milliseconds and can run a hundred times to catch a race that shows up one time in twenty. If the guard is a database constraint or a conditional update I would also test it directly, because that is the thing actually enforcing it. Two browsers would test the same logic far more slowly and far less reliably.',
+      },
+      {
+        question: 'Where does each of these live — unit, service, or end-to-end?',
+        answer:
+          'Quantity validation and the price-comes-from-the-server rule are unit tests on the logic. Stock transitions, the guest-to-account cart merge, the concurrency case and every authorisation case are service tests, because they need a real datastore but not a browser. End-to-end I would keep to one: add an item, see the badge increment, see the line in the cart — the journey whose failure means the shop is broken. Accessibility I would assert in a component test rather than a full journey, so it fails on the component that regressed.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'Two things change the whole answer, so I will ask first: is stock reserved at add or at checkout, and does a guest cart survive signing in? I will assume reserved at add and yes, a guest cart merges — and I will say where the other choice would move my tests.',
+      walk:
+        'Happy path is that the line shows the right price, quantity and seller, and the badge updates without a reload. Equivalence by stock state — in stock, low stock, out of stock, pre-order. Boundaries around quantity: one, the per-order limit, one over, zero, negative, and the last unit in stock against one more than remains. Then invalid input, including a quantity edited into the request rather than typed into the field, which is the version that actually gets exploited. State is heavy here: adding twice increments rather than duplicating, the guest cart merges without losing lines, the cart survives a refresh. And concurrency is the one I would not skip — two tabs taking the last unit, and a double-click adding one rather than two.',
+      prioritise:
+        'Three first: the double-click, because it is the most common real bug and it is cheap; the two-tabs-last-unit race at the service layer, because overselling costs money and support time; and the authorisation case — you cannot touch another customer’s cart by changing an id — because that class of bug is the most common serious vulnerability in web apps and it is a fast test. All three are service tests. The browser test I would keep is the single happy journey.',
+      close:
+        'And I would want add-to-cart failures counted separately from checkout failures, because they fail for different reasons and a single "cart errors" number hides which half is broken.',
+    },
     expected: [
       { id: 'cart-happy-1', dimension: 'happy', tier: 'must', text: 'Adding an item shows it in the cart with the right price, quantity, seller and image.' },
       { id: 'cart-happy-2', dimension: 'happy', tier: 'must', text: 'The cart badge count updates without a full page reload.' },
@@ -246,10 +313,32 @@ export const EXERCISES: DesignExercise[] = [
       'Is the camera a source on mobile, or file picker only?',
     ],
     followUps: [
-      'How do you generate the malformed files — by hand, or as part of the suite?',
-      'The upload works locally and fails in CI. Where do you look first?',
-      'What would you assert about the resized output without comparing images pixel by pixel?',
+      {
+        question: 'How do you generate the malformed files — by hand, or as part of the suite?',
+        answer:
+          'Both, deliberately. A small fixture directory checked into the repo for the ones that must never change — the zero-byte file, the wrong-magic-bytes jpg, the truncated image — because those are the regression cases and I want them byte-identical every run. Generated at runtime for anything large or parameterised: the exactly-at-the-limit file, the one byte over, the extreme aspect ratio. Committing a 10 MB fixture to test a 10 MB limit punishes everyone who clones the repo.',
+      },
+      {
+        question: 'The upload works locally and fails in CI. Where do you look first?',
+        answer:
+          'At the differences between the two environments, in order of likelihood: a body-size or timeout limit in the proxy or gateway that is not in front of my local server, missing credentials for the storage bucket, a slower connection making a timeout fire that never fires locally, and a fixture path that resolves differently in the CI working directory. I would get the server-side error rather than the browser-side one first — "it failed" from the client is almost never the useful half.',
+      },
+      {
+        question: 'What would you assert about the resized output without comparing images pixel by pixel?',
+        answer:
+          'Properties rather than pixels: the dimensions match the target, the aspect ratio is preserved within a pixel, the byte size is under the budget, the format is what we said, EXIF is stripped, and the file actually decodes. If I need to catch visual regressions I would use a perceptual hash with a threshold rather than an exact comparison — an exact pixel comparison across encoder versions is a flake generator, and it fails without telling you what changed.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'Which formats and what size limit, is it re-encoded server-side or stored as sent, and is the stored file public or behind authorisation? Those three change what I test most. I will assume JPEG and PNG, a few megabytes, resized on the server, and served publicly from a CDN.',
+      walk:
+        'Happy path first, and the assertion I care about is that the new picture appears everywhere the avatar is shown, not only on the settings page — a cached avatar elsewhere is the bug people actually report. Equivalence across formats, plus the file with the right extension and the wrong magic bytes. Boundaries on size: exactly the limit, one byte over, one byte, zero. Invalid input is unusually rich here because the file is attacker-controlled — a jpg that is really an archive, a truncated image, a decompression bomb. Then state: cancelling mid-upload leaving no orphan, and storage failing after the row is written, which is how you get a profile pointing at a file that does not exist. Security I would give real weight — served where it cannot execute, content type that cannot be sniffed, EXIF GPS stripped before it is public.',
+      prioritise:
+        'Three: the wrong-magic-bytes file, because accepting it is the difference between a photo and a payload; the size boundary at one byte over, because it is the single likeliest functional bug and it is instant; and storage-fails-after-the-row-is-written, because it corrupts data rather than just failing. The first two are service tests against the endpoint. The third I would test by injecting a failing storage client, which is only possible if the client is passed in — and if it is not, that is the change I would ask for.',
+      close:
+        'And every rejection logged with its reason, so "it will not let me upload" is diagnosable from the log instead of needing the customer to send us the file.',
+    },
     expected: [
       { id: 'upl-happy-1', dimension: 'happy', tier: 'must', text: 'A valid JPEG and PNG upload, and the new picture appears everywhere the avatar is shown, not only on the settings page.' },
       { id: 'upl-happy-2', dimension: 'happy', tier: 'must', text: 'Replacing an existing picture, and removing one entirely.' },
@@ -290,10 +379,32 @@ export const EXERCISES: DesignExercise[] = [
       'Is the suggestion index the same one that serves the results page?',
     ],
     followUps: [
-      'How do you test the out-of-order response case deterministically?',
-      'What is the assertion for “relevant”? Relevance is not a boolean.',
-      'Which of these can be a unit test on the client?',
+      {
+        question: 'How do you test the out-of-order response case deterministically?',
+        answer:
+          'Control the responses rather than hoping for the race. Stub the transport, fire the request for "ca", then the request for "cat", then resolve them in the wrong order — "cat" first, then "ca" — and assert the list still shows the results for "cat". That is deterministic and takes milliseconds. Doing it against a real backend by making one call artificially slow is possible but it is a timing test pretending to be a logic test.',
+      },
+      {
+        question: 'What is the assertion for “relevant”? Relevance is not a boolean.',
+        answer:
+          'It is not a pass/fail assertion, so I would not pretend it is one. I would hold a judged set of queries with their expected top results and measure precision at 5 or mean reciprocal rank across it, then assert the metric has not dropped below an agreed threshold rather than asserting any single result. Individual cases I would only pin where the business has said so — the brand name that must return that brand. Everything else is a metric with a guard rail, tracked over time.',
+      },
+      {
+        question: 'Which of these can be a unit test on the client?',
+        answer:
+          'More than people expect: the debounce, the cancellation, the out-of-order guard, the empty-state rendering, escaping of suggestion text, and the keyboard interaction — arrows moving the active option, Escape closing. All of those are the client’s own logic and need no backend at all. What is left for an integration test is the query actually reaching the service and coming back in the agreed shape, plus latency, which is not a client concern.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'How many suggestions and from where, is there a debounce and how long, and does Enter search what you typed or the highlighted suggestion? That last one decides a whole group of cases. I will assume ten suggestions, a 200 ms debounce, and Enter taking the highlight when there is one.',
+      walk:
+        'Happy path, then equivalence over match types — prefix, mid-word, misspelling, synonym — and I would ask which of those we claim to support, because testing a behaviour we never promised is noise. Boundaries: one character, the debounce interval on both sides, maximum query length, and zero results showing a real empty state. Hostile input matters more than it looks — a suggestion is rendered, so HTML in one is a stored-XSS sink. The dimension I would spend most time on is state and concurrency together: responses arriving out of order, where the slower earlier request overwrites the newer one. That is the classic typeahead bug and it looks like flakiness rather than a bug, which is why it survives. Then scale — the per-keystroke latency budget, and how many requests a twenty-character query actually generates.',
+      prioritise:
+        'Three: the out-of-order guard, because it is the defining bug of this feature and it is a fast client-side unit test; escaping in the suggestion list, because it is a security issue with a one-line regression; and the service-is-down case, because the box must still let you submit a plain search — degrading to useless is worse than degrading to plain. None of these needs a browser journey.',
+      close:
+        'And I would record the queries that return nothing. Those are the highest-value signal the search team gets, and they are invisible unless somebody deliberately logs them.',
+    },
     expected: [
       { id: 'ta-happy-1', dimension: 'happy', tier: 'must', text: 'Typing a prefix shows suggestions, and picking one runs the search it promised.' },
       { id: 'ta-eq-1', dimension: 'equivalence', tier: 'must', text: 'Prefix match, mid-word match, misspelling and synonym each have a defined behaviour — or are explicitly out of scope.' },
@@ -331,10 +442,32 @@ export const EXERCISES: DesignExercise[] = [
       'Is creating authenticated, or open to anyone?',
     ],
     followUps: [
-      'Which of these belong in a contract test rather than an end-to-end one?',
-      'How would you load-test the resolve path without generating real traffic to real sites?',
-      'A code resolves correctly in staging and 404s in production. Where do you look?',
+      {
+        question: 'Which of these belong in a contract test rather than an end-to-end one?',
+        answer:
+          'The shape, not the behaviour. That the create response carries a code field of the documented type, that the error body has a code and a message, that the redirect status is the one we published — those are contract, verified from both sides without deploying either against the other. Whether the code actually resolves to the right URL is behaviour and belongs in a service test. The distinction matters because a contract test fails with "the field is gone" and an end-to-end test fails with "something went wrong", and the first one is worth ten of the second at 3am.',
+      },
+      {
+        question: 'How would you load-test the resolve path without generating real traffic to real sites?',
+        answer:
+          'Point the codes at a host we control, or assert on the 302 without following it — the load test cares about our lookup and our response time, not about the destination. Then shape the traffic like production rather than uniformly: mostly reads, a long tail of codes, and one hot key taking a large share, because a uniform load test will miss a caching problem that real traffic finds immediately. And I would run it against something production-shaped, since a benchmark on an empty table measures nothing.',
+      },
+      {
+        question: 'A code resolves correctly in staging and 404s in production. Where do you look?',
+        answer:
+          'First: does the row exist in production, or is this a data problem rather than a code problem? If it exists, then a CDN or cache in front of production that staging does not have, serving a cached 404 from before the code was created — negative caching is the usual culprit. After that, environment config pointing at a different datastore, and a code-generation difference like case sensitivity that only bites where the two environments differ. I would find out by querying production directly and comparing what the edge returns against what the origin returns.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'Is the same long URL always the same code, or a new one each time? Are there custom aliases, expiry, deletion? And is creating authenticated or open to anyone? That last one changes the whole security section, because an open shortener is abused within hours. I will assume a new code each time, optional custom aliases, and authenticated creation.',
+      walk:
+        'This one splits cleanly in two, and I would say so: create and resolve are different endpoints with different risk profiles. On create — happy path, equivalence across URL kinds including ports, fragments and unicode, the length boundary, and rejection of javascript:, data: and internal addresses like 169.254.169.254, because that last one turns the service into a way to read cloud metadata. On resolve — an unknown code returns 404 rather than redirecting to the home page, expiry at and either side of the TTL, and behaviour behind a CDN cache. Concurrency I would name explicitly: two requests racing for the same custom alias, and the generator never issuing one code to two callers. Then scale, and I would point out the asymmetry — resolve is the path that must be fast, because it carries almost all of the traffic.',
+      prioritise:
+        'Three: the internal-address and javascript: rejection, because that is a vulnerability rather than a bug; the custom-alias race, because it silently gives two people the same link; and resolve latency at p99 under read-heavy load, because that is the only performance number that matters here. First two are service tests, the third is a load test on its own schedule, not in the pull-request pipeline.',
+      close:
+        'And the resolve path should record the code and referrer without recording the whole request — enough to see a link being abused, not enough to become a privacy problem of its own.',
+    },
     expected: [
       { id: 'sh-happy-1', dimension: 'happy', tier: 'must', text: 'POST returns a code; GET of that code redirects to the original, including its query string.' },
       { id: 'sh-eq-1', dimension: 'equivalence', tier: 'must', text: 'http and https; a URL with a port, with a fragment, with unicode, and one that is already short.' },
@@ -372,10 +505,32 @@ export const EXERCISES: DesignExercise[] = [
       'Can the underlying data change while a client is paginating?',
     ],
     followUps: [
-      'A record was created between page 1 and page 2. What does the client see, and is that a bug?',
-      'How would you write the deep-offset performance test so it fails loudly rather than slowly?',
-      'Which of these survive as a contract test when the team adds a field?',
+      {
+        question: 'A record was created between page 1 and page 2. What does the client see, and is that a bug?',
+        answer:
+          'With offset pagination and a newest-first sort, the new record lands on page 1 and pushes everything down by one — so the record that was last on page 1 is now first on page 2 and the client sees it twice. Delete instead of create and the client misses one entirely. Whether it is a bug depends on what we promised: for an activity feed, duplicates are tolerable and skips are not; for anything being reconciled or exported, both are unacceptable and the answer is a cursor over a stable sort key. What is definitely a bug is not having decided.',
+      },
+      {
+        question: 'How would you write the deep-offset performance test so it fails loudly rather than slowly?',
+        answer:
+          'Assert on a threshold rather than eyeballing a duration, and seed enough data for the problem to exist — a hundred rows will never show it. Then measure the deep page specifically, not an average across pages, and fail the test if p99 for the last page exceeds the budget. Better still, assert on the query plan or the rows-examined count where the datastore exposes it, because that fails deterministically on a slow CI machine where a wall-clock threshold turns into a flake.',
+      },
+      {
+        question: 'Which of these survive as a contract test when the team adds a field?',
+        answer:
+          'The ones that assert on what we need rather than on the whole body. Asserting the response has an items array of objects each carrying an id and a total or a next cursor survives a new field being added; asserting the body deep-equals a fixture breaks on every addition and trains everybody to update fixtures without reading them. So: assert the fields you consume and their types, assert unknown fields are ignored by the client, and let everything else change.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'Offset or cursor? What are the default and maximum page sizes? And is the sort stable when two records share a sort key? I ask that last one because an unstable sort makes pagination non-deterministic no matter how the paging works. I will assume offset, a default of 20, a maximum of 100, and newest-first.',
+      walk:
+        'Happy path, then equivalence by data volume — a user with none, with fewer than a page, with exactly one page, with several. Boundaries carry most of the value here: size of 1, the default, the maximum, the maximum plus one, page 0, page −1, the page after the last, and the last page both partially full and exactly full. That exactly-full case is the off-by-one that hides the "next" link, and it is missed constantly. Invalid input includes page as a float, a huge integer, or an array. But the case I would lead with is the state one — a record created between page 1 and page 2 causing a client to see something twice or miss it entirely. That is the defining bug of offset pagination and the reason cursors exist. Then scale, because deep offsets get slower with depth and cursors do not, and authorisation, because a cursor encoding a raw primary key can be decremented into somebody else’s data.',
+      prioritise:
+        'Three: authorisation across users, because it is the most serious and the fastest to write; the exactly-full last page, because it is the likeliest functional bug; and deep-offset latency with a real volume of seeded data, because it is invisible until it is a production incident. The first two are service tests, the third is a seeded performance test asserting a threshold rather than a stopwatch reading.',
+      close:
+        'And the p99 should be measured at the deep pages where it is bad, not averaged across all pages, which is how this problem stays hidden on a dashboard that looks healthy.',
+    },
     expected: [
       { id: 'pg-happy-1', dimension: 'happy', tier: 'must', text: 'Page one returns the default size, in the documented order, with a total or a next cursor.' },
       { id: 'pg-eq-1', dimension: 'equivalence', tier: 'must', text: 'A user with zero orders, fewer than one page, exactly one page, and several pages.' },
@@ -409,10 +564,32 @@ export const EXERCISES: DesignExercise[] = [
       'Are reset requests rate limited per address?',
     ],
     followUps: [
-      'How do you assert on the email without a human reading an inbox?',
-      'Corporate mail scanners prefetch links. What does that do to your single-use token?',
-      'Which parts of this can you test without sending a real email at all?',
+      {
+        question: 'How do you assert on the email without a human reading an inbox?',
+        answer:
+          'A catch-all mailbox the test can query over an API — a local SMTP sink in CI, or a disposable-inbox service against a staging domain. The test triggers the reset, polls the sink for a message to that address, and pulls the link out of the body. That also lets me assert on the content: that it is addressed correctly, that it does not contain the password, that the link points at our domain. Reading it by hand is not a test, it is a demonstration.',
+      },
+      {
+        question: 'Corporate mail scanners prefetch links. What does that do to your single-use token?',
+        answer:
+          'It burns it. The scanner fetches the URL before the user ever clicks, the token is consumed, and the customer gets "this link has expired" on their first click — and it will be reported as flaky rather than as a bug, because it depends on whose mail server they use. The fix is that a GET must not consume the token: the link opens a form, and the token is spent on the POST that actually sets the password. That is worth a test asserting the token still works after the URL has been fetched once.',
+      },
+      {
+        question: 'Which parts of this can you test without sending a real email at all?',
+        answer:
+          'Nearly all of it. Token generation, length and randomness, single use, expiry either side of the TTL, what a second request does to the first token, whether other sessions are invalidated, the identical response for registered and unregistered addresses, and the rate limit — all of those are service tests against the endpoints, with the token taken from a test-only hook rather than from a message. What genuinely needs mail is delivery itself and how the message renders, and that is one test, not a suite.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'How long is the token good for and is it single use? Does resetting sign out other sessions? And what happens for an account that signed up with SSO and has no password to reset? I will assume an hour, single use, other sessions invalidated, and SSO accounts told they have no password rather than silently succeeding.',
+      walk:
+        'The thing I want to say first is that this is not one feature, it is a flow across two channels, and the bugs live in the seams. Happy path end to end, then equivalence by account type including the SSO case. Boundaries on the token: a minute before expiry, exactly at, a minute after. Invalid input is where I would spend time — a token altered by one character, a token belonging to another account, a token already used, and the same link opened twice, which must fail the second time. State: what a second reset request does to the first link, whether the earlier lockout is cleared, whether other sessions die. Security has two cases I would not leave out — the response must be identical for a registered and an unregistered address, or the form tells attackers which addresses exist, and repeated requests must not turn the feature into an email bomb aimed at a customer.',
+      prioritise:
+        'Three: single use actually being single use, because a reusable reset link is an account takeover; the identical response for unknown addresses, because it is an enumeration hole and a one-line regression; and rate limiting per address, because the abuse case here is aimed at a customer rather than at us. All three are service tests with the token pulled from a test hook — none of them needs an inbox.',
+      close:
+        'And I would count requests and completions separately, because the gap between them is where this feature fails silently — people asking for a reset and never finishing one is what a broken link looks like on a dashboard.',
+    },
     expected: [
       { id: 'rs-happy-1', dimension: 'happy', tier: 'must', text: 'Request, email arrives, link opens the form, the new password works and the old one no longer does.' },
       { id: 'rs-eq-1', dimension: 'equivalence', tier: 'must', text: 'A registered address, an unregistered one, an unverified one, and an SSO account with no password to reset.' },
@@ -449,10 +626,32 @@ export const EXERCISES: DesignExercise[] = [
       'Who is the customer here — the riders, or the building owner?',
     ],
     followUps: [
-      'You have one building and one week. What do you actually test, and what do you simulate?',
-      'How would you test the dispatch algorithm without an elevator?',
-      'What is the single failure you would never ship without covering?',
+      {
+        question: 'You have one building and one week. What do you actually test, and what do you simulate?',
+        answer:
+          'On the real building: everything physical and everything safety-critical, because those cannot be simulated honestly — door obstruction, the overload sensor, power loss mid-travel, fire-service mode, the emergency phone, and the accessibility timings. In simulation: dispatch policy, queueing, morning-peak behaviour and anything needing thousands of repetitions, because a week is not enough trips to see a scheduling bug. The split is not about difficulty — it is that the simulator is a model, and the failures I would never ship are exactly the ones where trusting a model is the risk.',
+      },
+      {
+        question: 'How would you test the dispatch algorithm without an elevator?',
+        answer:
+          'It is a state machine over a queue, so it is a unit test. Feed it a sequence of calls with timestamps and assert the order it serves them, that it serves in travel order rather than press order, that no call is dropped, and that no call waits forever under continuous new requests — starvation is the interesting property. Then run randomised traffic against it and assert invariants rather than exact outcomes: every call eventually served, never two cars to one call, never travel past a requested floor without stopping.',
+      },
+      {
+        question: 'What is the single failure you would never ship without covering?',
+        answer:
+          'The doors opening when the car is not at a floor. Everything else on my list is an inconvenience or a cost; that one kills someone. After that, the overload sensor and the door-obstruction sensor failing on rather than off, because a sensor that always reports clear is worse than one that always reports blocked — the failure has to be safe by default, and that is a test I would want run on the real hardware every release.',
+      },
     ],
+    modelAnswer: {
+      open:
+        'How many cars and how many floors, is there a basement or an express floor, what is the weight limit, and is there fire-service mode or are any floors key-locked? And I would ask who the customer is — the riders care about wait time, the building owner cares about throughput and downtime, and those pull the tests in different directions.',
+      walk:
+        'I would say up front that this is a safety-critical system, so I am going to weight failure and misuse far more heavily than I would for a web form. Happy path: a call from floor 3 going up brings a car and opens the doors there. Equivalence across call types — inside, outside, while moving, for the floor you are already on. Boundaries: the top and bottom floors, where "up" from the top is not a meaningful request, and the weight limit at, under and over. Misuse: every button at once, a button held, a locked floor, and the door sensor obstructed continuously. State is where the real correctness bug lives — requests must be served in travel order, not press order; a lift that goes 8, then 2, then 7 is functionally wrong even though every call gets served. Concurrency is two cars answering one call. Then scale, which here is morning peak, and accessibility, which is a requirement rather than a nicety — audible announcements, braille, and a door-hold long enough for a wheelchair or a stroller.',
+      prioritise:
+        'The three I would never ship without: doors cannot open when the car is not at a floor; the overload sensor and the door sensor must fail safe rather than fail clear; and the dispatch queue must not starve a call under continuous new requests. The first two are hardware-in-the-loop tests on the real installation. The third is a unit test against the scheduler, because it is a state machine over a queue and needs no elevator at all.',
+      close:
+        'And I would ask what it logs — faults, door cycles, overload events. Without that, nobody notices the third car has been slow for a week until somebody complains, and by then you have no data about when it started.',
+    },
     expected: [
       { id: 'el-happy-1', dimension: 'happy', tier: 'must', text: 'A call from floor 3 going up brings a car and opens the doors at floor 3.' },
       { id: 'el-happy-2', dimension: 'happy', tier: 'credit', text: 'Panel light, floor indicator and arrival chime all agree with where the car actually is.' },

@@ -5,6 +5,7 @@ import {
   METHOD_STEPS,
   type DesignExercise,
   type ExpectedCase,
+  type FollowUp,
 } from '../data/testDesign';
 import { useTestDesignStore } from '../store/testDesignStore';
 import { useProgressStore } from '../store/progressStore';
@@ -103,6 +104,78 @@ function CaseRow({
         </span>
       )}
     </label>
+  );
+}
+
+/**
+ * The worked answer, collapsed.
+ *
+ * A checklist on its own produces a candidate with forty cases and no way to deliver them, so this
+ * shows what the answer sounds like out loud — the clarifiers as spoken, the narration over the
+ * enumeration, the three you would automate first and where, and the close. Collapsed for the same
+ * reason the behavioral examples are: read first it gets recited, read after it calibrates.
+ */
+const ANSWER_PARTS = [
+  { key: 'open', label: 'Open by asking' },
+  { key: 'walk', label: 'Then walk it out loud' },
+  { key: 'prioritise', label: 'Then prioritise — the part most answers skip' },
+  { key: 'close', label: 'And close on how you would know in production' },
+] as const;
+
+function WorkedAnswer({ exercise }: { exercise: DesignExercise }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`${CARD} p-5`}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="text-sm text-indigo-400 hover:text-indigo-300 font-medium"
+      >
+        {open ? 'Hide the worked answer' : 'See a worked answer — now that yours is marked'}
+      </button>
+      {open && (
+        <div className="mt-4 flex flex-col gap-3">
+          {ANSWER_PARTS.map((part) => (
+            <div key={part.key}>
+              <span className={LABEL}>{part.label}</span>
+              <p className="text-xs text-slate-300 leading-relaxed mt-0.5">
+                {exercise.modelAnswer[part.key]}
+              </p>
+            </div>
+          ))}
+          <p className="text-[11px] text-slate-500">
+            Somebody else’s answer, and the content is not the point — the shape is. Notice that it
+            names the dimension before listing under it, that it says which cases it would automate
+            and at which layer, and that it never delivers forty cases as forty cases.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** One follow-up, with its answer behind a click so you can try yours first. */
+function FollowUpRow({ followUp }: { followUp: FollowUp }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-slate-900/40 border border-slate-700 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full text-left px-3 py-2.5 hover:bg-slate-700/40 transition-colors flex gap-2"
+      >
+        <span className="text-slate-600 flex-shrink-0">→</span>
+        <span className="text-xs text-slate-300 flex-1">{followUp.question}</span>
+        <span className="text-[10px] text-indigo-400 flex-shrink-0 font-medium">
+          {open ? 'Hide' : 'Answer'}
+        </span>
+      </button>
+      {open && (
+        <p className="px-3 pb-3 pt-1 text-xs text-slate-400 leading-relaxed border-t border-slate-700">
+          {followUp.answer}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -283,16 +356,19 @@ function Comparing({ exercise, active }: { exercise: DesignExercise; active: Act
         </div>
       ))}
 
+      <WorkedAnswer exercise={exercise} />
+
       <div className={`${CARD} p-5`}>
         <span className={`${LABEL} mb-1.5`}>Where the interviewer goes next</span>
-        <ul className="flex flex-col gap-1.5 mb-4">
-          {exercise.followUps.map((q) => (
-            <li key={q} className="text-xs text-slate-300 flex gap-2">
-              <span className="text-slate-600">→</span>
-              <span>{q}</span>
-            </li>
+        <p className="text-xs text-slate-500 mb-3">
+          Answer each one yourself before opening it. These are where the round is actually won —
+          the list gets you to competent, the follow-ups are what separate answers.
+        </p>
+        <div className="flex flex-col gap-1.5 mb-4">
+          {exercise.followUps.map((followUp) => (
+            <FollowUpRow key={followUp.question} followUp={followUp} />
           ))}
-        </ul>
+        </div>
         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-700">
           <button
             onClick={() => commit(Date.now())}

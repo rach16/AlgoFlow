@@ -46,6 +46,27 @@ describe('the reference bank', () => {
     }
   });
 
+  // A reference list on its own produces a candidate with forty cases and no way to deliver them.
+  // Every exercise has to carry a worked answer, and no follow-up may be a question with no answer.
+  it('answers every question it asks', () => {
+    for (const exercise of EXERCISES) {
+      for (const part of ['open', 'walk', 'prioritise', 'close'] as const) {
+        expect(exercise.modelAnswer[part].length, `${exercise.id}.${part}`).toBeGreaterThan(80);
+      }
+      for (const followUp of exercise.followUps) {
+        expect(followUp.question.length, exercise.id).toBeGreaterThan(20);
+        expect(followUp.answer.length, followUp.question).toBeGreaterThan(120);
+      }
+    }
+  });
+
+  it('uses distinct follow-up questions within an exercise', () => {
+    for (const exercise of EXERCISES) {
+      const questions = exercise.followUps.map((f) => f.question);
+      expect(new Set(questions).size, exercise.id).toBe(questions.length);
+    }
+  });
+
   it('uses ids that are unique across the whole bank', () => {
     const ids = EXERCISES.flatMap((e) => e.expected.map((c) => c.id));
     expect(new Set(ids).size).toBe(ids.length);

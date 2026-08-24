@@ -30,7 +30,7 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling
 - 📚 **Method reference** in the language you are writing: 126 operations across 12 structures, with `String` and `char` kept separate because they are different APIs
 - 🗂️ **Three ways to browse** — Categories (the curriculum), Patterns (the technique), Topics (the data type)
 - 🎯 **Filter by who asks** — big tech, staffing agencies or startups, across every browse axis and the review queue
-- 🧭 **Test design** — 173 reference cases across 8 “how would you test X?” exercises. Write your list first, then compare and mark what you had; the score that matters is which *dimensions* you never reached, tracked across every attempt
+- 🧭 **Test design** — 173 reference cases across 8 “how would you test X?” exercises, each with a worked answer and answered follow-ups behind a reveal. Write your list first, then compare and mark what you had; the score that matters is which *dimensions* you never reached, tracked across every attempt
 - 🏗️ **Testability reference** — six case-design techniques with their traps, where each case belongs and what it costs there, ten design-for-testability levers, and the flake arithmetic that makes the argument
 - 🗣️ **Behavioral bank** — all 16 Amazon Leadership Principles, what each is really probing, the anti-patterns, and a STAR scaffold you fill in; one story can cover several principles, and finished stories join the review queue
 - ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
