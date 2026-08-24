@@ -10,7 +10,7 @@ import {
 /** Every member of the AppView union, listed so the compiler fails if one is added. */
 const ALL_VIEWS: AppView[] = [
   'visualizer', 'sdet', 'complexity', 'methods', 'drill', 'testdesign', 'testability',
-  'craft', 'flake', 'behavioral', 'review',
+  'craft', 'flake', 'ai', 'aifeatures', 'behavioral', 'review',
 ];
 
 describe('navigation', () => {

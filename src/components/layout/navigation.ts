@@ -20,6 +20,8 @@ export type AppView =
   | 'testability'
   | 'craft'
   | 'flake'
+  | 'ai'
+  | 'aifeatures'
   | 'behavioral'
   | 'review';
 
@@ -29,6 +31,7 @@ export type SectionId =
   | 'drill'
   | 'testdesign'
   | 'craft'
+  | 'ai'
   | 'behavioral'
   | 'review';
 
@@ -82,6 +85,16 @@ export const SECTIONS: NavSection[] = [
     views: [
       { id: 'craft', label: 'Tooling' },
       { id: 'flake', label: 'Flake lab' },
+    ],
+  },
+  {
+    // Both directions of the same question, and they are genuinely different work — one is about
+    // what you hand to a model, the other about testing a feature a model powers.
+    id: 'ai',
+    label: 'AI',
+    views: [
+      { id: 'ai', label: 'Using AI' },
+      { id: 'aifeatures', label: 'Testing AI' },
     ],
   },
   {

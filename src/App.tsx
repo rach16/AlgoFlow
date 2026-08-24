@@ -17,6 +17,12 @@ const CraftPage = lazy(() => import('./pages/CraftPage').then((m) => ({ default:
 const FlakeLabPage = lazy(() =>
   import('./pages/FlakeLabPage').then((m) => ({ default: m.FlakeLabPage }))
 );
+const AiTestingPage = lazy(() =>
+  import('./pages/AiTestingPage').then((m) => ({ default: m.AiTestingPage }))
+);
+const AiFeaturesPage = lazy(() =>
+  import('./pages/AiFeaturesPage').then((m) => ({ default: m.AiFeaturesPage }))
+);
 const BehavioralPage = lazy(() =>
   import('./pages/BehavioralPage').then((m) => ({ default: m.BehavioralPage }))
 );
@@ -87,6 +93,8 @@ function App() {
               {view === 'testability' && <TestabilityPage />}
               {view === 'craft' && <CraftPage />}
               {view === 'flake' && <FlakeLabPage />}
+              {view === 'ai' && <AiTestingPage />}
+              {view === 'aifeatures' && <AiFeaturesPage />}
               {view === 'behavioral' && <BehavioralPage />}
               {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
             </Suspense>
