@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
+  CATEGORIES,
   DIMENSIONS,
   DIMENSION_BY_ID,
   EXERCISES,
   METHOD_STEPS,
   type DimensionId,
+  type ExerciseCategory,
 } from '../data/testDesign';
 import { PYRAMID, TECHNIQUES, TESTABILITY_LEVERS, FLAKE_MATH } from '../data/testability';
 import {
@@ -58,6 +60,28 @@ describe('the reference bank', () => {
         expect(followUp.answer.length, followUp.question).toBeGreaterThan(120);
       }
     }
+  });
+
+  it('puts every exercise in a category that exists', () => {
+    const known = new Set<ExerciseCategory>(CATEGORIES.map((c) => c.id));
+    for (const exercise of EXERCISES) {
+      expect(known.has(exercise.category), `${exercise.id} -> ${exercise.category}`).toBe(true);
+    }
+    expect(new Set(CATEGORIES.map((c) => c.id)).size).toBe(CATEGORIES.length);
+  });
+
+  // A category with one exercise is not a category, it is a label — and the filter chip for it
+  // would be a click that changes nothing.
+  it('gives every category at least two exercises', () => {
+    for (const category of CATEGORIES) {
+      const inCategory = EXERCISES.filter((e) => e.category === category.id);
+      expect(inCategory.length, category.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('is a bank rather than a handful', () => {
+    expect(EXERCISES.length).toBeGreaterThanOrEqual(20);
+    expect(EXERCISES.flatMap((e) => e.expected).length).toBeGreaterThanOrEqual(300);
   });
 
   it('uses distinct follow-up questions within an exercise', () => {

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import {
+  CATEGORIES,
   DIMENSIONS,
   EXERCISES,
   METHOD_STEPS,
   type DesignExercise,
+  type ExerciseCategory,
   type ExpectedCase,
   type FollowUp,
 } from '../data/testDesign';
@@ -453,6 +455,7 @@ function ExerciseRow({
 export function TestDesignPage() {
   const { active, attempts, begin, clearAttempts } = useTestDesignStore();
   const [methodOpen, setMethodOpen] = useState(false);
+  const [kinds, setKinds] = useState<ExerciseCategory[]>([]);
 
   if (active) {
     const exercise = EXERCISES.find((e) => e.id === active.exerciseId);
@@ -493,6 +496,7 @@ export function TestDesignPage() {
 
   const summary = summarise(attempts);
   const spots = blindSpots(attempts);
+  const attemptedIds = new Set(attempts.map((a) => a.exerciseId));
 
   return (
     <div className="h-full overflow-y-auto p-4">
@@ -580,15 +584,74 @@ export function TestDesignPage() {
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
-          {EXERCISES.map((exercise) => (
-            <ExerciseRow
-              key={exercise.id}
-              exercise={exercise}
-              onStart={() => begin(exercise.id, Date.now())}
-            />
-          ))}
+        {/* Filter, then group. Twenty-four titles in one list is a wall; the kinds are also how
+            loops differ — an API-platform team asks about endpoints and a consumer team does not. */}
+        <div className={`${CARD} p-4`}>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mr-1">
+              Kind
+            </span>
+            <button
+              onClick={() => setKinds([])}
+              aria-pressed={kinds.length === 0}
+              className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                kinds.length === 0
+                  ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
+                  : 'bg-slate-700/40 border-transparent text-slate-400 hover:text-white'
+              }`}
+            >
+              All {EXERCISES.length}
+            </button>
+            {CATEGORIES.map((category) => {
+              const on = kinds.includes(category.id);
+              const count = EXERCISES.filter((e) => e.category === category.id).length;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() =>
+                    setKinds((prev) =>
+                      prev.includes(category.id)
+                        ? prev.filter((k) => k !== category.id)
+                        : [...prev, category.id]
+                    )
+                  }
+                  aria-pressed={on}
+                  title={category.blurb}
+                  className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                    on
+                      ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
+                      : 'bg-slate-700/40 border-transparent text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {category.label} {count}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {CATEGORIES.filter((c) => kinds.length === 0 || kinds.includes(c.id)).map((category) => {
+          const inCategory = EXERCISES.filter((e) => e.category === category.id);
+          const done = inCategory.filter((e) => attemptedIds.has(e.id)).length;
+          return (
+            <div key={category.id} className="flex flex-col gap-3">
+              <div className="flex items-baseline gap-2 flex-wrap px-1">
+                <h3 className="text-lg font-bold">{category.label}</h3>
+                <span className="text-xs font-mono text-slate-500">
+                  {done} / {inCategory.length}
+                </span>
+                <p className="text-xs text-slate-500 basis-full">{category.blurb}</p>
+              </div>
+              {inCategory.map((exercise) => (
+                <ExerciseRow
+                  key={exercise.id}
+                  exercise={exercise}
+                  onStart={() => begin(exercise.id, Date.now())}
+                />
+              ))}
+            </div>
+          );
+        })}
 
         {attempts.length > 0 && (
           <div className={`${CARD} p-4`}>
