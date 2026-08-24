@@ -32,6 +32,8 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling
 - 🎯 **Filter by who asks** — big tech, staffing agencies or startups, across every browse axis and the review queue
 - 🧭 **Test design** — 475 reference cases across 24 “how would you test X?” exercises in five kinds (interface, API, flow, data, physical), each with a worked answer and answered follow-ups behind a reveal. Write your list first, then compare and mark what you had; the score that matters is which *dimensions* you never reached, tracked across every attempt
 - 🏗️ **Testability reference** — six case-design techniques with their traps, where each case belongs and what it costs there, ten design-for-testability levers, and the flake arithmetic that makes the argument
+- 🔧 **Tooling craft** — waits ranked worst to best with the code and where each breaks, locators ranked 1–6 in both Playwright and Selenium, the five ways page objects go wrong, CI rules with actual numbers, and an honest Selenium/Playwright/Cypress comparison that commits to an answer
+- 🎬 **Flake lab** — five races animated step by step, each run twice on the same clock: the click that lands before the handler is bound, the stale element, the overlay that ate the click, the sleep that is both too long and too short, and the fixture two workers shared
 - 🗣️ **Behavioral bank** — all 16 Amazon Leadership Principles, what each is really probing, the anti-patterns, and a STAR scaffold you fill in; one story can cover several principles, and finished stories join the review queue
 - ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
@@ -54,6 +56,8 @@ Three sections. Practice holds the reference material you reach for mid-problem.
 | **Drill** | | Timed, hint-free practice against the clock — the coding round as it is actually run |
 | **Test design** | Exercises | 24 “How would you test X?” subjects, filterable by kind — enumerate first, then compare against the reference and find your blind spots |
 | | Testability | Technique, layer and design-for-testability: the questions asked once your list is on the table |
+| **Craft** | Tooling | Waits, locators, page objects, CI and framework choice — ranked and argued, not hedged |
+| | Flake lab | Race conditions played out step by step, broken run beside fixed |
 | **Behavioral** | | Amazon's 16 Leadership Principles, with STAR scaffolds you fill in yourself |
 | **Review** | | Spaced-repetition queue of what is due |
 
@@ -68,8 +72,8 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 | 3 | Timed drill mode — plain editor, no autocomplete, 2 problems in 45 min | ✅ done |
 | 4 | Amazon Leadership Principles story bank | ✅ done |
 | 5 | Test design and design-for-testability | ✅ done |
-| 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | next |
-| 7 | AI in testing | planned |
+| 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | ✅ done |
+| 7 | AI in testing | next |
 | 8 | SQL and twenty-minute build exercises | planned |
 
 ## 🎓 Algorithm Categories

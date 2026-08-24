@@ -13,6 +13,10 @@ const TestDesignPage = lazy(() =>
 const TestabilityPage = lazy(() =>
   import('./pages/TestabilityPage').then((m) => ({ default: m.TestabilityPage }))
 );
+const CraftPage = lazy(() => import('./pages/CraftPage').then((m) => ({ default: m.CraftPage })));
+const FlakeLabPage = lazy(() =>
+  import('./pages/FlakeLabPage').then((m) => ({ default: m.FlakeLabPage }))
+);
 const BehavioralPage = lazy(() =>
   import('./pages/BehavioralPage').then((m) => ({ default: m.BehavioralPage }))
 );
@@ -81,6 +85,8 @@ function App() {
               {view === 'drill' && <DrillPage onOpenAlgorithm={() => setView('visualizer')} />}
               {view === 'testdesign' && <TestDesignPage />}
               {view === 'testability' && <TestabilityPage />}
+              {view === 'craft' && <CraftPage />}
+              {view === 'flake' && <FlakeLabPage />}
               {view === 'behavioral' && <BehavioralPage />}
               {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
             </Suspense>

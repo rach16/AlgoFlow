@@ -18,6 +18,8 @@ export type AppView =
   | 'drill'
   | 'testdesign'
   | 'testability'
+  | 'craft'
+  | 'flake'
   | 'behavioral'
   | 'review';
 
@@ -26,6 +28,7 @@ export type SectionId =
   | 'coding'
   | 'drill'
   | 'testdesign'
+  | 'craft'
   | 'behavioral'
   | 'review';
 
@@ -69,6 +72,16 @@ export const SECTIONS: NavSection[] = [
     views: [
       { id: 'testdesign', label: 'Exercises' },
       { id: 'testability', label: 'Testability' },
+    ],
+  },
+  {
+    // The reference and the animations are different modes — one is read, one is driven — so they
+    // are separate views rather than one very long page.
+    id: 'craft',
+    label: 'Craft',
+    views: [
+      { id: 'craft', label: 'Tooling' },
+      { id: 'flake', label: 'Flake lab' },
     ],
   },
   {
