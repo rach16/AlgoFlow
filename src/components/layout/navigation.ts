@@ -22,6 +22,8 @@ export type AppView =
   | 'flake'
   | 'ai'
   | 'aifeatures'
+  | 'sql'
+  | 'build'
   | 'behavioral'
   | 'review';
 
@@ -32,6 +34,7 @@ export type SectionId =
   | 'testdesign'
   | 'craft'
   | 'ai'
+  | 'sqlbuild'
   | 'behavioral'
   | 'review';
 
@@ -95,6 +98,16 @@ export const SECTIONS: NavSection[] = [
     views: [
       { id: 'ai', label: 'Using AI' },
       { id: 'aifeatures', label: 'Testing AI' },
+    ],
+  },
+  {
+    // The two rounds that are neither algorithms nor test design, and they share nothing except
+    // being the ones candidates skip: a SQL screen and a small thing you build in twenty minutes.
+    id: 'sqlbuild',
+    label: 'SQL & build',
+    views: [
+      { id: 'sql', label: 'SQL' },
+      { id: 'build', label: 'Build round' },
     ],
   },
   {

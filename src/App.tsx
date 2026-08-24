@@ -23,6 +23,8 @@ const AiTestingPage = lazy(() =>
 const AiFeaturesPage = lazy(() =>
   import('./pages/AiFeaturesPage').then((m) => ({ default: m.AiFeaturesPage }))
 );
+const SqlPage = lazy(() => import('./pages/SqlPage').then((m) => ({ default: m.SqlPage })));
+const BuildPage = lazy(() => import('./pages/BuildPage').then((m) => ({ default: m.BuildPage })));
 const BehavioralPage = lazy(() =>
   import('./pages/BehavioralPage').then((m) => ({ default: m.BehavioralPage }))
 );
@@ -95,6 +97,8 @@ function App() {
               {view === 'flake' && <FlakeLabPage />}
               {view === 'ai' && <AiTestingPage />}
               {view === 'aifeatures' && <AiFeaturesPage />}
+              {view === 'sql' && <SqlPage />}
+              {view === 'build' && <BuildPage />}
               {view === 'behavioral' && <BehavioralPage />}
               {view === 'review' && <ReviewPage onOpenAlgorithm={() => setView('visualizer')} />}
             </Suspense>

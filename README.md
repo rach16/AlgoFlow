@@ -12,7 +12,7 @@
 
 SDET interview prep that shows you the algorithm running instead of describing it. **254 problems** — all of NeetCode 250 plus four staples SDET loops ask constantly — each with two independently animated approaches in **Python**, **JavaScript** and **Java**, a derivation of its complexity, and a spaced-repetition schedule so it comes back before you forget it.
 
-The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling craft (Playwright, Selenium, CI) and AI in testing are still to come — see [the build plan](#-roadmap).
+The animated visualizer is called **AlgoFlow** and lives under Practice, alongside tooling craft (Playwright, Selenium, CI), both directions of AI in testing, a SQL screen and the twenty-minute build round. Every phase of [the build plan](#-roadmap) is now done.
 
 [Live Demo](https://algoflow-ruby.vercel.app) · [Report Bug](https://github.com/rach16/AlgoFlow/issues) · [Request Feature](https://github.com/rach16/AlgoFlow/issues)
 
@@ -34,6 +34,11 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling
 - 🏗️ **Testability reference** — six case-design techniques with their traps, where each case belongs and what it costs there, ten design-for-testability levers, and the flake arithmetic that makes the argument
 - 🔧 **Tooling craft** — waits ranked worst to best with the code and where each breaks, locators ranked 1–6 in both Playwright and Selenium, the five ways page objects go wrong, CI rules with actual numbers, and an honest Selenium/Playwright/Cypress comparison that commits to an answer
 - 🎬 **Flake lab** — five races animated step by step, each run twice on the same clock: the click that lands before the handler is bound, the stale element, the overlay that ate the click, the sleep that is both too long and too short, and the fixture two workers shared
+- 🤖 **Using AI in testing** — the three answers to “how are you using AI” and why two of them lose, the hand-over/keep split named task by task, verification debt, and honest reads on self-healing locators and browser agents
+- 🧬 **Mutation lab** — the answer to “how do you know the generated tests are any good”: one pricing function, two suites over it at *identical* 100% line coverage, nine deliberate breakages. The suite generated from the implementation kills 3 of 8; the suite written from the spec kills 8. Every kill in the data was measured by running it
+- 🧪 **Testing AI features** — eleven cards in the order you meet the problems: you cannot grade the output, then you cannot reproduce the run, then the input turns out to be an attack surface, and only then does somebody look at the bill
+- 🗄️ **SQL for testers** — twelve exercises against one seeded database, each a pair: the query that looks right beside the query that is right. Half are the classics (NOT IN against a NULL, WHERE versus HAVING, second-highest with a tie) and half are what you actually run after a suite goes green — the order with no payment, the customer charged twice, the refund timestamped before its payment. Every result table was produced by executing the SQL, so the query that returns nothing really does
+- 🔨 **The build round** — eight things you get asked to write in twenty minutes: waitFor, retry with backoff, a token bucket, deepEqual, a test runner, a flaky-test detector, a data builder, p95 from a log. Each with what is actually being assessed, the follow-ups that come after it works, and the ways it goes wrong. Every solution is the exact source that passed its listed assertions
 - 🗣️ **Behavioral bank** — all 16 Amazon Leadership Principles, what each is really probing, the anti-patterns, and a STAR scaffold you fill in; one story can cover several principles, and finished stories join the review queue
 - ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
@@ -45,7 +50,7 @@ The animated visualizer is called **AlgoFlow** and lives under Practice. Tooling
 
 ## 🧭 Navigation
 
-Three sections. Practice holds the reference material you reach for mid-problem.
+Nine sections. Practice holds the reference material you reach for mid-problem.
 
 | Section | View | What it is for |
 |---|---|---|
@@ -58,12 +63,16 @@ Three sections. Practice holds the reference material you reach for mid-problem.
 | | Testability | Technique, layer and design-for-testability: the questions asked once your list is on the table |
 | **Craft** | Tooling | Waits, locators, page objects, CI and framework choice — ranked and argued, not hedged |
 | | Flake lab | Race conditions played out step by step, broken run beside fixed |
+| **AI** | Using AI | What you hand to a model and what you refuse to, and the mutation lab that proves coverage cannot answer the follow-up |
+| | Testing AI | Testing a feature a model powers — eval sets, LLM-as-judge bias, prompt injection, over-refusal, cost as an assertion |
+| **SQL & build** | SQL | Twelve query pairs against one seeded database — the query that looks right, and what it actually returned |
+| | Build round | The twenty-minute build: a wait, a retry, a limiter, a runner, and what the follow-ups are really asking |
 | **Behavioral** | | Amazon's 16 Leadership Principles, with STAR scaffolds you fill in yourself |
 | **Review** | | Spaced-repetition queue of what is due |
 
 ## 🗺️ Roadmap
 
-Planned, in dependency order. Each phase exists to de-risk the next.
+Built in dependency order, each phase de-risking the next. All eight are shipped.
 
 | # | Phase | State |
 |---|---|---|
@@ -73,8 +82,8 @@ Planned, in dependency order. Each phase exists to de-risk the next.
 | 4 | Amazon Leadership Principles story bank | ✅ done |
 | 5 | Test design and design-for-testability | ✅ done |
 | 6 | Craft cards — waits, Selenium, Playwright, POM, CI — and the flake animations | ✅ done |
-| 7 | AI in testing | next |
-| 8 | SQL and twenty-minute build exercises | planned |
+| 7 | AI in testing — both directions, plus the mutation lab | ✅ done |
+| 8 | SQL and twenty-minute build exercises | ✅ done |
 
 ## 🎓 Algorithm Categories
 
