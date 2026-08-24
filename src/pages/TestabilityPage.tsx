@@ -166,7 +166,7 @@ export function TestabilityPage() {
                   <span className="text-slate-400">Flake:</span> {layer.flake}
                 </p>
                 <p className="text-xs text-red-200/70 mt-1 leading-relaxed">
-                  <span className="text-red-400/70">×</span> {layer.mistake}
+                  <span className="text-red-400/70">Mistake:</span> {layer.mistake}
                 </p>
               </div>
             ))}
@@ -195,21 +195,36 @@ export function TestabilityPage() {
           <h3 className="text-lg font-bold mb-1">Design for testability</h3>
           <p className="text-sm text-slate-400 mb-4">
             “What would you change so this is easier to test?” is the question the SDET title is
-            for. Each of these is a smell you can name, a change you can ask for, and a sentence
-            you can say in the room.
+            for. Each card below is one lever, in three lines:{' '}
+            <span className="text-red-200/70">what you notice</span> in the suite,{' '}
+            <span className="text-slate-200">the change you ask for</span> in the product, and{' '}
+            <span className="text-slate-300">the sentence you say</span> when you are asked in the
+            room.
           </p>
+          {/* Every row is labelled rather than carrying a bare × or →. The section heading that
+              would explain the shape scrolls off after the second card, and by the sixth these
+              read as unlabelled fragments — which is exactly how it was first reported. */}
           <div className="flex flex-col gap-2">
             {TESTABILITY_LEVERS.map((lever) => (
-              <div key={lever.id} className="bg-slate-900/40 border border-slate-700 rounded-lg p-3">
-                <p className="text-xs text-red-200/70 leading-relaxed">
-                  <span className="text-red-400/70">×</span> {lever.smell}
-                </p>
-                <p className="text-xs text-slate-200 leading-relaxed mt-1.5">
-                  <span className="text-green-400">→</span> {lever.lever}
-                </p>
-                <p className="text-xs text-slate-500 leading-relaxed mt-1.5 italic">
-                  “{lever.say}”
-                </p>
+              <div key={lever.id} className="bg-slate-900/40 border border-slate-700 rounded-lg p-3 flex flex-col gap-2">
+                <div className="grid grid-cols-[5.5rem_1fr] gap-2 items-baseline">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400/70">
+                    You notice
+                  </span>
+                  <p className="text-xs text-red-200/70 leading-relaxed">{lever.smell}</p>
+                </div>
+                <div className="grid grid-cols-[5.5rem_1fr] gap-2 items-baseline">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400/80">
+                    You ask for
+                  </span>
+                  <p className="text-xs text-slate-200 leading-relaxed">{lever.lever}</p>
+                </div>
+                <div className="grid grid-cols-[5.5rem_1fr] gap-2 items-baseline">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    You say
+                  </span>
+                  <p className="text-xs text-slate-400 leading-relaxed italic">“{lever.say}”</p>
+                </div>
               </div>
             ))}
           </div>
