@@ -17,6 +17,9 @@ const CraftPage = lazy(() => import('./pages/CraftPage').then((m) => ({ default:
 const FlakeLabPage = lazy(() =>
   import('./pages/FlakeLabPage').then((m) => ({ default: m.FlakeLabPage }))
 );
+const ToolQuestionsPage = lazy(() =>
+  import('./pages/ToolQuestionsPage').then((m) => ({ default: m.ToolQuestionsPage }))
+);
 const AiTestingPage = lazy(() =>
   import('./pages/AiTestingPage').then((m) => ({ default: m.AiTestingPage }))
 );
@@ -95,6 +98,7 @@ function App() {
               {view === 'testability' && <TestabilityPage />}
               {view === 'craft' && <CraftPage />}
               {view === 'flake' && <FlakeLabPage />}
+              {view === 'toolqa' && <ToolQuestionsPage />}
               {view === 'ai' && <AiTestingPage />}
               {view === 'aifeatures' && <AiFeaturesPage />}
               {view === 'sql' && <SqlPage />}

@@ -32,6 +32,7 @@ import { FLAKE_SCENARIOS } from '../data/flakeScenarios';
 import { LEADERSHIP_PRINCIPLES } from '../data/leadershipPrinciples';
 import { SQL_EXERCISES } from '../data/sqlExercises';
 import { EXERCISES } from '../data/testDesign';
+import { TOOL_QUESTIONS } from '../data/toolQuestions';
 import { PYRAMID, TECHNIQUES, TESTABILITY_LEVERS } from '../data/testability';
 
 export interface ReferenceEntry {
@@ -111,6 +112,16 @@ export const REFERENCE_ENTRIES: ReferenceEntry[] = [
       s.intermittent,
       'flaky flake race intermittent',
     ])
+  ),
+  ...TOOL_QUESTIONS.map((q) =>
+    entry(
+      `toolq:${q.id}`,
+      'toolqa',
+      q.tool === 'both' ? 'Selenium / Playwright' : q.tool === 'selenium' ? 'Selenium' : 'Playwright',
+      line(q.question, 70),
+      line(q.answer),
+      [q.code?.selenium ?? '', q.code?.playwright ?? '', q.followUp]
+    )
   ),
   ...AI_QA.map((qa, i) =>
     entry(`aiqa:${i}`, 'ai', 'AI in testing', line(qa.question, 70), line(qa.answer))

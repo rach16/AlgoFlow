@@ -20,6 +20,7 @@ export type AppView =
   | 'testability'
   | 'craft'
   | 'flake'
+  | 'toolqa'
   | 'ai'
   | 'aifeatures'
   | 'sql'
@@ -88,6 +89,7 @@ export const SECTIONS: NavSection[] = [
     views: [
       { id: 'craft', label: 'Tooling' },
       { id: 'flake', label: 'Flake lab' },
+      { id: 'toolqa', label: 'Questions' },
     ],
   },
   {

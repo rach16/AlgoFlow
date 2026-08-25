@@ -27,10 +27,19 @@ import { BUILD_EXERCISES } from '../data/buildExercises';
 import { CRAFT_REVIEW_TOPICS } from '../data/craft';
 import { FLAKE_SCENARIOS } from '../data/flakeScenarios';
 import { SQL_EXERCISES } from '../data/sqlExercises';
+import { TOOL_QUESTIONS } from '../data/toolQuestions';
 import { EXERCISES } from '../data/testDesign';
 import type { Story } from './stories';
 
-export type ReviewKindId = 'story' | 'design' | 'sql' | 'build' | 'ai' | 'craft' | 'flake';
+export type ReviewKindId =
+  | 'story'
+  | 'design'
+  | 'sql'
+  | 'build'
+  | 'ai'
+  | 'craft'
+  | 'flake'
+  | 'tool';
 
 /** Everything a queue row needs that is not in the ReviewRecord itself. */
 export interface ReviewKind {
@@ -127,6 +136,16 @@ export const KINDS: ReviewKind[] = [
     view: 'craft',
     audienceFiltered: false,
     titleFor: (id) => CRAFT_REVIEW_TOPICS.find((t) => t.id === id)?.title ?? gone('topic'),
+  },
+  {
+    id: 'tool',
+    prefix: 'tool:',
+    label: 'Selenium / Playwright',
+    action: 'answer it out loud before opening it',
+    dot: 'bg-emerald-400',
+    view: 'toolqa',
+    audienceFiltered: false,
+    titleFor: (id) => TOOL_QUESTIONS.find((q) => q.id === id)?.question ?? gone('question'),
   },
   {
     id: 'flake',
