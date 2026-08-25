@@ -100,23 +100,3 @@ export function summariseCoverage(stories: Story[]): CoverageSummary {
     storiesComplete: stories.filter(isComplete).length,
   };
 }
-
-/**
- * Review ids for stories are namespaced, so one queue can hold both problems and stories without
- * a story id ever colliding with an algorithm id.
- */
-export const STORY_REVIEW_PREFIX = 'story:';
-
-export const storyReviewId = (storyId: string): string => `${STORY_REVIEW_PREFIX}${storyId}`;
-
-export const isStoryReviewId = (id: string): boolean => id.startsWith(STORY_REVIEW_PREFIX);
-
-export const storyIdFromReviewId = (id: string): string =>
-  id.slice(STORY_REVIEW_PREFIX.length);
-
-/** A story's display title from its id — the review queue holds ids, not stories. */
-export function storyTitleFor(stories: Story[], storyId: string): string {
-  const story = stories.find((s) => s.id === storyId);
-  if (!story) return 'A deleted story';
-  return story.title.trim() || 'Untitled story';
-}

@@ -362,3 +362,50 @@ export const FRAMEWORKS: FrameworkRow[] = [
 /** The answer to "which would you choose", which is what the table is actually for. */
 export const FRAMEWORK_VERDICT =
   'For a new web suite I would start with Playwright, because auto-waiting removes the largest single source of flake before anyone writes a line, and the trace viewer means a CI failure is inspected rather than reproduced. I would choose Selenium when the language or the device coverage requires it, which is a real constraint at large companies and not a legacy excuse. What I would not do is migrate a working Selenium suite for its own sake — the flake in an old suite is almost never caused by the framework, and a migration relocates it rather than fixing it.';
+
+/**
+ * The craft page's five sections, as things you can put in the review queue.
+ *
+ * A "review" here is not re-reading the page — it is reproducing the ranking and the reason for
+ * each position without looking, which is the form the question actually takes in a room. The
+ * prompt is written as the question rather than the topic for that reason.
+ */
+export interface CraftTopic {
+  id: string;
+  title: string;
+  /** The question to answer from memory. */
+  prompt: string;
+}
+
+export const CRAFT_REVIEW_TOPICS: CraftTopic[] = [
+  {
+    id: 'waits',
+    title: 'Waits, worst to best',
+    prompt:
+      'Rank the wait strategies worst to best, and for each one name what it breaks on. Then say the through-line in a sentence.',
+  },
+  {
+    id: 'locators',
+    title: 'Locators, ranked',
+    prompt:
+      'Rank the six locator strategies, give the Playwright and Selenium syntax for the top three, and say what makes rank 1 the default.',
+  },
+  {
+    id: 'pom',
+    title: 'Page objects and their failure modes',
+    prompt:
+      'Make the case for page objects, then name the five ways they go wrong and the fix for each.',
+  },
+  {
+    id: 'ci',
+    title: 'Running it in CI',
+    prompt:
+      'What do you do about flake in a pipeline people still trust after six months? Give the rules with their numbers.',
+  },
+  {
+    id: 'frameworks',
+    title: 'Selenium, Playwright, Cypress',
+    prompt:
+      'Compare the three on waits, parallelism, reach and debugging — then actually pick one and say what it costs you.',
+  },
+];

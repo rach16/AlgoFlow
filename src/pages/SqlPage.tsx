@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import {
   SQL_EXERCISES,
   SQL_KINDS,
@@ -192,6 +193,15 @@ function Exercise({ exercise }: { exercise: (typeof SQL_EXERCISES)[number] }) {
             <span className={`${LABEL} mb-1`}>In the room</span>
             <p className="text-xs text-slate-400 leading-relaxed italic">“{exercise.say}”</p>
           </div>
+
+          {/* Reading the answer is not learning it. Scheduling it means you get the prompt back
+              with the query hidden, which is the only version that proves anything. */}
+          <ReviewControl
+            kind="sql"
+            itemId={exercise.id}
+            prompt="Come back and write it from the prompt:"
+            className="pt-1"
+          />
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import {
   CATEGORIES,
   DIMENSIONS,
@@ -10,11 +11,9 @@ import {
   type FollowUp,
 } from '../data/testDesign';
 import { useTestDesignStore } from '../store/testDesignStore';
-import { useProgressStore } from '../store/progressStore';
 import {
   blindSpots,
   countCases,
-  designReviewId,
   latestByExercise,
   scoreAttempt,
   summarise,
@@ -22,7 +21,6 @@ import {
   type AttemptScore,
 } from '../utils/testDesign';
 import { formatClock } from '../utils/drill';
-import { CONFIDENCE_META, dueLabel } from '../utils/review';
 import { useNow } from '../utils/useNow';
 
 /**
@@ -396,11 +394,8 @@ function ExerciseRow({
   onStart: () => void;
 }) {
   const { attempts } = useTestDesignStore();
-  const { reviews, rateOther } = useProgressStore();
-  const now = useNow();
   const latest = latestByExercise(attempts).get(exercise.id);
   const score = latest ? scoreAttempt(exercise, latest.checked) : null;
-  const record = reviews[designReviewId(exercise.id)];
   const tries = attempts.filter((a) => a.exerciseId === exercise.id).length;
 
   return (
@@ -426,23 +421,7 @@ function ExerciseRow({
             {score.missed.length > 0 && (
               <span className="text-red-300/80">missed entirely: {missedLabel(score.missed)}</span>
             )}
-            {/* The buttons stay after a rating, so a re-attempt can be re-rated rather than
-                leaving the schedule stuck on how the first one went. */}
-            <span className="ml-auto flex items-center gap-1.5">
-              <span className="text-slate-500">
-                {record ? dueLabel(record, now) : 'Schedule a re-run:'}
-              </span>
-              {CONFIDENCE_META.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => rateOther(designReviewId(exercise.id), c.id)}
-                  title={c.hint}
-                  className={`px-2 py-0.5 rounded font-medium transition-colors ${c.accent}`}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </span>
+            <ReviewControl kind="design" itemId={exercise.id} className="ml-auto" />
           </div>
         </>
       ) : (

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
+import { aiQuestionId } from '../utils/reviewKinds';
 import {
   AI_QA,
   MUTANTS,
@@ -442,7 +444,14 @@ function Answers() {
                 </span>
               </button>
               {isOpen && (
-                <p className="px-3 pb-3 text-xs text-slate-300 leading-relaxed">{qa.answer}</p>
+                <div className="px-3 pb-3 flex flex-col gap-2">
+                  <p className="text-xs text-slate-300 leading-relaxed">{qa.answer}</p>
+                  <ReviewControl
+                    kind="ai"
+                    itemId={aiQuestionId(qa.question)}
+                    prompt="Ask me again:"
+                  />
+                </div>
               )}
             </div>
           );

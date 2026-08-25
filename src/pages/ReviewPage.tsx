@@ -9,12 +9,7 @@ import { useFilterStore } from '../store/filterStore';
 import { matchesAudience } from '../utils/audienceFilter';
 import { AUDIENCES } from '../data/audiences';
 import { useStoryStore } from '../store/storyStore';
-import { isStoryReviewId, storyIdFromReviewId, storyTitleFor } from '../utils/stories';
-import {
-  exerciseIdFromReviewId,
-  exerciseTitleFor,
-  isDesignReviewId,
-} from '../utils/testDesign';
+import { parseReviewId } from '../utils/reviewKinds';
 
 interface ReviewPageProps {
   onOpenAlgorithm: () => void;
@@ -50,9 +45,10 @@ export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
   // queue rather than only the catalogue. A queued problem whose metadata has since disappeared
   // stays visible — dropping it silently would hide a real data problem.
   const inScope = (id: string) => {
-    // Stories and design exercises are not problems, so no audience tag applies to them — the
-    // filter is about who asks a coding question.
-    if (isStoryReviewId(id) || isDesignReviewId(id)) return true;
+    // Everything with a kind declares whether the filter applies to it; the filter is about who
+    // asks a coding question, so today nothing but a problem opts in.
+    const parsed = parseReviewId(id);
+    if (parsed) return !parsed.kind.audienceFiltered;
     const algorithm = byId.get(id);
     return !algorithm || matchesAudience(algorithm.audiences, audiences);
   };
@@ -70,44 +66,18 @@ export function ReviewPage({ onOpenAlgorithm }: ReviewPageProps) {
   };
 
   const Row = ({ id, record }: { id: string; record: ReviewRecord }) => {
-    // The queue holds three kinds of thing: problems, behavioral stories under a `story:` id, and
-    // test-design exercises under `design:`.
-    if (isDesignReviewId(id)) {
+    // Anything with a kind renders from the registry; an unprefixed id is a problem, and only a
+    // problem gets a clickable row, because only a problem has somewhere to open.
+    const parsed = parseReviewId(id);
+    if (parsed) {
+      const { kind, itemId } = parsed;
       return (
         <div className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700/40 text-left">
-          <span className="w-2 h-2 rounded-full flex-shrink-0 bg-teal-400" />
+          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${kind.dot}`} />
           <span className="flex-1 min-w-0">
-            <span className="block text-sm truncate">
-              {exerciseTitleFor(exerciseIdFromReviewId(id))}
-            </span>
-            <span className="block text-xs text-slate-500">
-              Test design — enumerate it again from scratch
-            </span>
-          </span>
-          <span
-            className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${
-              LAST_BADGE[record.last]
-            }`}
-          >
-            {record.last}
-          </span>
-          <span className="text-xs text-slate-400 flex-shrink-0 w-28 text-right">
-            {dueLabel(record, now)}
-          </span>
-        </div>
-      );
-    }
-
-    if (isStoryReviewId(id)) {
-      return (
-        <div className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700/40 text-left">
-          <span className="w-2 h-2 rounded-full flex-shrink-0 bg-purple-400" />
-          <span className="flex-1 min-w-0">
-            <span className="block text-sm truncate">
-              {storyTitleFor(stories, storyIdFromReviewId(id))}
-            </span>
-            <span className="block text-xs text-slate-500">
-              Behavioral story — retell it out loud
+            <span className="block text-sm truncate">{kind.titleFor(itemId, { stories })}</span>
+            <span className="block text-xs text-slate-500 truncate">
+              {kind.label} — {kind.action}
             </span>
           </span>
           <span

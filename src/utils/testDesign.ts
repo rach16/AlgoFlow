@@ -182,22 +182,3 @@ export function summarise(attempts: DesignAttempt[]): DesignSummary {
     totalAttempts: attempts.length,
   };
 }
-
-/**
- * Review ids for exercises are namespaced the same way stories are, so one queue holds problems,
- * stories and exercises without any id ever colliding with an algorithm id.
- */
-export const DESIGN_REVIEW_PREFIX = 'design:';
-
-export const designReviewId = (exerciseId: string): string =>
-  `${DESIGN_REVIEW_PREFIX}${exerciseId}`;
-
-export const isDesignReviewId = (id: string): boolean => id.startsWith(DESIGN_REVIEW_PREFIX);
-
-export const exerciseIdFromReviewId = (id: string): string =>
-  id.slice(DESIGN_REVIEW_PREFIX.length);
-
-/** An exercise's title from its id — the review queue holds ids, not exercises. */
-export function exerciseTitleFor(exerciseId: string): string {
-  return EXERCISES.find((e) => e.id === exerciseId)?.title ?? 'A removed exercise';
-}

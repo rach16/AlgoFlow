@@ -42,8 +42,8 @@ The animated visualizer is called **AlgoFlow** and lives under Practice, alongsi
 - 🗣️ **Behavioral bank** — all 16 Amazon Leadership Principles, what each is really probing, the anti-patterns, and a STAR scaffold you fill in; one story can cover several principles, and finished stories join the review queue
 - ⏱️ **Timed drill** — plain editor, no autocomplete, no hints, clock running: two problems in 45 minutes, then grade yourself and watch the pass rate
 - 🧪 **Coding round** — the problems SDET loops actually ask, tiered by how consistently public reports name them, with sources cited
-- 🔁 **Spaced repetition** — rate a problem and it returns on a schedule; all local, no account
-- 🔍 **Search** (<kbd>⌘K</kbd>) across name, category, pattern and topic
+- 🔁 **Spaced repetition across the whole site** — rate anything and it returns on a schedule: problems, behavioral stories, test-design exercises, SQL queries, build exercises, AI questions, craft rankings and flake scenarios. All local, no account
+- 🔍 **Search** (<kbd>⌘K</kbd>) across everything — 254 problems by name, category, pattern and topic, plus every exercise and reference card in the site, each result labelled with the section it lives in
 - ⌨️ **Keyboard driven** — arrows step, <kbd>space</kbd> plays, <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> switches language, <kbd>[</kbd><kbd>]</kbd> switches approach
 - 📱 Works on mobile
 - ✅ **9,500+ tests** in CI, which execute every approach of every problem and assert the emitted state is renderable

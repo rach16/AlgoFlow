@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import {
   CI_CARDS,
+  CRAFT_REVIEW_TOPICS,
   FRAMEWORKS,
   FRAMEWORK_VERDICT,
   LOCATORS,
@@ -244,6 +246,20 @@ export function CraftPage() {
         {section === 'pom' && <PageObjects />}
         {section === 'ci' && <Ci />}
         {section === 'frameworks' && <Frameworks />}
+
+        {/* Reference you have read is not reference you can produce. Each section can be queued as
+            the question it becomes in a room, which is the prompt below rather than the heading. */}
+        {(() => {
+          const topic = CRAFT_REVIEW_TOPICS.find((t) => t.id === section);
+          if (!topic) return null;
+          return (
+            <div className={`${CARD} p-5`}>
+              <span className={`${LABEL} mb-1`}>Come back to this</span>
+              <p className="text-xs text-slate-300 leading-relaxed mb-2.5">{topic.prompt}</p>
+              <ReviewControl kind="craft" itemId={topic.id} />
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import { FLAKE_SCENARIOS } from '../data/flakeScenarios';
 import { RaceTimeline } from '../components/craft/RaceTimeline';
 
@@ -114,6 +115,14 @@ export function FlakeLabPage() {
                     <span className={LABEL}>The fix</span>
                     <p className="text-xs text-slate-300 leading-relaxed mt-0.5">{scenario.fix}</p>
                   </div>
+
+                  {/* Watching the animation is not the same as being able to name the race under
+                      pressure, which is what the question actually asks for. */}
+                  <ReviewControl
+                    kind="flake"
+                    itemId={scenario.id}
+                    prompt="Come back and explain this one cold:"
+                  />
                 </div>
               )}
             </div>

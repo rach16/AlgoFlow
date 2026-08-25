@@ -1,17 +1,14 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import { LEADERSHIP_PRINCIPLES, STORIES_PER_PRINCIPLE } from '../data/leadershipPrinciples';
 import { useStoryStore } from '../store/storyStore';
-import { useProgressStore } from '../store/progressStore';
 import {
   STAR_FIELDS,
   coverageFor,
   isComplete,
-  storyReviewId,
   summariseCoverage,
   type Story,
 } from '../utils/stories';
-import { CONFIDENCE_META, dueLabel } from '../utils/review';
-import { useNow } from '../utils/useNow';
 
 
 /**
@@ -24,9 +21,6 @@ import { useNow } from '../utils/useNow';
  */
 function StoryEditor({ story, onDeleted }: { story: Story; onDeleted: () => void }) {
   const { updateStory, togglePrinciple, removeStory } = useStoryStore();
-  const { reviews, rateOther } = useProgressStore();
-  const now = useNow();
-  const record = reviews[storyReviewId(story.id)];
 
   return (
     <div className="bg-slate-900/40 border border-slate-700 rounded-lg p-4 flex flex-col gap-3">
@@ -84,25 +78,13 @@ function StoryEditor({ story, onDeleted }: { story: Story; onDeleted: () => void
 
       {/* Rating a story schedules it, so you practise retelling it rather than re-reading it. */}
       <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-700">
-        <span className="text-xs text-slate-400 mr-1">
-          {record ? 'Retold — currently ' : 'Retell it out loud, then rate:'}
-          {record && <span className="text-slate-200">{dueLabel(record, now)}</span>}
-        </span>
-        {CONFIDENCE_META.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => rateOther(storyReviewId(story.id), c.id)}
-            disabled={!isComplete(story)}
-            title={
-              isComplete(story)
-                ? c.label
-                : 'Fill in every part of the story before scheduling it'
-            }
-            className={`px-2.5 py-1 rounded text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${c.accent}`}
-          >
-            {c.label}
-          </button>
-        ))}
+        <ReviewControl
+          kind="story"
+          itemId={story.id}
+          prompt="Retell it out loud, then rate:"
+          disabled={!isComplete(story)}
+          disabledHint="Fill in every part of the story before scheduling it"
+        />
         <button
           onClick={() => {
             removeStory(story.id);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ReviewControl } from '../components/common/ReviewControl';
 import { BUILD_EXERCISES } from '../data/buildExercises';
 
 /**
@@ -82,6 +83,13 @@ function Exercise({ exercise }: { exercise: (typeof BUILD_EXERCISES)[number] }) 
               ))}
             </ul>
           </div>
+
+          <ReviewControl
+            kind="build"
+            itemId={exercise.id}
+            prompt="Come back and build it again:"
+            className="pt-1"
+          />
         </div>
       )}
     </div>

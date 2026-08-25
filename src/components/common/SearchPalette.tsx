@@ -4,21 +4,31 @@ import { useVisualizerStore } from '../../store/visualizerStore';
 import { useProgressStore } from '../../store/progressStore';
 import { TOPICS } from '../../utils/topics';
 import type { AlgorithmMeta } from '../../algorithms/manifestTypes';
+import { REFERENCE_ENTRIES, type ReferenceEntry } from '../../utils/searchIndex';
+import type { AppView } from '../layout/navigation';
 
 interface SearchPaletteProps {
   onClose: () => void;
-  /** Called after a problem is picked, so the shell can switch to the visualizer. */
-  onPick: () => void;
+  /** Called with the view the picked result lives in, so the shell can switch to it. */
+  onPick: (view: AppView) => void;
 }
 
-interface Entry {
-  algorithm: AlgorithmMeta;
-  category: string;
-  pattern: string;
-  topics: string;
-  /** Everything matchable, pre-lowercased once. */
-  haystack: string;
-}
+/**
+ * Two kinds of result. A problem opens in the visualizer and carries its own metadata; a reference
+ * entry just switches the view. They share a `title` and a `haystack` so one scorer ranks both,
+ * which is what lets "flaky" surface a problem, a flake scenario and a CI rule in one list.
+ */
+type Entry =
+  | {
+      type: 'problem';
+      id: string;
+      title: string;
+      haystack: string;
+      algorithm: AlgorithmMeta;
+      category: string;
+      pattern: string;
+    }
+  | { type: 'reference'; id: string; title: string; haystack: string; reference: ReferenceEntry };
 
 const DIFFICULTY_BADGE: Record<string, string> = {
   Easy: 'bg-green-500/20 text-green-400',
@@ -36,7 +46,7 @@ const MAX_RESULTS = 50;
  * problem name beats one on its category or pattern, and a prefix beats a mid-word hit.
  */
 function score(entry: Entry, tokens: string[]): number {
-  const name = entry.algorithm.name.toLowerCase();
+  const name = entry.title.toLowerCase();
   let total = 0;
   for (const t of tokens) {
     if (name.startsWith(t)) total += 100;
@@ -46,7 +56,9 @@ function score(entry: Entry, tokens: string[]): number {
     else return 0; // every token has to land somewhere
   }
   // Nudge shorter names up, so "Two Sum" outranks "Two Sum II" for the query "two sum".
-  return total * 1000 - name.length;
+  // Problems win ties: with 254 of them against ~120 reference entries, an unqualified query is
+  // far more often someone looking for a problem.
+  return total * 1000 - name.length + (entry.type === 'problem' ? 1 : 0);
 }
 
 export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
@@ -59,21 +71,31 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
 
   const entries = useMemo<Entry[]>(() => {
     const topicName = new Map(TOPICS.map((t) => [t.id, t.name]));
-    return metaCategories.flatMap((c) =>
+    const problems: Entry[] = metaCategories.flatMap((c) =>
       c.algorithms.map((algorithm) => {
         const pattern = algorithm.patternName;
         const topics = algorithm.topics.map((id) => topicName.get(id) ?? id).join(' ');
         return {
+          type: 'problem' as const,
+          id: algorithm.id,
+          title: algorithm.name,
           algorithm,
           category: c.name,
           pattern,
-          topics,
           haystack: [algorithm.name, c.name, pattern, topics, algorithm.difficulty]
             .join(' ')
             .toLowerCase(),
         };
       })
     );
+    const references: Entry[] = REFERENCE_ENTRIES.map((reference) => ({
+      type: 'reference' as const,
+      id: reference.id,
+      title: reference.title,
+      haystack: reference.haystack,
+      reference,
+    }));
+    return [...problems, ...references];
   }, []);
 
   const results = useMemo(() => {
@@ -98,9 +120,13 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
     listRef.current?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' });
   }, [selected, results]);
 
-  const pick = (algorithm: AlgorithmMeta) => {
-    void selectAlgorithm(algorithm.id);
-    onPick();
+  const pick = (entry: Entry) => {
+    if (entry.type === 'problem') {
+      void selectAlgorithm(entry.algorithm.id);
+      onPick('visualizer');
+    } else {
+      onPick(entry.reference.view);
+    }
     onClose();
   };
 
@@ -114,7 +140,7 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const hit = results[selected];
-      if (hit) pick(hit.algorithm);
+      if (hit) pick(hit);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       onClose();
@@ -131,7 +157,7 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Search problems"
+        aria-label="Search problems and reference"
       >
         <div className="flex items-center gap-2 px-4 border-b border-slate-700">
           <svg className="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,8 +171,8 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
               setSelected(0);
             }}
             onKeyDown={onKeyDown}
-            placeholder="Search 254 problems by name, category, pattern or topic…"
-            aria-label="Search problems"
+            placeholder="Search problems, exercises and reference…"
+            aria-label="Search problems and reference"
             className="flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-slate-500"
           />
           <kbd className="text-[10px] text-slate-500 border border-slate-600 rounded px-1.5 py-0.5 flex-shrink-0">
@@ -161,17 +187,48 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
             </p>
           ) : (
             results.map((entry, i) => {
-              const { algorithm } = entry;
               const isSelected = i === selected;
+              const row = `w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 ${
+                isSelected ? 'bg-indigo-600/90 text-white' : 'text-slate-300'
+              }`;
+              const sub = `block truncate text-[10px] leading-tight ${
+                isSelected ? 'text-indigo-200' : 'text-slate-500'
+              }`;
+
+              if (entry.type === 'reference') {
+                const { reference } = entry;
+                return (
+                  <button
+                    key={entry.id}
+                    data-selected={isSelected}
+                    onMouseEnter={() => setSelected(i)}
+                    onClick={() => pick(entry)}
+                    className={row}
+                  >
+                    <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate text-sm leading-tight">{entry.title}</span>
+                      <span className={sub}>{reference.subtitle}</span>
+                    </span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ${
+                        isSelected ? 'bg-white/15 text-white' : 'bg-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {reference.section}
+                    </span>
+                  </button>
+                );
+              }
+
+              const { algorithm } = entry;
               return (
                 <button
-                  key={algorithm.id}
+                  key={entry.id}
                   data-selected={isSelected}
                   onMouseEnter={() => setSelected(i)}
-                  onClick={() => pick(algorithm)}
-                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 ${
-                    isSelected ? 'bg-indigo-600/90 text-white' : 'text-slate-300'
-                  }`}
+                  onClick={() => pick(entry)}
+                  className={row}
                 >
                   <span
                     className={`w-2 h-2 rounded-full flex-shrink-0 ${
@@ -184,11 +241,7 @@ export function SearchPalette({ onClose, onPick }: SearchPaletteProps) {
                   />
                   <span className="flex-1 min-w-0">
                     <span className="block truncate text-sm leading-tight">{algorithm.name}</span>
-                    <span
-                      className={`block truncate text-[10px] leading-tight ${
-                        isSelected ? 'text-indigo-200' : 'text-slate-500'
-                      }`}
-                    >
+                    <span className={sub}>
                       {entry.category} · {entry.pattern}
                     </span>
                   </span>

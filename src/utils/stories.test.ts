@@ -4,10 +4,6 @@ import {
   coverageFor,
   emptyStory,
   isComplete,
-  isStoryReviewId,
-  storyIdFromReviewId,
-  storyReviewId,
-  storyTitleFor,
   summariseCoverage,
   type Story,
 } from './stories';
@@ -167,29 +163,3 @@ describe('summariseCoverage', () => {
   });
 });
 
-describe('story review ids', () => {
-  it('namespaces a story id so it cannot collide with an algorithm id', () => {
-    expect(storyReviewId('abc')).toBe('story:abc');
-    expect(isStoryReviewId('story:abc')).toBe(true);
-    expect(isStoryReviewId('two-sum')).toBe(false);
-  });
-
-  it('round-trips', () => {
-    const id = crypto.randomUUID();
-    expect(storyIdFromReviewId(storyReviewId(id))).toBe(id);
-  });
-});
-
-describe('storyTitleFor', () => {
-  it('uses the title when there is one', () => {
-    expect(storyTitleFor([full({ id: 'a', title: 'Flaky checkout' })], 'a')).toBe('Flaky checkout');
-  });
-
-  it('falls back for an untitled story rather than rendering blank', () => {
-    expect(storyTitleFor([full({ id: 'a', title: '  ' })], 'a')).toBe('Untitled story');
-  });
-
-  it('says so when the story is gone, rather than dropping the queue entry silently', () => {
-    expect(storyTitleFor([], 'missing')).toBe('A deleted story');
-  });
-});

@@ -12,10 +12,6 @@ import { PYRAMID, TECHNIQUES, TESTABILITY_LEVERS, FLAKE_MATH } from '../data/tes
 import {
   blindSpots,
   countCases,
-  designReviewId,
-  exerciseIdFromReviewId,
-  exerciseTitleFor,
-  isDesignReviewId,
   latestByExercise,
   scoreAttempt,
   summarise,
@@ -306,27 +302,6 @@ describe('latestByExercise', () => {
   });
 });
 
-describe('review ids', () => {
-  it('round-trips an exercise id', () => {
-    const id = designReviewId('login');
-    expect(isDesignReviewId(id)).toBe(true);
-    expect(exerciseIdFromReviewId(id)).toBe('login');
-  });
-
-  it('does not claim a problem id or a story id', () => {
-    expect(isDesignReviewId('two-sum')).toBe(false);
-    expect(isDesignReviewId('story:abc')).toBe(false);
-  });
-
-  it('never collides with a real problem id, because those hold no colon', () => {
-    expect(designReviewId('login')).toContain(':');
-  });
-
-  it('names an exercise, and says so when it is gone', () => {
-    expect(exerciseTitleFor('login')).toBe(login.title);
-    expect(exerciseTitleFor('nope')).toBe('A removed exercise');
-  });
-});
 
 describe('flake arithmetic', () => {
   // The claim on the page is that 500 tests at 99% are green under 1% of the time. If that

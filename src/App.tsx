@@ -107,10 +107,7 @@ function App() {
       </div>
 
       {searchOpen && (
-        <SearchPalette
-          onClose={() => setSearchOpen(false)}
-          onPick={() => setView('visualizer')}
-        />
+        <SearchPalette onClose={() => setSearchOpen(false)} onPick={setView} />
       )}
     </div>
   );
